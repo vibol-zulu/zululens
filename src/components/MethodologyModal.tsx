@@ -26,7 +26,7 @@ const MethodologyModal: React.FC<MethodologyModalProps> = ({ open, onClose }) =>
         <ScrollArea className="max-h-[70vh] px-6 pb-6">
           <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
             <h4 className="font-semibold text-foreground">What is UMA?</h4>
-            <p>Unique Monthly Audience (UMA) is our cross-platform audience estimate. It combines publicly visible reach metrics from websites, YouTube, podcasts, and major social platforms into a single figure.</p>
+            <p>Unique Monthly Audience (UMA) is our cross-platform audience estimate. It combines publicly visible reach metrics from websites, YouTube, podcasts, and major social platforms into a single figure. The "Unique Monthly Audience" is an educated assumption, not a verified audit.</p>
             
             <h4 className="font-semibold text-foreground mt-6">Data Sources</h4>
             <ul className="list-disc pl-5 space-y-1">
