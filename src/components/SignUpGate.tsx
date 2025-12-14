@@ -89,7 +89,7 @@ We respect your privacy. No spam, only interesting ideas.</p>
 
       {/* Footer */}
       <footer className="flex items-end justify-between p-6 md:p-8">
-        <div className="text-white/50 text-xs font-mono uppercase leading-relaxed max-w-xs">ZULU DIGITAL MICROSCOPE: US MEDIA 2000-2025 
+        <div className="text-white/50 text-[10px] font-mono uppercase leading-relaxed max-w-xs">ZULU DIGITAL MICROSCOPE: US MEDIA 2000-2025 
         <br />
           ​Powered by Zulu Group<br />
           ​
