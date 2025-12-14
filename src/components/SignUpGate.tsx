@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 interface SignUpGateProps {
   onJoin: (name: string, email: string) => void;
@@ -11,17 +12,6 @@ const SignUpGate: React.FC<SignUpGateProps> = ({
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
-  const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth) * 100;
-      const y = (e.clientY / window.innerHeight) * 100;
-      setMousePos({ x, y });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -38,19 +28,9 @@ const SignUpGate: React.FC<SignUpGateProps> = ({
       onJoin(name, email);
     }, 500);
   };
-  return <div className="min-h-screen flex flex-col relative overflow-hidden" style={{
-    background: `radial-gradient(ellipse at ${mousePos.x}% ${mousePos.y}%, hsl(180 25% 28%) 0%, hsl(170 30% 18%) 40%, hsl(200 20% 25%) 100%)`,
-    transition: 'background 0.3s ease-out'
+  return <div className="min-h-screen flex flex-col" style={{
+    background: 'linear-gradient(135deg, hsl(180 25% 25%) 0%, hsl(170 30% 18%) 50%, hsl(200 20% 30%) 100%)'
   }}>
-      {/* Grain texture overlay */}
-      <div 
-        className="absolute inset-0 pointer-events-none opacity-40"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-          backgroundRepeat: 'repeat',
-          mixBlendMode: 'overlay'
-        }}
-      />
       {/* Header */}
       <header className="flex items-center justify-between p-6 md:p-8">
         <nav className="flex flex-col gap-1">
