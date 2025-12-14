@@ -180,21 +180,11 @@ const Sidebar: React.FC<SidebarProps> = ({
           style={{ backgroundColor: headerBgColor }}
         >
           <h3 
-            className="font-semibold capitalize text-sm text-center mb-3"
+            className="font-semibold capitalize text-sm text-center"
             style={{ color: headerTextColor }}
           >
             {category}
           </h3>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => onToggleAll(category)}
-            disabled={sorted.length === 0}
-            className="w-full text-xs bg-white/20 border-white/30 hover:bg-white/30"
-            style={{ color: headerTextColor }}
-          >
-            {allSelected && sorted.length > 0 ? 'Deselect All' : 'Select All'}
-          </Button>
         </div>
         
         <ScrollArea className="flex-1">
@@ -254,22 +244,11 @@ const Sidebar: React.FC<SidebarProps> = ({
         style={{ backgroundColor: headerBgColor }}
       >
         <h3 
-          className="font-semibold capitalize text-center mb-4"
+          className="font-semibold capitalize text-center"
           style={{ color: headerTextColor }}
         >
           {category}
         </h3>
-
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => onToggleAll(category)}
-          disabled={sorted.length === 0}
-          className="w-full bg-white/20 border-white/30 hover:bg-white/30"
-          style={{ color: headerTextColor }}
-        >
-          {allSelected && sorted.length > 0 ? 'Deselect All' : 'Select All'}
-        </Button>
       </div>
 
       <ScrollArea className="flex-1 p-4">
