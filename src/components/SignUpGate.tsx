@@ -126,20 +126,18 @@ const SignUpGate: React.FC<SignUpGateProps> = ({ onJoin }) => {
               <input type="text" name="b_8cebbb69cb233fee8e96a59fe_de54a87f37" tabIndex={-1} defaultValue="" />
             </div>
 
-            <Button 
+            <button 
               type="submit"
               disabled={submitted}
-              className="h-12 px-8 bg-white hover:bg-white/90 font-mono text-sm tracking-widest uppercase transition-all duration-300 border-0"
+              className="h-12 px-8 font-mono text-sm tracking-widest uppercase transition-all duration-300 rounded-md disabled:opacity-50"
               style={{
                 background: 'white',
-                color: 'transparent',
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                backgroundImage: 'linear-gradient(135deg, hsl(180 25% 25%) 0%, hsl(170 30% 18%) 50%, hsl(200 20% 30%) 100%)'
+                color: 'hsl(170 30% 18%)',
+                mixBlendMode: 'screen'
               }}
             >
               {submitted ? 'Unlocking...' : 'Unlock Infographic'}
-            </Button>
+            </button>
           </form>
         </div>
       </main>
