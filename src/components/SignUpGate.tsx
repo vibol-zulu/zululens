@@ -48,9 +48,7 @@ const SignUpGate: React.FC<SignUpGateProps> = ({
       }}>
           {/* Icon */}
           <div className="mb-8">
-            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" className="text-white/90">
-              <path d="M24 4L24 44M4 24L44 24M10.1 10.1L37.9 37.9M37.9 10.1L10.1 37.9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
+            
           </div>
 
           {/* Headline */}
