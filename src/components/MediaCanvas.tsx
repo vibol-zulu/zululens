@@ -118,13 +118,13 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
           const textX = x + SPECTRUM_BIN_WIDTH / 2;
           const textY = cy;
 
-          ctx.font = 'bold 14px sans-serif';
+          ctx.font = 'bold 16px sans-serif';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           
           const metrics = ctx.measureText(labelText);
-          const bgH = 20;
-          const bgW = metrics.width + 12;
+          const bgH = 24;
+          const bgW = metrics.width + 14;
           ctx.fillStyle = 'rgba(255,255,255,0.8)';
           ctx.fillRect(textX - bgW/2, textY - bgH/2, bgW, bgH);
 
