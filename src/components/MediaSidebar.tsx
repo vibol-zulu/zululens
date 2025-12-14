@@ -3,9 +3,10 @@ import { BrandData, Category, COLORS } from '@/types/media';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import AddChannelModal from './AddChannelModal';
 
 // The Big 6 are the corporate channels from 2000
 const BIG_6_NAMES = [
@@ -33,6 +34,9 @@ interface SidebarProps {
   isOpen: boolean;
   onToggleSidebar: () => void;
   isMobile?: boolean;
+  country: string;
+  year: number;
+  onChannelAdded: () => void;
 }
 
 const SidebarToggle: React.FC<{ side: 'left' | 'right'; isOpen: boolean; onClick: () => void }> = ({ side, isOpen, onClick }) => (
@@ -142,8 +146,12 @@ const Sidebar: React.FC<SidebarProps> = ({
   side,
   isOpen,
   onToggleSidebar,
-  isMobile = false
+  isMobile = false,
+  country,
+  year,
+  onChannelAdded
 }) => {
+  const [showAddModal, setShowAddModal] = useState(false);
   const sorted = [...brands].sort((a, b) => b.valueMillions - a.valueMillions);
   const allSelected = sorted.length > 0 && sorted.every(b => selectedIds.has(b.id));
   const color = category === 'corporate' ? COLORS.corporate : COLORS.independent;
@@ -189,6 +197,25 @@ const Sidebar: React.FC<SidebarProps> = ({
         
         <ScrollArea className="flex-1">
           <div className="p-3">
+            <div className="flex gap-2 mb-3">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => onToggleAll(category)}
+                disabled={sorted.length === 0}
+                className="flex-1 text-xs"
+              >
+                {allSelected && sorted.length > 0 ? 'Deselect All' : 'Select All'}
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setShowAddModal(true)}
+                className="px-2"
+              >
+                <Plus className="h-3 w-3" />
+              </Button>
+            </div>
             {sorted.length === 0 && (
               <p className="text-center text-muted-foreground text-xs italic py-4">
                 No data available
@@ -226,6 +253,15 @@ const Sidebar: React.FC<SidebarProps> = ({
             )}
           </div>
         </ScrollArea>
+        
+        <AddChannelModal
+          isOpen={showAddModal}
+          onClose={() => setShowAddModal(false)}
+          category={category}
+          country={country}
+          year={year}
+          onChannelAdded={onChannelAdded}
+        />
       </div>
     );
   }
@@ -252,16 +288,25 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       <ScrollArea className="flex-1 p-4">
-
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => onToggleAll(category)}
-          disabled={sorted.length === 0}
-          className="w-full mb-4"
-        >
-          {allSelected && sorted.length > 0 ? 'Deselect All' : 'Select All'}
-        </Button>
+        <div className="flex gap-2 mb-4">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => onToggleAll(category)}
+            disabled={sorted.length === 0}
+            className="flex-1"
+          >
+            {allSelected && sorted.length > 0 ? 'Deselect All' : 'Select All'}
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setShowAddModal(true)}
+            className="px-3"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+        </div>
 
         <div>
           {sorted.length === 0 && (
@@ -300,6 +345,15 @@ const Sidebar: React.FC<SidebarProps> = ({
       </ScrollArea>
       
       <SidebarToggle side={side} isOpen={isOpen} onClick={onToggleSidebar} />
+      
+      <AddChannelModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        category={category}
+        country={country}
+        year={year}
+        onChannelAdded={onChannelAdded}
+      />
     </div>
   );
 };

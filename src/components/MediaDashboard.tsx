@@ -217,6 +217,9 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               isOpen={true}
               onToggleSidebar={() => {}}
               isMobile={true}
+              country={country}
+              year={year}
+              onChannelAdded={() => {}}
             />
             <Sidebar 
               category="independent" 
@@ -228,6 +231,9 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               isOpen={true}
               onToggleSidebar={() => {}}
               isMobile={true}
+              country={country}
+              year={year}
+              onChannelAdded={() => {}}
             />
           </div>
         )}
@@ -244,6 +250,9 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               side="left"
               isOpen={leftSidebarOpen}
               onToggleSidebar={() => setLeftSidebarOpen(!leftSidebarOpen)}
+              country={country}
+              year={year}
+              onChannelAdded={() => {}}
             />
             
             <Sidebar 
@@ -255,6 +264,9 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               side="right"
               isOpen={rightSidebarOpen}
               onToggleSidebar={() => setRightSidebarOpen(!rightSidebarOpen)}
+              country={country}
+              year={year}
+              onChannelAdded={() => {}}
             />
           </>
         )}
