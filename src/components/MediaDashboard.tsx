@@ -261,7 +261,10 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
       <ContactModal open={showContact} onClose={() => setShowContact(false)} />
       <ContributorModal 
         open={showContributor} 
-        onClose={() => setShowContributor(false)}
+        onClose={() => {
+          setShowContributor(false);
+          setCountry('United States');
+        }}
         defaultName={visitorName}
         defaultEmail={visitorEmail}
         country={country}
