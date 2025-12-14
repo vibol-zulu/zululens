@@ -36,19 +36,7 @@ const SignUpGate: React.FC<SignUpGateProps> = ({
         <nav className="flex flex-col gap-1">
           <span className="text-white/90 text-sm font-medium tracking-wide uppercase">Home</span>
         </nav>
-        <div className="text-right text-white/60 text-xs font-mono hidden md:block">
-          <div>{new Date().toLocaleTimeString('en-US', {
-            hour12: true,
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-          }).toUpperCase()}</div>
-          <div>{new Date().toLocaleDateString('en-US', {
-            month: 'short',
-            day: '2-digit',
-            year: 'numeric'
-          }).toUpperCase()}</div>
-        </div>
+        
       </header>
 
       {/* Main Content */}
@@ -88,11 +76,11 @@ We respect your privacy. No spam, only interesting ideas.</p>
               <input type="text" name="b_8cebbb69cb233fee8e96a59fe_de54a87f37" tabIndex={-1} defaultValue="" />
             </div>
 
-            <button type="submit" disabled={submitted} className="h-12 px-8 font-mono text-sm tracking-widest uppercase transition-all duration-300 rounded-md disabled:opacity-50" style={{
+            <button type="submit" disabled={submitted} style={{
             background: 'white',
             color: 'hsl(170 30% 18%)',
             mixBlendMode: 'screen'
-          }}>
+          }} className="h-12 px-8 font-mono tracking-widest uppercase transition-all duration-300 rounded-md disabled:opacity-50 text-xs">
               {submitted ? 'Unlocking...' : 'Unlock Infographic'}
             </button>
           </form>
@@ -106,9 +94,7 @@ We respect your privacy. No spam, only interesting ideas.</p>
           ​Powered by Zulu Group<br />
           ​
         </div>
-        <div className="text-right text-white/50 text-xs font-mono">
-          <div>© {new Date().getFullYear()} Zulu Group</div>
-        </div>
+        
       </footer>
     </div>;
 };
