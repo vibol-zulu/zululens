@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { YearData, ViewMode } from '@/types/media';
 import { COUNTRIES } from '@/data/mediaData';
 import MediaCanvas from '@/components/MediaCanvas';
@@ -8,6 +7,7 @@ import InsightsModal from '@/components/InsightsModal';
 import MethodologyModal from '@/components/MethodologyModal';
 import ContactModal from '@/components/ContactModal';
 import ContributorModal from '@/components/ContributorModal';
+import AdminModal from '@/components/AdminModal';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -38,7 +38,6 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   visitorEmail,
   data
 }) => {
-  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
   const useStackedLayout = isMobile || isTablet;
@@ -55,6 +54,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   const [showMethodology, setShowMethodology] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [showContributor, setShowContributor] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
 
   // Fetch user-added channels and merge with static data
   const { getMergedData, refetch: refetchUserChannels } = useUserChannels(country);
@@ -182,7 +182,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               <DropdownMenuItem onClick={() => setShowContact(true)}>
                 Contact
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate('/admin')}>
+              <DropdownMenuItem onClick={() => setShowAdmin(true)}>
                 Admin
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -297,6 +297,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
         defaultEmail={visitorEmail}
         country={country}
       />
+      <AdminModal open={showAdmin} onClose={() => setShowAdmin(false)} />
     </div>
   );
 };
