@@ -617,8 +617,8 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
 
                 <ScrollArea className="flex-1">
                   <div className="p-4">
-                    <div className="rounded-md border">
-                      <Table>
+                    <div className="rounded-md border overflow-x-auto">
+                      <Table className="min-w-[600px]">
                         <TableHeader>
                           <TableRow>
                             <TableHead>Name</TableHead>
@@ -685,8 +685,8 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
 
                 <ScrollArea className="flex-1">
                   <div className="p-4">
-                    <div className="rounded-md border">
-                      <Table>
+                    <div className="rounded-md border overflow-x-auto">
+                      <Table className="min-w-[550px]">
                         <TableHeader>
                           <TableRow>
                             <TableHead>Email</TableHead>
@@ -762,8 +762,8 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
 
                 <ScrollArea className="flex-1">
                   <div className="p-4">
-                    <div className="rounded-md border">
-                      <Table>
+                    <div className="rounded-md border overflow-x-auto">
+                      <Table className="min-w-[600px]">
                         <TableHeader>
                           <TableRow>
                             <TableHead>Name</TableHead>
