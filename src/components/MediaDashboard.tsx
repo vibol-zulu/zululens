@@ -236,6 +236,8 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               country={country}
               year={year}
               onChannelAdded={refetchUserChannels}
+              visitorName={visitorName}
+              visitorEmail={visitorEmail}
             />
             <Sidebar 
               category="independent" 
@@ -250,6 +252,8 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               country={country}
               year={year}
               onChannelAdded={refetchUserChannels}
+              visitorName={visitorName}
+              visitorEmail={visitorEmail}
             />
           </div>
         )}
@@ -269,6 +273,8 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               country={country}
               year={year}
               onChannelAdded={refetchUserChannels}
+              visitorName={visitorName}
+              visitorEmail={visitorEmail}
             />
             
             <Sidebar 
@@ -283,6 +289,8 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               country={country}
               year={year}
               onChannelAdded={refetchUserChannels}
+              visitorName={visitorName}
+              visitorEmail={visitorEmail}
             />
           </>
         )}
