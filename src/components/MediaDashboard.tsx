@@ -38,6 +38,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   visitorEmail,
   data
 }) => {
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
   const useStackedLayout = isMobile || isTablet;
@@ -180,6 +181,9 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setShowContact(true)}>
                 Contact
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/admin')}>
+                Admin
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
