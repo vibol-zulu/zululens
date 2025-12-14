@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 interface SignUpGateProps {
   onJoin: (name: string, email: string) => void;
@@ -36,24 +35,63 @@ const SignUpGate: React.FC<SignUpGateProps> = ({ onJoin }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md shadow-xl border-0">
-        <CardHeader className="text-center pb-4">
-          <CardTitle className="text-[2.618rem] leading-tight font-bold text-primary">
-            Zulu Digital Microscope
-          </CardTitle>
-          <CardDescription className="text-[1rem] text-muted-foreground mt-3">
+    <div 
+      className="min-h-screen flex flex-col"
+      style={{
+        background: 'linear-gradient(135deg, hsl(180 25% 25%) 0%, hsl(170 30% 18%) 50%, hsl(200 20% 30%) 100%)'
+      }}
+    >
+      {/* Header */}
+      <header className="flex items-center justify-between p-6 md:p-8">
+        <nav className="flex flex-col gap-1">
+          <span className="text-white/90 text-sm font-medium tracking-wide uppercase">Home</span>
+        </nav>
+        <div className="text-right text-white/60 text-xs font-mono hidden md:block">
+          <div>{new Date().toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' }).toUpperCase()}</div>
+          <div>{new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase()}</div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="flex-1 flex items-center justify-center px-6 md:px-12 lg:px-24 py-12">
+        <div 
+          className="w-full max-w-2xl rounded-2xl p-8 md:p-12"
+          style={{
+            background: 'linear-gradient(180deg, hsla(180 20% 35% / 0.4) 0%, hsla(170 25% 25% / 0.3) 100%)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid hsla(180 30% 50% / 0.15)'
+          }}
+        >
+          {/* Icon */}
+          <div className="mb-8">
+            <svg 
+              width="48" 
+              height="48" 
+              viewBox="0 0 48 48" 
+              fill="none" 
+              className="text-white/90"
+            >
+              <path 
+                d="M24 4L24 44M4 24L44 24M10.1 10.1L37.9 37.9M37.9 10.1L10.1 37.9" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
+
+          {/* Headline */}
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-6">
             Explore how media has transformed over 25 years
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-center text-[0.875rem] leading-relaxed text-muted-foreground mb-6">
-            Sign up to our newsletter to unlock the interactive visualization.<br />
-            No spam, just insights worth your time.
+          </h1>
+
+          {/* Description */}
+          <p className="text-white/70 text-base md:text-lg leading-relaxed mb-8 max-w-lg">
+            Sign up to our newsletter to unlock the interactive visualization—gain insights into the evolving media landscape, all while keeping your inbox clutter-free.
           </p>
-          
+
           {error && (
-            <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-lg mb-4">
+            <div className="bg-red-500/20 text-red-200 text-sm p-3 rounded-lg mb-6 border border-red-500/30">
               {error}
             </div>
           )}
@@ -65,7 +103,7 @@ const SignUpGate: React.FC<SignUpGateProps> = ({ onJoin }) => {
             method="POST" 
             target="hiddenFrame"
             onSubmit={handleSubmit}
-            className="space-y-4"
+            className="space-y-4 max-w-md"
           >
             <Input 
               type="text" 
@@ -73,7 +111,7 @@ const SignUpGate: React.FC<SignUpGateProps> = ({ onJoin }) => {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Full Name"
-              className="h-12"
+              className="h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus-visible:ring-white/30 focus-visible:ring-offset-0"
             />
             <Input 
               type="email" 
@@ -81,7 +119,7 @@ const SignUpGate: React.FC<SignUpGateProps> = ({ onJoin }) => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Email Address"
-              className="h-12"
+              className="h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus-visible:ring-white/30 focus-visible:ring-offset-0"
             />
 
             <div className="absolute -left-[5000px]" aria-hidden="true">
@@ -91,19 +129,26 @@ const SignUpGate: React.FC<SignUpGateProps> = ({ onJoin }) => {
             <Button 
               type="submit"
               disabled={submitted}
-              className="w-full h-12 text-base font-semibold"
+              className="h-12 px-8 bg-white/10 hover:bg-white/20 text-white border border-white/30 font-mono text-sm tracking-widest uppercase transition-all duration-300"
+              variant="outline"
             >
-              {submitted ? 'Unlocking...' : 'Unlock Infographic'}
+              {submitted ? 'Unlocking...' : 'Start for Free'}
             </Button>
           </form>
-          
-          <div className="mt-6 pt-4 border-t text-center">
-            <p className="text-xs text-muted-foreground">
-              Powered by Zulu Group
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="flex items-end justify-between p-6 md:p-8">
+        <div className="text-white/50 text-xs font-mono uppercase leading-relaxed max-w-xs">
+          Explore the media landscape,<br />
+          gain insights,<br />
+          keep data private.
+        </div>
+        <div className="text-right text-white/50 text-xs font-mono">
+          <div>© {new Date().getFullYear()} Zulu Group</div>
+        </div>
+      </footer>
     </div>
   );
 };
