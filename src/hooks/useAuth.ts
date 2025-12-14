@@ -7,6 +7,7 @@ export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isContributor, setIsContributor] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -15,13 +16,14 @@ export function useAuth() {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Check contributor role after auth state changes
+        // Check roles after auth state changes
         if (session?.user) {
           setTimeout(() => {
-            checkContributorRole(session.user.id);
+            checkRoles(session.user.id);
           }, 0);
         } else {
           setIsContributor(false);
+          setIsAdmin(false);
         }
       }
     );
@@ -32,7 +34,7 @@ export function useAuth() {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        checkContributorRole(session.user.id);
+        checkRoles(session.user.id);
       }
       setLoading(false);
     });
@@ -40,18 +42,33 @@ export function useAuth() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const checkContributorRole = async (userId: string) => {
+  const checkRoles = async (userId: string) => {
     try {
-      const { data, error } = await supabase.rpc('has_role', { 
+      // Check contributor role
+      const { data: isContrib, error: contribError } = await supabase.rpc('has_role', { 
         _user_id: userId, 
         _role: 'contributor' 
       });
       
-      if (!error) {
-        setIsContributor(data === true);
+      if (!contribError) {
+        setIsContributor(isContrib === true);
+      }
+
+      // Check admin role
+      const { data: isAdm, error: adminError } = await supabase.rpc('has_role', { 
+        _user_id: userId, 
+        _role: 'admin' 
+      });
+      
+      if (!adminError) {
+        setIsAdmin(isAdm === true);
+        // Admins are also contributors
+        if (isAdm === true) {
+          setIsContributor(true);
+        }
       }
     } catch (error) {
-      console.error('Error checking contributor role:', error);
+      console.error('Error checking roles:', error);
     }
   };
 
@@ -67,6 +84,7 @@ export function useAuth() {
     const { error } = await supabase.auth.signOut();
     if (!error) {
       setIsContributor(false);
+      setIsAdmin(false);
     }
     return { error };
   }, []);
@@ -76,6 +94,7 @@ export function useAuth() {
     session,
     loading,
     isContributor,
+    isAdmin,
     signIn,
     signOut
   };
