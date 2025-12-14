@@ -26,6 +26,7 @@ import { Menu } from 'lucide-react';
 import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
 import { COLORS } from '@/types/media';
 import { useUserChannels } from '@/hooks/useUserChannels';
+import { useAuth } from '@/hooks/useAuth';
 
 interface MediaDashboardProps {
   visitorName: string;
@@ -56,6 +57,9 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   const [showContributor, setShowContributor] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
 
+  // Auth state for contributor access
+  const { isContributor } = useAuth();
+
   // Fetch user-added channels and merge with static data
   const { getMergedData, refetch: refetchUserChannels } = useUserChannels(country);
   
@@ -69,8 +73,8 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
     setCountry(value);
     setSelectedIds(new Set());
     
-    // Show contributor modal if country has no data
-    if (value !== 'United States') {
+    // Show contributor modal only if country has no data AND user is not authenticated
+    if (value !== 'United States' && !isContributor) {
       setShowContributor(true);
     }
   };

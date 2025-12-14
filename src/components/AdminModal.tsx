@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, LogOut } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -38,6 +38,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { COUNTRIES } from '@/data/mediaData';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Channel {
   id: string;
@@ -63,10 +64,11 @@ const POLITICAL_LEANS = ['Far Left', 'Progressive/Left', 'Center-Left', 'Center'
 
 const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   const { toast } = useToast();
+  const { user, isContributor, signIn, signOut, loading: authLoading } = useAuth();
   
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isVerifying, setIsVerifying] = useState(false);
+  const [isSigningIn, setIsSigningIn] = useState(false);
   
   const [selectedCountry, setSelectedCountry] = useState('United States');
   const [selectedYear, setSelectedYear] = useState<number>(2025);
@@ -90,28 +92,36 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
     political_lean: ''
   });
 
-  const verifyPassword = async () => {
-    setIsVerifying(true);
+  const isAuthenticated = user && isContributor;
+
+  const handleSignIn = async () => {
+    if (!email || !password) {
+      toast({ title: 'Please enter email and password', variant: 'destructive' });
+      return;
+    }
+    
+    setIsSigningIn(true);
     try {
-      const { data, error } = await supabase.functions.invoke('verify-admin', {
-        body: { password }
-      });
+      const { error } = await signIn(email, password);
       
-      if (error) throw error;
-      
-      if (data.valid) {
-        setIsAuthenticated(true);
-        sessionStorage.setItem('admin_authenticated', 'true');
-        toast({ title: 'Access granted' });
+      if (error) {
+        toast({ title: error.message, variant: 'destructive' });
       } else {
-        toast({ title: 'Invalid password', variant: 'destructive' });
+        toast({ title: 'Signed in successfully' });
+        setEmail('');
+        setPassword('');
       }
     } catch (error) {
-      console.error('Verification error:', error);
-      toast({ title: 'Verification failed', variant: 'destructive' });
+      console.error('Sign in error:', error);
+      toast({ title: 'Sign in failed', variant: 'destructive' });
     } finally {
-      setIsVerifying(false);
+      setIsSigningIn(false);
     }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast({ title: 'Signed out' });
   };
 
   const fetchChannels = async () => {
@@ -138,13 +148,6 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    const cached = sessionStorage.getItem('admin_authenticated');
-    if (cached === 'true') {
-      setIsAuthenticated(true);
-    }
-  }, []);
 
   useEffect(() => {
     if (isAuthenticated && open) {
@@ -255,12 +258,36 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="max-w-5xl max-h-[90vh] p-0 overflow-hidden">
-        {!isAuthenticated ? (
-          <div className="p-6">
+        {/* Close button - always visible */}
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 z-50 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        >
+          <X className="h-4 w-4" />
+          <span className="sr-only">Close</span>
+        </button>
+
+        {authLoading ? (
+          <div className="p-6 flex items-center justify-center">
+            <p className="text-muted-foreground">Loading...</p>
+          </div>
+        ) : !isAuthenticated ? (
+          <div className="p-6 pr-12">
             <DialogHeader>
-              <DialogTitle>Admin Access</DialogTitle>
+              <DialogTitle>Contributor Login</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label htmlFor="admin-email">Email</Label>
+                <Input
+                  id="admin-email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                />
+              </div>
+              
               <div className="space-y-2">
                 <Label htmlFor="admin-password">Password</Label>
                 <Input
@@ -268,7 +295,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && verifyPassword()}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSignIn()}
                 />
               </div>
               
@@ -276,15 +303,21 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                 <Button variant="outline" onClick={onClose} className="flex-1">
                   Cancel
                 </Button>
-                <Button onClick={verifyPassword} disabled={isVerifying} className="flex-1">
-                  {isVerifying ? 'Verifying...' : 'Enter'}
+                <Button onClick={handleSignIn} disabled={isSigningIn} className="flex-1">
+                  {isSigningIn ? 'Signing in...' : 'Sign In'}
                 </Button>
               </div>
+
+              {user && !isContributor && (
+                <p className="text-sm text-destructive text-center mt-2">
+                  Your account does not have contributor access.
+                </p>
+              )}
             </div>
           </div>
         ) : (
           <div className="flex flex-col h-[80vh]">
-            <div className="border-b p-4 flex items-center justify-between shrink-0">
+            <div className="border-b p-4 flex items-center justify-between shrink-0 pr-12">
               <h2 className="font-semibold text-lg">Admin Panel</h2>
               
               <div className="flex items-center gap-2">
@@ -322,6 +355,10 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                 
                 <Button size="sm" onClick={handleAdd}>
                   <Plus className="h-4 w-4 mr-1" /> Add
+                </Button>
+
+                <Button size="sm" variant="ghost" onClick={handleSignOut}>
+                  <LogOut className="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -499,7 +536,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={deleteChannel} className="bg-destructive text-destructive-foreground">
+              <AlertDialogAction onClick={deleteChannel} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                 Delete
               </AlertDialogAction>
             </AlertDialogFooter>
