@@ -16,7 +16,7 @@ interface UserChannel {
   year: number;
 }
 
-export const useUserChannels = (country: string) => {
+export const useUserChannels = (country: string, year: number) => {
   const [userChannels, setUserChannels] = useState<BrandData[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -26,7 +26,8 @@ export const useUserChannels = (country: string) => {
       const { data, error } = await supabase
         .from('user_channels')
         .select('*')
-        .eq('country', country);
+        .eq('country', country)
+        .eq('year', year);
 
       if (error) {
         console.error('Error fetching user channels:', error);
@@ -52,14 +53,14 @@ export const useUserChannels = (country: string) => {
     } finally {
       setLoading(false);
     }
-  }, [country]);
+  }, [country, year]);
 
   useEffect(() => {
     fetchUserChannels();
   }, [fetchUserChannels]);
 
-  // Get data for a specific year
-  const getMergedData = useCallback((year: number): YearData => {
+  // Get data for the current year
+  const getMergedData = useCallback((): YearData => {
     const staticData = INITIAL_DATA[year];
     
     // For United States, use ONLY static data (database was seeded with same data)
@@ -67,19 +68,15 @@ export const useUserChannels = (country: string) => {
       return staticData;
     }
     
-    // For non-US countries or if no static data, use database channels
-    if (!staticData) {
-      return {
-        totalAudienceMillions: 0,
-        usPopulationMillions: 0,
-        usPopulationSource: '',
-        totalRadiusPx: 0,
-        brands: userChannels
-      };
-    }
-
-    return staticData;
-  }, [country, userChannels]);
+    // For non-US countries, use database channels only
+    return {
+      totalAudienceMillions: 0,
+      usPopulationMillions: 0,
+      usPopulationSource: '',
+      totalRadiusPx: 0,
+      brands: userChannels
+    };
+  }, [country, year, userChannels]);
 
   return {
     userChannels,
