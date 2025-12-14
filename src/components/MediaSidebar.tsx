@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import AddChannelModal from './AddChannelModal';
 
 // The Big 6 are the corporate channels from 2000
@@ -207,14 +208,23 @@ const Sidebar: React.FC<SidebarProps> = ({
               >
                 {allSelected && sorted.length > 0 ? 'Deselect All' : 'Select All'}
               </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setShowAddModal(true)}
-                className="px-2"
-              >
-                <Plus className="h-3 w-3" />
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => setShowAddModal(true)}
+                      className="px-2"
+                    >
+                      <Plus className="h-3 w-3" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Add a new channel</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
             {sorted.length === 0 && (
               <p className="text-center text-muted-foreground text-xs italic py-4">
@@ -298,14 +308,23 @@ const Sidebar: React.FC<SidebarProps> = ({
           >
             {allSelected && sorted.length > 0 ? 'Deselect All' : 'Select All'}
           </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => setShowAddModal(true)}
-            className="px-3"
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setShowAddModal(true)}
+                  className="px-3"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Add a new channel</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
 
         <div>
