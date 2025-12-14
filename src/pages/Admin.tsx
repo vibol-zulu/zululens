@@ -278,7 +278,7 @@ const Admin = () => {
                 {isVerifying ? 'Verifying...' : 'Enter'}
               </Button>
               
-              <Button variant="ghost" onClick={() => navigate('/?skip=1')} className="w-full">
+              <Button variant="ghost" onClick={() => navigate('/')} className="w-full">
                 <ArrowLeft className="h-4 w-4 mr-2" /> Back to Dashboard
               </Button>
             </div>
@@ -296,7 +296,7 @@ const Admin = () => {
       <div className="min-h-screen bg-background">
         <header className="h-14 border-b bg-card flex items-center px-4 justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/?skip=1')}>
+            <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <h1 className="font-semibold">Admin Panel</h1>
