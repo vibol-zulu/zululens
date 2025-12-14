@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface ContributorModalProps {
@@ -44,17 +43,25 @@ const ContributorModal: React.FC<ContributorModalProps> = ({
     setSending(true);
     
     try {
-      const { error } = await supabase.functions.invoke('send-contributor-email', {
-        body: { name, email, message, country }
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('email', email);
+      formData.append('message', message);
+      formData.append('country', country);
+      formData.append('_subject', `New Contributor Request for ${country}`);
+
+      const response = await fetch('https://formsubmit.co/ajax/vibol@zulu.group', {
+        method: 'POST',
+        body: formData,
       });
 
-      if (error) throw error;
+      if (!response.ok) throw new Error('Failed to send');
 
       toast.success('Thank you! Your message has been sent.');
       onClose();
       setMessage('');
     } catch (error: any) {
-      console.error('Error sending email:', error);
+      console.error('Error sending message:', error);
       toast.error('Failed to send message. Please try again.');
     } finally {
       setSending(false);
