@@ -101,11 +101,11 @@ We respect your privacy. No spam, only interesting ideas.</p>
 
       {/* Footer */}
       <footer className="flex items-end justify-between p-6 md:p-8">
-        <div className="text-white/50 text-xs font-mono uppercase leading-relaxed max-w-xs">
-          Zulu Digital Microscope: US Media 2000-2025
+        <div className="text-white/50 text-xs font-mono uppercase leading-relaxed max-w-xs">ZULU DIGITAL MICROSCOPE: US MEDIA 2000-2025
+​POWERED BY ZULU GROUP
         <br />
           ​Powered by Zulu Group<br />
-          keep data private.
+          ​
         </div>
         <div className="text-right text-white/50 text-xs font-mono">
           <div>© {new Date().getFullYear()} Zulu Group</div>
