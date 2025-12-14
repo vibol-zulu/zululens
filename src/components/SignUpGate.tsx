@@ -80,7 +80,7 @@ We respect your privacy. No spam, only interesting ideas.</p>
             background: 'white',
             color: 'hsl(170 30% 18%)',
             mixBlendMode: 'screen'
-          }} className="h-12 px-8 font-mono tracking-widest uppercase transition-all duration-300 rounded-md disabled:opacity-50 text-xs">
+          }} className="h-12 px-8 tracking-widest uppercase transition-all duration-300 rounded-md text-xs bg-white font-sans opacity-100">
               {submitted ? 'Unlocking...' : 'Unlock Infographic'}
             </button>
           </form>
