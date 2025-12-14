@@ -1,23 +1,20 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-
 interface SignUpGateProps {
   onJoin: (name: string, email: string) => void;
 }
-
 const MAILCHIMP_ACTION = "https://group.us14.list-manage.com/subscribe/post?u=8cebbb69cb233fee8e96a59fe&amp;id=de54a87f37";
-
-const SignUpGate: React.FC<SignUpGateProps> = ({ onJoin }) => {
+const SignUpGate: React.FC<SignUpGateProps> = ({
+  onJoin
+}) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
     if (!name.trim()) {
       setError('Please enter your name.');
       return;
@@ -26,57 +23,45 @@ const SignUpGate: React.FC<SignUpGateProps> = ({ onJoin }) => {
       setError('Please enter a valid email.');
       return;
     }
-
     setSubmitted(true);
-
     setTimeout(() => {
       onJoin(name, email);
     }, 500);
   };
-
-  return (
-    <div 
-      className="min-h-screen flex flex-col"
-      style={{
-        background: 'linear-gradient(135deg, hsl(180 25% 25%) 0%, hsl(170 30% 18%) 50%, hsl(200 20% 30%) 100%)'
-      }}
-    >
+  return <div className="min-h-screen flex flex-col" style={{
+    background: 'linear-gradient(135deg, hsl(180 25% 25%) 0%, hsl(170 30% 18%) 50%, hsl(200 20% 30%) 100%)'
+  }}>
       {/* Header */}
       <header className="flex items-center justify-between p-6 md:p-8">
         <nav className="flex flex-col gap-1">
           <span className="text-white/90 text-sm font-medium tracking-wide uppercase">Home</span>
         </nav>
         <div className="text-right text-white/60 text-xs font-mono hidden md:block">
-          <div>{new Date().toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' }).toUpperCase()}</div>
-          <div>{new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase()}</div>
+          <div>{new Date().toLocaleTimeString('en-US', {
+            hour12: true,
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          }).toUpperCase()}</div>
+          <div>{new Date().toLocaleDateString('en-US', {
+            month: 'short',
+            day: '2-digit',
+            year: 'numeric'
+          }).toUpperCase()}</div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center px-6 md:px-12 lg:px-24 py-12">
-        <div 
-          className="w-full max-w-2xl rounded-2xl p-8 md:p-12"
-          style={{
-            background: 'linear-gradient(180deg, hsla(180 20% 35% / 0.4) 0%, hsla(170 25% 25% / 0.3) 100%)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid hsla(180 30% 50% / 0.15)'
-          }}
-        >
+        <div className="w-full max-w-2xl rounded-2xl p-8 md:p-12" style={{
+        background: 'linear-gradient(180deg, hsla(180 20% 35% / 0.4) 0%, hsla(170 25% 25% / 0.3) 100%)',
+        backdropFilter: 'blur(20px)',
+        border: '1px solid hsla(180 30% 50% / 0.15)'
+      }}>
           {/* Icon */}
           <div className="mb-8">
-            <svg 
-              width="48" 
-              height="48" 
-              viewBox="0 0 48 48" 
-              fill="none" 
-              className="text-white/90"
-            >
-              <path 
-                d="M24 4L24 44M4 24L44 24M10.1 10.1L37.9 37.9M37.9 10.1L10.1 37.9" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round"
-              />
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" className="text-white/90">
+              <path d="M24 4L24 44M4 24L44 24M10.1 10.1L37.9 37.9M37.9 10.1L10.1 37.9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </div>
 
@@ -86,56 +71,28 @@ const SignUpGate: React.FC<SignUpGateProps> = ({ onJoin }) => {
           </h1>
 
           {/* Description */}
-          <p className="text-white/70 text-base md:text-lg leading-relaxed mb-8 max-w-lg">
-            Sign up to our newsletter to unlock the interactive visualization—gain insights into the evolving media landscape, all while keeping your inbox clutter-free.
-          </p>
+          <p className="text-white/70 text-base md:text-lg leading-relaxed mb-8 max-w-lg">Sign up to our newsletter to unlock the interactive infographic.
+We respect your privacy. No spam, only interesting ideas.</p>
 
-          {error && (
-            <div className="bg-red-500/20 text-red-200 text-sm p-3 rounded-lg mb-6 border border-red-500/30">
+          {error && <div className="bg-red-500/20 text-red-200 text-sm p-3 rounded-lg mb-6 border border-red-500/30">
               {error}
-            </div>
-          )}
+            </div>}
 
           <iframe name="hiddenFrame" className="hidden" title="hiddenFrame" />
 
-          <form 
-            action={MAILCHIMP_ACTION} 
-            method="POST" 
-            target="hiddenFrame"
-            onSubmit={handleSubmit}
-            className="space-y-4 max-w-md"
-          >
-            <Input 
-              type="text" 
-              name="FNAME"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Full Name"
-              className="h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus-visible:ring-white/30 focus-visible:ring-offset-0"
-            />
-            <Input 
-              type="email" 
-              name="EMAIL"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email Address"
-              className="h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus-visible:ring-white/30 focus-visible:ring-offset-0"
-            />
+          <form action={MAILCHIMP_ACTION} method="POST" target="hiddenFrame" onSubmit={handleSubmit} className="space-y-4 max-w-md">
+            <Input type="text" name="FNAME" value={name} onChange={e => setName(e.target.value)} placeholder="Full Name" className="h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus-visible:ring-white/30 focus-visible:ring-offset-0" />
+            <Input type="email" name="EMAIL" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email Address" className="h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus-visible:ring-white/30 focus-visible:ring-offset-0" />
 
             <div className="absolute -left-[5000px]" aria-hidden="true">
               <input type="text" name="b_8cebbb69cb233fee8e96a59fe_de54a87f37" tabIndex={-1} defaultValue="" />
             </div>
 
-            <button 
-              type="submit"
-              disabled={submitted}
-              className="h-12 px-8 font-mono text-sm tracking-widest uppercase transition-all duration-300 rounded-md disabled:opacity-50"
-              style={{
-                background: 'white',
-                color: 'hsl(170 30% 18%)',
-                mixBlendMode: 'screen'
-              }}
-            >
+            <button type="submit" disabled={submitted} className="h-12 px-8 font-mono text-sm tracking-widest uppercase transition-all duration-300 rounded-md disabled:opacity-50" style={{
+            background: 'white',
+            color: 'hsl(170 30% 18%)',
+            mixBlendMode: 'screen'
+          }}>
               {submitted ? 'Unlocking...' : 'Unlock Infographic'}
             </button>
           </form>
@@ -153,8 +110,6 @@ const SignUpGate: React.FC<SignUpGateProps> = ({ onJoin }) => {
           <div>© {new Date().getFullYear()} Zulu Group</div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default SignUpGate;
