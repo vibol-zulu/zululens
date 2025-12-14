@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { YearData, ViewMode } from '@/types/media';
 import { COUNTRIES } from '@/data/mediaData';
 import MediaCanvas from '@/components/MediaCanvas';
