@@ -61,10 +61,10 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   const { isContributor } = useAuth();
 
   // Fetch user-added channels and merge with static data
-  const { getMergedData, refetch: refetchUserChannels } = useUserChannels(country);
+  const { getMergedData, refetch: refetchUserChannels } = useUserChannels(country, year);
   
   // Get merged data for current year (static + user-added)
-  const mergedData = useMemo(() => getMergedData(year), [getMergedData, year]);
+  const mergedData = useMemo(() => getMergedData(), [getMergedData]);
 
   // Check if country has data (only United States has data currently)
   const countryHasData = country === 'United States';
