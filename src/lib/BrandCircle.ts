@@ -119,38 +119,18 @@ export class BrandCircle {
     if (viewMode === 'compass') {
       const targetX = (this.spectrumBinIndex - 2) * SPECTRUM_BIN_WIDTH;
       
-      if (this.category === 'corporate') {
-        const speed = Math.hypot(this.vx, this.vy);
-        const maxSpeed = 0.5;
-        if (speed > maxSpeed) {
-          this.vx = (this.vx / speed) * maxSpeed;
-          this.vy = (this.vy / speed) * maxSpeed;
-        }
+      // Same physics for both corporate and independent circles
+      const speed = Math.hypot(this.vx, this.vy);
+      const maxSpeed = 0.5;
+      if (speed > maxSpeed) {
+        this.vx = (this.vx / speed) * maxSpeed;
+        this.vy = (this.vy / speed) * maxSpeed;
+      }
 
-        if (speed < 0.02) {
-          const a = Math.random() * Math.PI * 2;
-          this.vx += Math.cos(a) * 0.05;
-          this.vy += Math.sin(a) * 0.05;
-        }
-      } else {
-        this.vx += (Math.random() - 0.5) * 0.2;
-        this.vy += (Math.random() - 0.5) * 0.2;
-
-        for (const other of allCircles) {
-          if (other.id === this.id) continue;
-          const diffX = this.x - other.x;
-          const diffY = this.y - other.y;
-          const dist = Math.hypot(diffX, diffY);
-          const minDist = this.currentRadius + other.currentRadius + 2;
-          
-          if (dist < minDist && dist > 0) {
-            const force = (minDist - dist) * 0.05;
-            const fx = (diffX / dist) * force;
-            const fy = (diffY / dist) * force;
-            this.vx += fx;
-            this.vy += fy;
-          }
-        }
+      if (speed < 0.02) {
+        const a = Math.random() * Math.PI * 2;
+        this.vx += Math.cos(a) * 0.05;
+        this.vy += Math.sin(a) * 0.05;
       }
 
       const halfW = (SPECTRUM_BIN_WIDTH / 2) + 10;
@@ -161,7 +141,7 @@ export class BrandCircle {
       const minY = -halfH + this.currentRadius;
       const maxY = halfH - this.currentRadius;
 
-      const bounce = this.category === 'corporate' ? -1.0 : -0.5;
+      const bounce = -1.0;
 
       if (minX < maxX) {
         if (this.x < minX) { this.x = minX; this.vx *= bounce; }
@@ -177,11 +157,6 @@ export class BrandCircle {
       } else {
         this.y = 0;
         this.vy = 0;
-      }
-
-      if (this.category !== 'corporate') {
-        this.vx *= 0.95;
-        this.vy *= 0.95;
       }
 
     } else {
