@@ -308,6 +308,8 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
         defaultName={visitorName}
         defaultEmail={visitorEmail}
         country={country}
+        customTitle={`No data for ${country} yet`}
+        customMessage={`We don't have media landscape data for ${country}. Help us build it! Share your knowledge of local media outlets and become a contributor.`}
       />
       <AdminModal open={showAdmin} onClose={() => setShowAdmin(false)} />
     </div>
