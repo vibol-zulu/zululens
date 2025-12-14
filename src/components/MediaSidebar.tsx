@@ -168,25 +168,30 @@ const Sidebar: React.FC<SidebarProps> = ({
   }) : [];
   const othersFiltered = isCorporate ? brands.filter(b => !big6Filtered.includes(b)) : [];
 
+  // Determine header colors - corporate gets teal bg with peach text, independent gets peach bg with teal text
+  const headerBgColor = category === 'corporate' ? COLORS.corporate : COLORS.independent;
+  const headerTextColor = category === 'corporate' ? COLORS.independent : COLORS.corporate;
+
   if (isMobile) {
     return (
       <div className="flex-1 border-r last:border-r-0 border-border bg-card overflow-hidden flex flex-col">
-        <div className="p-3 border-b border-border">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <div 
-              className="w-3 h-3 rounded-full" 
-              style={{ backgroundColor: color }}
-            />
-            <h3 className={cn("font-semibold capitalize text-sm", textColorClass)}>
-              {category}
-            </h3>
-          </div>
+        <div 
+          className="p-3 border-b border-border"
+          style={{ backgroundColor: headerBgColor }}
+        >
+          <h3 
+            className="font-semibold capitalize text-sm text-center mb-3"
+            style={{ color: headerTextColor }}
+          >
+            {category}
+          </h3>
           <Button 
             variant="outline" 
             size="sm" 
             onClick={() => onToggleAll(category)}
             disabled={sorted.length === 0}
-            className="w-full text-xs"
+            className="w-full text-xs bg-white/20 border-white/30 hover:bg-white/30"
+            style={{ color: headerTextColor }}
           >
             {allSelected && sorted.length > 0 ? 'Deselect All' : 'Select All'}
           </Button>
@@ -244,16 +249,30 @@ const Sidebar: React.FC<SidebarProps> = ({
         !isOpen && (side === 'left' ? '-translate-x-[calc(100%-12px)]' : 'translate-x-[calc(100%-12px)]')
       )}
     >
+      <div 
+        className="p-4 border-b border-border/50"
+        style={{ backgroundColor: headerBgColor }}
+      >
+        <h3 
+          className="font-semibold capitalize text-center mb-4"
+          style={{ color: headerTextColor }}
+        >
+          {category}
+        </h3>
+
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => onToggleAll(category)}
+          disabled={sorted.length === 0}
+          className="w-full bg-white/20 border-white/30 hover:bg-white/30"
+          style={{ color: headerTextColor }}
+        >
+          {allSelected && sorted.length > 0 ? 'Deselect All' : 'Select All'}
+        </Button>
+      </div>
+
       <ScrollArea className="flex-1 p-4">
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <div 
-            className="w-3 h-3 rounded-full" 
-            style={{ backgroundColor: color }}
-          />
-          <h3 className={cn("font-semibold capitalize", textColorClass)}>
-            {category}
-          </h3>
-        </div>
 
         <Button 
           variant="outline" 
