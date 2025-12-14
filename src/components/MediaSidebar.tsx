@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { BrandData, Category, COLORS } from '@/types/media';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Plus } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Plus, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -159,8 +160,20 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showContributorModal, setShowContributorModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const { isContributor } = useAuth();
-  const sorted = [...brands].sort((a, b) => b.valueMillions - a.valueMillions);
+  
+  // Filter brands by search query
+  const filteredBrands = useMemo(() => {
+    if (!searchQuery.trim()) return brands;
+    const query = searchQuery.toLowerCase();
+    return brands.filter(b => 
+      b.name.toLowerCase().includes(query) || 
+      b.platform.toLowerCase().includes(query)
+    );
+  }, [brands, searchQuery]);
+  
+  const sorted = [...filteredBrands].sort((a, b) => b.valueMillions - a.valueMillions);
 
   const handleAddClick = () => {
     if (isContributor) {
@@ -173,13 +186,13 @@ const Sidebar: React.FC<SidebarProps> = ({
   const color = category === 'corporate' ? COLORS.corporate : COLORS.independent;
   const textColorClass = category === 'corporate' ? 'text-corporate' : 'text-orange-600';
 
-  // For corporate category, split into Big 6 and Others
+  // For corporate category, split into Big 6 and Others (use filtered brands for search)
   const isCorporate = category === 'corporate';
-  const big6Brands = isCorporate ? brands.filter(b => BIG_6_NAMES.some(name => b.name.includes(name.split(' ')[0]) || name.includes(b.name.split(' ')[0]))) : [];
-  const otherBrands = isCorporate ? brands.filter(b => !big6Brands.includes(b)) : [];
+  const big6Brands = isCorporate ? filteredBrands.filter(b => BIG_6_NAMES.some(name => b.name.includes(name.split(' ')[0]) || name.includes(b.name.split(' ')[0]))) : [];
+  const otherBrands = isCorporate ? filteredBrands.filter(b => !big6Brands.includes(b)) : [];
 
   // More accurate matching for Big 6
-  const big6Filtered = isCorporate ? brands.filter(b => {
+  const big6Filtered = isCorporate ? filteredBrands.filter(b => {
     const lowerName = b.name.toLowerCase();
     return (
       lowerName.includes('fox news') ||
@@ -190,7 +203,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       lowerName.includes('cbs e') || lowerName.includes('cbs news')
     );
   }) : [];
-  const othersFiltered = isCorporate ? brands.filter(b => !big6Filtered.includes(b)) : [];
+  const othersFiltered = isCorporate ? filteredBrands.filter(b => !big6Filtered.includes(b)) : [];
 
   // Determine header colors - corporate gets teal bg with peach text, independent gets peach bg with teal text
   const headerBgColor = category === 'corporate' ? COLORS.corporate : COLORS.independent;
@@ -213,7 +226,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         
         <ScrollArea className="flex-1">
           <div className="p-3">
-            <div className="flex gap-2 mb-3">
+            <div className="flex gap-2 mb-2">
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -240,6 +253,15 @@ const Sidebar: React.FC<SidebarProps> = ({
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
+            </div>
+            <div className="relative mb-3">
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+              <Input
+                placeholder="Search channels..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-7 h-8 text-xs"
+              />
             </div>
             {sorted.length === 0 && (
               <p className="text-center text-muted-foreground text-xs italic py-4">
@@ -286,6 +308,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           country={country}
           year={year}
           onChannelAdded={onChannelAdded}
+          existingChannelNames={brands.map(b => b.name)}
         />
         
         <ContributorModal
@@ -323,7 +346,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       <ScrollArea className="flex-1 p-4">
-        <div className="flex gap-2 mb-4">
+        <div className="flex gap-2 mb-3">
           <Button 
             variant="outline" 
             size="sm" 
@@ -350,6 +373,15 @@ const Sidebar: React.FC<SidebarProps> = ({
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
+        </div>
+        <div className="relative mb-4">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search channels..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
         </div>
 
         <div>
@@ -397,6 +429,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         country={country}
         year={year}
         onChannelAdded={onChannelAdded}
+        existingChannelNames={brands.map(b => b.name)}
       />
       
       <ContributorModal

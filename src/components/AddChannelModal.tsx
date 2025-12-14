@@ -15,6 +15,7 @@ interface AddChannelModalProps {
   country: string;
   year: number;
   onChannelAdded: () => void;
+  existingChannelNames?: string[];
 }
 
 const PLATFORMS = [
@@ -66,7 +67,8 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
   category,
   country,
   year,
-  onChannelAdded
+  onChannelAdded,
+  existingChannelNames = []
 }) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -87,6 +89,21 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
       toast({
         title: "Missing fields",
         description: "Please fill in all fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Check for duplicate channel name (case-insensitive)
+    const trimmedName = formData.name.trim().toLowerCase();
+    const isDuplicate = existingChannelNames.some(
+      name => name.toLowerCase() === trimmedName
+    );
+    
+    if (isDuplicate) {
+      toast({
+        title: "Channel already exists",
+        description: `"${formData.name.trim()}" is already in the ${category} dataset for ${country} (${year}).`,
         variant: "destructive"
       });
       return;
