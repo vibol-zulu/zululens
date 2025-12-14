@@ -58,15 +58,12 @@ export const useUserChannels = (country: string) => {
     fetchUserChannels();
   }, [fetchUserChannels]);
 
-  // Merge static data with user channels
+  // Merge static data with user channels (excluding duplicates)
   const getMergedData = useCallback((year: number): YearData => {
     const staticData = INITIAL_DATA[year];
     if (!staticData || country !== 'United States') {
       // For non-US countries, only show user-added channels
-      const yearChannels = userChannels.filter(c => {
-        // User channels have year stored, but we show all for now
-        return true;
-      });
+      const yearChannels = userChannels.filter(c => true);
       return {
         totalAudienceMillions: 0,
         usPopulationMillions: 0,
@@ -76,15 +73,17 @@ export const useUserChannels = (country: string) => {
       };
     }
 
-    // Merge static brands with user-added brands for the selected year
-    const userBrandsForYear = userChannels.filter(c => {
-      // Check if user channel matches the year (stored in the id or we can filter by year)
-      return true; // Show all user channels for now
-    });
+    // Get static brand names for deduplication
+    const staticBrandNames = new Set(staticData.brands.map(b => b.name.toLowerCase()));
+
+    // Filter user channels to only include ones NOT in static data (truly user-added)
+    const uniqueUserBrands = userChannels.filter(c => 
+      !staticBrandNames.has(c.name.toLowerCase())
+    );
 
     return {
       ...staticData,
-      brands: [...staticData.brands, ...userBrandsForYear]
+      brands: [...staticData.brands, ...uniqueUserBrands]
     };
   }, [country, userChannels]);
 
