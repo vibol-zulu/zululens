@@ -18,6 +18,8 @@ interface ContributorModalProps {
   defaultName: string;
   defaultEmail: string;
   country: string;
+  customTitle?: string;
+  customMessage?: string;
 }
 
 const ContributorModal: React.FC<ContributorModalProps> = ({
@@ -25,7 +27,9 @@ const ContributorModal: React.FC<ContributorModalProps> = ({
   onClose,
   defaultName,
   defaultEmail,
-  country
+  country,
+  customTitle,
+  customMessage
 }) => {
   const [name, setName] = useState(defaultName);
   const [email, setEmail] = useState(defaultEmail);
@@ -80,8 +84,14 @@ const ContributorModal: React.FC<ContributorModalProps> = ({
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">We need your help</DialogTitle>
+          <DialogTitle className="text-xl font-semibold">
+            {customTitle || 'We need your help'}
+          </DialogTitle>
         </DialogHeader>
+        
+        {customMessage && (
+          <p className="text-sm text-muted-foreground">{customMessage}</p>
+        )}
         
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           <div className="space-y-2">

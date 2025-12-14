@@ -8,7 +8,8 @@ import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import AddChannelModal from './AddChannelModal';
-
+import ContributorModal from './ContributorModal';
+import { useAuth } from '@/hooks/useAuth';
 // The Big 6 are the corporate channels from 2000
 const BIG_6_NAMES = [
   'FOX News',
@@ -38,6 +39,8 @@ interface SidebarProps {
   country: string;
   year: number;
   onChannelAdded: () => void;
+  visitorName?: string;
+  visitorEmail?: string;
 }
 
 const SidebarToggle: React.FC<{ side: 'left' | 'right'; isOpen: boolean; onClick: () => void }> = ({ side, isOpen, onClick }) => (
@@ -150,10 +153,22 @@ const Sidebar: React.FC<SidebarProps> = ({
   isMobile = false,
   country,
   year,
-  onChannelAdded
+  onChannelAdded,
+  visitorName = '',
+  visitorEmail = ''
 }) => {
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showContributorModal, setShowContributorModal] = useState(false);
+  const { isContributor } = useAuth();
   const sorted = [...brands].sort((a, b) => b.valueMillions - a.valueMillions);
+
+  const handleAddClick = () => {
+    if (isContributor) {
+      setShowAddModal(true);
+    } else {
+      setShowContributorModal(true);
+    }
+  };
   const allSelected = sorted.length > 0 && sorted.every(b => selectedIds.has(b.id));
   const color = category === 'corporate' ? COLORS.corporate : COLORS.independent;
   const textColorClass = category === 'corporate' ? 'text-corporate' : 'text-orange-600';
@@ -214,7 +229,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      onClick={() => setShowAddModal(true)}
+                      onClick={handleAddClick}
                       className="px-2"
                     >
                       <Plus className="h-3 w-3" />
@@ -272,6 +287,16 @@ const Sidebar: React.FC<SidebarProps> = ({
           year={year}
           onChannelAdded={onChannelAdded}
         />
+        
+        <ContributorModal
+          open={showContributorModal}
+          onClose={() => setShowContributorModal(false)}
+          defaultName={visitorName}
+          defaultEmail={visitorEmail}
+          country={country}
+          customTitle="Want to add a channel?"
+          customMessage="Become a contributor to add channels and help build the media landscape dataset."
+        />
       </div>
     );
   }
@@ -311,14 +336,14 @@ const Sidebar: React.FC<SidebarProps> = ({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => setShowAddModal(true)}
-                  className="px-3"
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleAddClick}
+                className="px-3"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
               </TooltipTrigger>
               <TooltipContent>
                 <p>Add a new channel</p>
@@ -372,6 +397,16 @@ const Sidebar: React.FC<SidebarProps> = ({
         country={country}
         year={year}
         onChannelAdded={onChannelAdded}
+      />
+      
+      <ContributorModal
+        open={showContributorModal}
+        onClose={() => setShowContributorModal(false)}
+        defaultName={visitorName}
+        defaultEmail={visitorEmail}
+        country={country}
+        customTitle="Want to add a channel?"
+        customMessage="Become a contributor to add channels and help build the media landscape dataset."
       />
     </div>
   );
