@@ -548,8 +548,8 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
               </div>
             </div>
 
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-              <div className="border-b px-4">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
+              <div className="border-b px-4 shrink-0">
                 <TabsList className="h-12">
                   <TabsTrigger value="channels" className="gap-2">
                     <Database className="h-4 w-4" />
@@ -576,7 +576,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
               </div>
 
               {/* Channels Tab */}
-              <TabsContent value="channels" className="flex-1 flex flex-col mt-0">
+              <TabsContent value="channels" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
                 <div className="border-b p-4 flex items-center gap-2 flex-wrap">
                   <Select value={selectedCountry} onValueChange={setSelectedCountry}>
                     <SelectTrigger className="w-[140px]">
@@ -675,7 +675,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
               </TabsContent>
 
               {/* Users Tab */}
-              <TabsContent value="users" className="flex-1 flex flex-col mt-0">
+              <TabsContent value="users" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
                 <div className="border-b p-4 flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">{users.length} users</span>
                   <Button size="sm" onClick={() => setShowCreateUserDialog(true)}>
@@ -753,7 +753,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
               </TabsContent>
 
               {/* Requests Tab */}
-              <TabsContent value="requests" className="flex-1 flex flex-col mt-0">
+              <TabsContent value="requests" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
                 <div className="border-b p-4">
                   <span className="text-sm text-muted-foreground">
                     {pendingRequestsCount} pending request{pendingRequestsCount !== 1 ? 's' : ''}
