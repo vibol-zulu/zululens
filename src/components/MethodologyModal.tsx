@@ -52,6 +52,11 @@ const MethodologyModal: React.FC<MethodologyModalProps> = ({ open, onClose }) =>
 
             <h4 className="font-semibold text-foreground mt-6">Political Lean Classification</h4>
             <p>Political lean is assigned based on public self-identification, content analysis, and editorial positioning. Classifications are simplified for visualization purposes.</p>
+
+            <h4 className="font-semibold text-foreground mt-6">How It Differs for Corporate Conglomerates</h4>
+            <p>For each conglomerate, Unique Monthly Audience was first estimated at the sub-brand level (e.g., CNN vs. HLN; NBC News vs. TODAY; Fox News vs. Fox Business) using the same 30-day, cross-platform, primary-platform/media-type framework as the independents.</p>
+            <p>A second de-duplication pass was then applied across those sub-brands to account for the fact that many of the same individuals consume multiple properties within the same corporate family (e.g., watching cable plus clips on YouTube plus visiting the .com site), yielding a single conglomerate-level UMA.</p>
+            <p>As a result, conglomerate figures are more heavily de-duplicated than single-brand independents, and should be interpreted as "unduplicated people reached by the overall corporate news portfolio" rather than a sum of its component channels.</p>
           </div>
         </ScrollArea>
         
