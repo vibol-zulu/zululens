@@ -129,10 +129,16 @@ const SignUpGate: React.FC<SignUpGateProps> = ({ onJoin }) => {
             <Button 
               type="submit"
               disabled={submitted}
-              className="h-12 px-8 bg-white/10 hover:bg-white/20 text-white border border-white/30 font-mono text-sm tracking-widest uppercase transition-all duration-300"
-              variant="outline"
+              className="h-12 px-8 bg-white hover:bg-white/90 font-mono text-sm tracking-widest uppercase transition-all duration-300 border-0"
+              style={{
+                background: 'white',
+                color: 'transparent',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                backgroundImage: 'linear-gradient(135deg, hsl(180 25% 25%) 0%, hsl(170 30% 18%) 50%, hsl(200 20% 30%) 100%)'
+              }}
             >
-              {submitted ? 'Unlocking...' : 'Start for Free'}
+              {submitted ? 'Unlocking...' : 'Unlock Infographic'}
             </Button>
           </form>
         </div>
