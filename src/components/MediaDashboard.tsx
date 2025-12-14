@@ -6,6 +6,7 @@ import Sidebar from '@/components/MediaSidebar';
 import InsightsModal from '@/components/InsightsModal';
 import MethodologyModal from '@/components/MethodologyModal';
 import ContactModal from '@/components/ContactModal';
+import ContributorModal from '@/components/ContributorModal';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -48,10 +49,19 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   const [showInsights, setShowInsights] = useState(false);
   const [showMethodology, setShowMethodology] = useState(false);
   const [showContact, setShowContact] = useState(false);
+  const [showContributor, setShowContributor] = useState(false);
+
+  // Check if country has data (only United States has data currently)
+  const countryHasData = country === 'United States';
 
   const handleCountryChange = (value: string) => {
     setCountry(value);
     setSelectedIds(new Set());
+    
+    // Show contributor modal if country has no data
+    if (value !== 'United States') {
+      setShowContributor(true);
+    }
   };
 
   const toggleBrand = (id: string) => {
@@ -249,6 +259,13 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
       <InsightsModal open={showInsights} onClose={() => setShowInsights(false)} />
       <MethodologyModal open={showMethodology} onClose={() => setShowMethodology(false)} />
       <ContactModal open={showContact} onClose={() => setShowContact(false)} />
+      <ContributorModal 
+        open={showContributor} 
+        onClose={() => setShowContributor(false)}
+        defaultName={visitorName}
+        defaultEmail={visitorEmail}
+        country={country}
+      />
     </div>
   );
 };
