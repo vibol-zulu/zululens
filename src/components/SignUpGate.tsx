@@ -66,7 +66,7 @@ const SignUpGate: React.FC<SignUpGateProps> = ({
           </div>
 
           {/* Headline */}
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-6">
+          <h1 className="text-3xl md:text-4xl font-bold text-white leading-tight mb-6 lg:text-4xl">
             Explore how media has transformed over 25 years
           </h1>
 
