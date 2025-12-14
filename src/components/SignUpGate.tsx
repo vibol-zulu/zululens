@@ -42,14 +42,14 @@ const SignUpGate: React.FC<SignUpGateProps> = ({ onJoin }) => {
           <CardTitle className="text-2xl font-bold text-primary">
             Zulu Digital Microscope
           </CardTitle>
-          <CardDescription className="text-muted-foreground mt-2">
-            US Media Landscape: 2000 vs 2025
+          <CardDescription className="text-muted-foreground mt-2 text-base">
+            Explore how media has transformed over 25 years
           </CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-center text-sm text-muted-foreground mb-6">
-            Sign up to our newsletter to gain access.<br />
-            We respect your privacy — no spam, only interesting ideas.
+            Enter your details below to unlock the interactive visualization.<br />
+            No spam, just insights worth your time.
           </p>
           
           {error && (
