@@ -616,7 +616,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                 </div>
 
                 <div className="flex-1 overflow-auto p-4">
-                  <div className="rounded-md border">
+                  <div className="rounded-md border overflow-x-auto">
                     <Table className="min-w-[600px]">
                         <TableHeader>
                           <TableRow>
@@ -682,7 +682,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                 </div>
 
                 <div className="flex-1 overflow-auto p-4">
-                  <div className="rounded-md border">
+                  <div className="rounded-md border overflow-x-auto">
                     <Table className="min-w-[550px]">
                         <TableHeader>
                           <TableRow>
@@ -757,7 +757,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                 </div>
 
                 <div className="flex-1 overflow-auto p-4">
-                  <div className="rounded-md border">
+                  <div className="rounded-md border overflow-x-auto">
                     <Table className="min-w-[600px]">
                         <TableHeader>
                           <TableRow>
