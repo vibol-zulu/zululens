@@ -67,6 +67,7 @@ const Admin = () => {
   
   const [selectedCountry, setSelectedCountry] = useState('United States');
   const [selectedYear, setSelectedYear] = useState<number>(2025);
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'corporate' | 'independent'>('all');
   const [channels, setChannels] = useState<Channel[]>([]);
   const [loading, setLoading] = useState(false);
   
@@ -113,12 +114,17 @@ const Admin = () => {
   const fetchChannels = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('user_channels')
         .select('*')
         .eq('country', selectedCountry)
-        .eq('year', selectedYear)
-        .order('value_millions', { ascending: false });
+        .eq('year', selectedYear);
+      
+      if (selectedCategory !== 'all') {
+        query = query.eq('category', selectedCategory);
+      }
+      
+      const { data, error } = await query.order('value_millions', { ascending: false });
 
       if (error) throw error;
       setChannels(data || []);
@@ -141,7 +147,7 @@ const Admin = () => {
     if (isAuthenticated) {
       fetchChannels();
     }
-  }, [isAuthenticated, selectedCountry, selectedYear]);
+  }, [isAuthenticated, selectedCountry, selectedYear, selectedCategory]);
 
   const handleEdit = (channel: Channel) => {
     setEditingChannel(channel);
@@ -272,7 +278,7 @@ const Admin = () => {
                 {isVerifying ? 'Verifying...' : 'Enter'}
               </Button>
               
-              <Button variant="ghost" onClick={() => navigate('/')} className="w-full">
+              <Button variant="ghost" onClick={() => navigate('/?skip=1')} className="w-full">
                 <ArrowLeft className="h-4 w-4 mr-2" /> Back to Dashboard
               </Button>
             </div>
@@ -290,7 +296,7 @@ const Admin = () => {
       <div className="min-h-screen bg-background">
         <header className="h-14 border-b bg-card flex items-center px-4 justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+            <Button variant="ghost" size="icon" onClick={() => navigate('/?skip=1')}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <h1 className="font-semibold">Admin Panel</h1>
@@ -315,6 +321,17 @@ const Admin = () => {
               <SelectContent>
                 <SelectItem value="2000">2000</SelectItem>
                 <SelectItem value="2025">2025</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Select value={selectedCategory} onValueChange={(v) => setSelectedCategory(v as 'all' | 'corporate' | 'independent')}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="corporate">Corporate</SelectItem>
+                <SelectItem value="independent">Independent</SelectItem>
               </SelectContent>
             </Select>
             
