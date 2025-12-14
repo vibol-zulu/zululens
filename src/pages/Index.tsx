@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import SignUpGate from '@/components/SignUpGate';
 import MediaDashboard from '@/components/MediaDashboard';
 import { INITIAL_DATA, STORAGE_KEY } from '@/data/mediaData';
@@ -6,8 +7,17 @@ import { YearData } from '@/types/media';
 import { Helmet } from 'react-helmet';
 
 const Index = () => {
-  const [view, setView] = useState<'gate' | 'dashboard'>('gate');
+  const [searchParams] = useSearchParams();
+  const skipGate = searchParams.get('skip') === '1';
+  
+  const [view, setView] = useState<'gate' | 'dashboard'>(skipGate ? 'dashboard' : 'gate');
   const [visitor, setVisitor] = useState<{name: string, email: string} | null>(null);
+  
+  useEffect(() => {
+    if (skipGate) {
+      setView('dashboard');
+    }
+  }, [skipGate]);
   
   const [data] = useState<Record<number, YearData>>(() => {
     try {
