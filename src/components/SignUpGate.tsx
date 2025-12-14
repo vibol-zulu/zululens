@@ -38,17 +38,17 @@ const SignUpGate: React.FC<SignUpGateProps> = ({ onJoin }) => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md shadow-xl border-0">
-        <CardHeader className="text-center pb-2">
-          <CardTitle className="text-2xl font-bold text-primary">
+        <CardHeader className="text-center pb-4">
+          <CardTitle className="text-[2.618rem] leading-tight font-bold text-primary">
             Zulu Digital Microscope
           </CardTitle>
-          <CardDescription className="text-muted-foreground mt-2 text-base">
+          <CardDescription className="text-[1rem] text-muted-foreground mt-3">
             Explore how media has transformed over 25 years
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-center text-sm text-muted-foreground mb-6">
-            Enter your details below to unlock the interactive visualization.<br />
+          <p className="text-center text-[0.875rem] leading-relaxed text-muted-foreground mb-6">
+            Sign up to our newsletter to unlock the interactive visualization.<br />
             No spam, just insights worth your time.
           </p>
           
