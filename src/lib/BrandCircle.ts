@@ -194,21 +194,8 @@ export class BrandCircle {
           this.vy *= 0.9;
         }
       } else {
-        const targetMinDist = INNER_CONTAINER_RADIUS + this.currentRadius;
+        // Independents only have outer boundary constraint (no inner container)
         const targetMaxDist = boundaryRadius - this.currentRadius;
-
-        if (dist < targetMinDist) {
-          const nx = this.x / (dist || 0.01);
-          const ny = this.y / (dist || 0.01);
-          this.x = nx * targetMinDist;
-          this.y = ny * targetMinDist;
-
-          const dot = this.vx * nx + this.vy * ny;
-          this.vx -= 2 * dot * nx;
-          this.vy -= 2 * dot * ny;
-          this.vx *= 0.9;
-          this.vy *= 0.9;
-        }
 
         if (dist > targetMaxDist) {
           const nx = this.x / dist;
