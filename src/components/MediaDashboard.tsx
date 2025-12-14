@@ -22,7 +22,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Menu } from 'lucide-react';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
 import { COLORS } from '@/types/media';
 
 interface MediaDashboardProps {
@@ -37,6 +37,8 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   data
 }) => {
   const isMobile = useIsMobile();
+  const isTablet = useIsTablet();
+  const useStackedLayout = isMobile || isTablet;
   
   const [year, setYear] = useState<number>(2025);
   const [country, setCountry] = useState<string>('United States');
@@ -177,15 +179,15 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
       </header>
 
       {/* Main */}
-      <main className={`flex-1 relative overflow-hidden bg-background ${isMobile ? 'flex flex-col' : ''}`}>
+      <main className={`flex-1 relative overflow-hidden bg-background ${useStackedLayout ? 'flex flex-col' : ''}`}>
         {/* Canvas Container */}
         <div 
           className={`${
-            isMobile 
+            useStackedLayout 
               ? 'relative h-1/2 border-b' 
               : 'absolute top-0 bottom-0 z-[1] transition-all duration-300'
           }`}
-          style={!isMobile ? {
+          style={!useStackedLayout ? {
             left: leftSidebarOpen ? '280px' : '0',
             right: rightSidebarOpen ? '280px' : '0'
           } : undefined}
@@ -202,8 +204,8 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
           />
         </div>
 
-        {/* Mobile Sidebars */}
-        {isMobile && (
+        {/* Mobile/Tablet Sidebars */}
+        {useStackedLayout && (
           <div className="flex-1 flex w-full overflow-hidden z-10 bg-card">
             <Sidebar 
               category="corporate" 
@@ -231,7 +233,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
         )}
 
         {/* Desktop Floating Sidebars */}
-        {!isMobile && (
+        {!useStackedLayout && (
           <>
             <Sidebar 
               category="corporate" 
