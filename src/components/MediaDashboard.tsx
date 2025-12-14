@@ -97,21 +97,23 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
       {/* Header */}
       <header className="h-14 border-b bg-card flex items-center px-4 justify-between shrink-0 z-20">
         <div className="flex items-center gap-3">
-          {/* Country Selector */}
-          <Select value={country} onValueChange={handleCountryChange}>
-            <SelectTrigger className="w-[140px] h-9">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {COUNTRIES.map(c => (
-                <SelectItem key={c} value={c}>{c}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {/* Country Selector - Desktop only */}
+          {!isMobile && (
+            <Select value={country} onValueChange={handleCountryChange}>
+              <SelectTrigger className="w-[140px] h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {COUNTRIES.map(c => (
+                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
 
           {/* Year Selector */}
           <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
-            <SelectTrigger className="w-[120px] h-9">
+            <SelectTrigger className={`${isMobile ? 'w-[100px]' : 'w-[120px]'} h-9`}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -124,7 +126,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
           <div className="flex bg-muted rounded-full p-0.5 ml-2">
             <button 
               onClick={() => setViewMode('default')}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+              className={`${isMobile ? 'px-3' : 'px-4'} py-1.5 rounded-full text-sm font-medium transition-all ${
                 viewMode === 'default' 
                   ? 'bg-card shadow-sm text-foreground' 
                   : 'text-muted-foreground hover:text-foreground'
@@ -134,7 +136,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
             </button>
             <button 
               onClick={() => setViewMode('compass')}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+              className={`${isMobile ? 'px-3' : 'px-4'} py-1.5 rounded-full text-sm font-medium transition-all ${
                 viewMode === 'compass' 
                   ? 'bg-card shadow-sm text-foreground' 
                   : 'text-muted-foreground hover:text-foreground'
