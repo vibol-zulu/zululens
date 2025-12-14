@@ -104,7 +104,7 @@ We respect your privacy. No spam, only interesting ideas.</p>
         <div className="text-white/50 text-xs font-mono uppercase leading-relaxed max-w-xs">
           Zulu Digital Microscope: US Media 2000-2025
         <br />
-          gain insights,<br />
+          ​Powered by Zulu Group<br />
           keep data private.
         </div>
         <div className="text-right text-white/50 text-xs font-mono">
