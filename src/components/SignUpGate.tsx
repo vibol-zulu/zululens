@@ -102,7 +102,8 @@ We respect your privacy. No spam, only interesting ideas.</p>
       {/* Footer */}
       <footer className="flex items-end justify-between p-6 md:p-8">
         <div className="text-white/50 text-xs font-mono uppercase leading-relaxed max-w-xs">
-          Explore the media landscape,<br />
+          Zulu Digital Microscope: US Media 2000-2025
+        <br />
           gain insights,<br />
           keep data private.
         </div>
