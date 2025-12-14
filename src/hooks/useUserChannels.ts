@@ -63,20 +63,20 @@ export const useUserChannels = (country: string) => {
     const staticData = INITIAL_DATA[year];
     if (!staticData || country !== 'United States') {
       // For non-US countries, only show user-added channels
-      const yearChannels = userChannels.filter(c => true);
       return {
         totalAudienceMillions: 0,
         usPopulationMillions: 0,
         usPopulationSource: '',
         totalRadiusPx: 0,
-        brands: yearChannels
+        brands: userChannels
       };
     }
 
-    // Get static brand names for deduplication
+    // Get static brand names for deduplication (for this specific year)
     const staticBrandNames = new Set(staticData.brands.map(b => b.name.toLowerCase()));
 
     // Filter user channels to only include ones NOT in static data (truly user-added)
+    // Note: We show static data as the source of truth, database is for NEW channels only
     const uniqueUserBrands = userChannels.filter(c => 
       !staticBrandNames.has(c.name.toLowerCase())
     );
