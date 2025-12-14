@@ -32,15 +32,15 @@ const SignUpGate: React.FC<SignUpGateProps> = ({
     background: 'linear-gradient(135deg, hsl(180 25% 25%) 0%, hsl(170 30% 18%) 50%, hsl(200 20% 30%) 100%)'
   }}>
       {/* Header */}
-      <header className="flex items-center justify-between p-6 md:p-8">
+      <header className="flex items-center justify-between p-6 md:p-8 px-[12px] py-[12px]">
         <nav className="flex flex-col gap-1">
-          <span className="text-white/90 text-sm font-medium tracking-wide uppercase">Home</span>
+          <span className="text-white/90 font-medium tracking-wide uppercase text-xs font-sans">Home</span>
         </nav>
         
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center px-6 md:px-12 lg:px-24 py-12">
+      <main className="flex-1 px-6 md:px-12 py-12 items-center justify-center flex flex-row lg:px-[56px]">
         <div className="w-full max-w-2xl rounded-lg p-8 md:p-12" style={{
         background: 'linear-gradient(180deg, hsla(180 20% 35% / 0.4) 0%, hsla(170 25% 25% / 0.3) 100%)',
         backdropFilter: 'blur(20px)',
@@ -86,7 +86,7 @@ We respect your privacy. No spam, only interesting ideas.</p>
       </main>
 
       {/* Footer */}
-      <footer className="flex items-end justify-between p-6 md:p-8">
+      <footer className="p-6 md:p-8 flex-col flex items-start justify-between px-[12px] py-[12px]">
         <div className="text-white/50 text-[10px] font-mono uppercase leading-relaxed max-w-xs">ZULU DIGITAL MICROSCOPE: US MEDIA 2000-2025 
         <br />
           ​Powered by Zulu Group<br />
