@@ -53,7 +53,7 @@ const SignUpGate: React.FC<SignUpGateProps> = ({
 
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center px-6 md:px-12 lg:px-24 py-12">
-        <div className="w-full max-w-2xl rounded-2xl p-8 md:p-12" style={{
+        <div className="w-full max-w-2xl rounded-lg p-8 md:p-12" style={{
         background: 'linear-gradient(180deg, hsla(180 20% 35% / 0.4) 0%, hsla(170 25% 25% / 0.3) 100%)',
         backdropFilter: 'blur(20px)',
         border: '1px solid hsla(180 30% 50% / 0.15)'
