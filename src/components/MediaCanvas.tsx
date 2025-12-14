@@ -4,7 +4,7 @@ import { BrandCircle, INNER_CONTAINER_RADIUS, SPECTRUM_BIN_WIDTH, SPECTRUM_BIN_H
 
 interface MediaCanvasProps {
   year: number;
-  data: Record<number, YearData>;
+  yearData: YearData;
   selectedIds: Set<string>;
   hoveredId: string | null;
   setHoveredId: (id: string | null) => void;
@@ -15,7 +15,7 @@ interface MediaCanvasProps {
 
 const MediaCanvas: React.FC<MediaCanvasProps> = ({
   year,
-  data,
+  yearData,
   selectedIds,
   hoveredId,
   setHoveredId,
@@ -28,16 +28,16 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
   const requestRef = useRef<number>(0);
   const scaleRef = useRef<number>(1);
 
-  // Initialize circles when year changes
+  // Initialize circles when year or data changes
   useEffect(() => {
-    if (country !== 'United States') {
+    if (!yearData || yearData.brands.length === 0) {
       circlesRef.current = [];
       return;
     }
     
-    const boundaryRadius = data[year].totalRadiusPx;
-    circlesRef.current = data[year].brands.map(b => new BrandCircle(b, boundaryRadius));
-  }, [year, data, country]);
+    const boundaryRadius = yearData.totalRadiusPx || 385;
+    circlesRef.current = yearData.brands.map(b => new BrandCircle(b, boundaryRadius));
+  }, [year, yearData]);
 
   // Animation loop
   useEffect(() => {
@@ -64,7 +64,7 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
         requiredWidth = (SPECTRUM_BIN_WIDTH * 5) + 60;
         requiredHeight = SPECTRUM_BIN_HEIGHT + 100;
       } else {
-        const boundaryRadius = data[year].totalRadiusPx;
+        const boundaryRadius = yearData.totalRadiusPx || 385;
         requiredWidth = (boundaryRadius * 2) + 60;
         requiredHeight = (boundaryRadius * 2) + 60;
       }
@@ -80,7 +80,7 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
 
       const cx = (width / viewScale) / 2;
       const cy = (height / viewScale) / 2;
-      const boundaryRadius = data[year].totalRadiusPx;
+      const boundaryRadius = yearData.totalRadiusPx || 385;
 
       // Draw boundaries (Default mode only)
       if (viewMode === 'default') {
@@ -204,7 +204,7 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
 
     requestRef.current = requestAnimationFrame(render);
     return () => cancelAnimationFrame(requestRef.current);
-  }, [year, data, selectedIds, hoveredId, country, viewMode]);
+  }, [year, yearData, selectedIds, hoveredId, country, viewMode]);
 
   const handleCanvasMouseMove = useCallback((e: React.MouseEvent) => {
     if (!canvasRef.current) return;

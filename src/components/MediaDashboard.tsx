@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { YearData, ViewMode } from '@/types/media';
 import { COUNTRIES } from '@/data/mediaData';
 import MediaCanvas from '@/components/MediaCanvas';
@@ -24,6 +24,7 @@ import {
 import { Menu } from 'lucide-react';
 import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
 import { COLORS } from '@/types/media';
+import { useUserChannels } from '@/hooks/useUserChannels';
 
 interface MediaDashboardProps {
   visitorName: string;
@@ -53,6 +54,12 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   const [showContact, setShowContact] = useState(false);
   const [showContributor, setShowContributor] = useState(false);
 
+  // Fetch user-added channels and merge with static data
+  const { getMergedData, refetch: refetchUserChannels } = useUserChannels(country);
+  
+  // Get merged data for current year (static + user-added)
+  const mergedData = useMemo(() => getMergedData(year), [getMergedData, year]);
+
   // Check if country has data (only United States has data currently)
   const countryHasData = country === 'United States';
 
@@ -74,7 +81,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   };
 
   const toggleAll = (category: string) => {
-    const brands = data[year].brands.filter(b => b.category === category);
+    const brands = mergedData.brands.filter(b => b.category === category);
     const allSelected = brands.every(b => selectedIds.has(b.id));
     const newSet = new Set(selectedIds);
     
@@ -194,7 +201,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
         >
           <MediaCanvas
             year={year}
-            data={data}
+            yearData={mergedData}
             selectedIds={selectedIds}
             hoveredId={hoveredId}
             setHoveredId={setHoveredId}
@@ -209,7 +216,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
           <div className="flex-1 flex w-full overflow-hidden z-10 bg-card">
             <Sidebar 
               category="corporate" 
-              brands={country === 'United States' ? data[year].brands.filter(b => b.category === 'corporate') : []}
+              brands={mergedData.brands.filter(b => b.category === 'corporate')}
               selectedIds={selectedIds}
               onToggle={toggleBrand}
               onToggleAll={toggleAll}
@@ -219,11 +226,11 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               isMobile={true}
               country={country}
               year={year}
-              onChannelAdded={() => {}}
+              onChannelAdded={refetchUserChannels}
             />
             <Sidebar 
               category="independent" 
-              brands={country === 'United States' ? data[year].brands.filter(b => b.category === 'independent') : []}
+              brands={mergedData.brands.filter(b => b.category === 'independent')}
               selectedIds={selectedIds}
               onToggle={toggleBrand}
               onToggleAll={toggleAll}
@@ -233,7 +240,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               isMobile={true}
               country={country}
               year={year}
-              onChannelAdded={() => {}}
+              onChannelAdded={refetchUserChannels}
             />
           </div>
         )}
@@ -243,7 +250,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
           <>
             <Sidebar 
               category="corporate" 
-              brands={country === 'United States' ? data[year].brands.filter(b => b.category === 'corporate') : []}
+              brands={mergedData.brands.filter(b => b.category === 'corporate')}
               selectedIds={selectedIds}
               onToggle={toggleBrand}
               onToggleAll={toggleAll}
@@ -252,12 +259,12 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               onToggleSidebar={() => setLeftSidebarOpen(!leftSidebarOpen)}
               country={country}
               year={year}
-              onChannelAdded={() => {}}
+              onChannelAdded={refetchUserChannels}
             />
             
             <Sidebar 
               category="independent" 
-              brands={country === 'United States' ? data[year].brands.filter(b => b.category === 'independent') : []}
+              brands={mergedData.brands.filter(b => b.category === 'independent')}
               selectedIds={selectedIds}
               onToggle={toggleBrand}
               onToggleAll={toggleAll}
@@ -266,7 +273,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               onToggleSidebar={() => setRightSidebarOpen(!rightSidebarOpen)}
               country={country}
               year={year}
-              onChannelAdded={() => {}}
+              onChannelAdded={refetchUserChannels}
             />
           </>
         )}
