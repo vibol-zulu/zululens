@@ -14,7 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      user_channels: {
+        Row: {
+          category: string
+          content_type: string
+          country: string
+          created_at: string
+          id: string
+          name: string
+          platform: string
+          political_lean: string
+          start_date: string
+          updated_at: string
+          value_millions: number
+          year: number
+        }
+        Insert: {
+          category: string
+          content_type: string
+          country?: string
+          created_at?: string
+          id?: string
+          name: string
+          platform: string
+          political_lean: string
+          start_date: string
+          updated_at?: string
+          value_millions: number
+          year?: number
+        }
+        Update: {
+          category?: string
+          content_type?: string
+          country?: string
+          created_at?: string
+          id?: string
+          name?: string
+          platform?: string
+          political_lean?: string
+          start_date?: string
+          updated_at?: string
+          value_millions?: number
+          year?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
