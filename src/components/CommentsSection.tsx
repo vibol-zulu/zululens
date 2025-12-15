@@ -240,11 +240,11 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
           <span className="font-medium text-sm shrink-0">
             Comments {totalComments > 0 && `(${totalComments})`}
           </span>
+          <span className="text-xs text-muted-foreground shrink-0">— {country}</span>
           
           {/* Cycling preview when collapsed */}
           {!isExpanded && (
-            <div className="flex items-center gap-2 ml-3 text-sm text-muted-foreground overflow-hidden">
-              <span className="text-muted-foreground/50">—</span>
+            <div className="flex items-center gap-2 ml-2 text-sm text-muted-foreground overflow-hidden">
               <span 
                 key={previewIndex}
                 className="truncate animate-fade-in"
