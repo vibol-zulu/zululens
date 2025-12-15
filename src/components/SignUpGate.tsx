@@ -34,7 +34,7 @@ const SignUpGate: React.FC<SignUpGateProps> = ({
       {/* Header */}
       <header className="flex items-center justify-between p-6 md:p-8 px-[12px] py-[12px]">
         <nav className="flex flex-col gap-1">
-          <span className="text-white/90 font-medium tracking-wide uppercase text-xs font-sans">Home</span>
+          <a href="https://www.zulu.group" target="_blank" rel="noopener noreferrer" className="text-white/90 font-medium tracking-wide uppercase text-xs font-sans hover:text-white transition-colors">Home</a>
         </nav>
         
       </header>
