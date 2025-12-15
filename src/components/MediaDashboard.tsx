@@ -58,7 +58,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   const [showAdmin, setShowAdmin] = useState(false);
 
   // Auth state for contributor access
-  const { isContributor } = useAuth();
+  const { user, isContributor, signOut } = useAuth();
 
   // Fetch user-added channels and merge with static data
   const { getMergedData, refetch: refetchUserChannels } = useUserChannels(country, year);
@@ -189,6 +189,11 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               <DropdownMenuItem onClick={() => setShowAdmin(true)}>
                 Admin
               </DropdownMenuItem>
+              {user && (
+                <DropdownMenuItem onClick={() => signOut()}>
+                  Sign Out
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
