@@ -348,7 +348,15 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
       <InsightsModal open={showInsights} onClose={() => setShowInsights(false)} />
       <MethodologyModal open={showMethodology} onClose={() => setShowMethodology(false)} />
       <ContactModal open={showContact} onClose={() => setShowContact(false)} />
-      <MissionModal open={showMission} onOpenChange={setShowMission} />
+      <MissionModal 
+        open={showMission} 
+        onOpenChange={setShowMission}
+        onSignUpClick={() => {
+          setSignInDefaultTab('signup');
+          setShowSignIn(true);
+        }}
+        onContributorClick={() => setShowContributor(true)}
+      />
       <ContributorModal 
         open={showContributor} 
         onClose={() => {

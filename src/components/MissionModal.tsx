@@ -5,14 +5,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Target, Users, TrendingUp, Shield, Star } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Target, Users, TrendingUp } from 'lucide-react';
 
 interface MissionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSignUpClick?: () => void;
+  onContributorClick?: () => void;
 }
 
-const MissionModal: React.FC<MissionModalProps> = ({ open, onOpenChange }) => {
+const MissionModal: React.FC<MissionModalProps> = ({ 
+  open, 
+  onOpenChange,
+  onSignUpClick,
+  onContributorClick
+}) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
@@ -58,58 +66,40 @@ const MissionModal: React.FC<MissionModalProps> = ({ open, onOpenChange }) => {
             <div className="space-y-3">
               {/* Tier 1 */}
               <div className="border rounded-lg p-4 bg-muted/30">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-sm font-bold">1</span>
-                  <h4 className="font-medium">Visitor</h4>
-                </div>
-                <p className="text-sm text-muted-foreground pl-8">
+                <h4 className="font-medium mb-1">Visitor</h4>
+                <p className="text-sm text-muted-foreground">
                   Explore the visualization, view media data, and join our newsletter. Apply to become a contributor.
                 </p>
               </div>
 
               {/* Tier 2 */}
               <div className="border rounded-lg p-4 bg-muted/30">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">2</span>
-                  <h4 className="font-medium">Member</h4>
-                </div>
-                <p className="text-sm text-muted-foreground pl-8">
+                <h4 className="font-medium mb-1">Member</h4>
+                <p className="text-sm text-muted-foreground">
                   Create an account to join discussions, leave comments, and engage with the community.
                 </p>
               </div>
 
               {/* Tier 3 */}
               <div className="border rounded-lg p-4 bg-muted/30">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="w-6 h-6 rounded-full bg-primary/40 flex items-center justify-center text-sm font-bold text-primary">3</span>
-                  <h4 className="font-medium">Contributor</h4>
-                  <Shield className="h-4 w-4 text-primary" />
-                </div>
-                <p className="text-sm text-muted-foreground pl-8">
+                <h4 className="font-medium mb-1">Contributor</h4>
+                <p className="text-sm text-muted-foreground">
                   Approved contributors can add new media channels to the visualization, helping expand our dataset.
                 </p>
               </div>
 
               {/* Tier 4 */}
               <div className="border rounded-lg p-4 bg-muted/30">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="w-6 h-6 rounded-full bg-primary/60 flex items-center justify-center text-sm font-bold text-primary-foreground">4</span>
-                  <h4 className="font-medium">Moderator</h4>
-                  <Shield className="h-4 w-4 text-primary" />
-                </div>
-                <p className="text-sm text-muted-foreground pl-8">
+                <h4 className="font-medium mb-1">Moderator</h4>
+                <p className="text-sm text-muted-foreground">
                   Moderators review and approve channel submissions, ensuring data quality and accuracy.
                 </p>
               </div>
 
               {/* Tier 5 */}
               <div className="border rounded-lg p-4 bg-primary/10 border-primary/30">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-sm font-bold text-primary-foreground">5</span>
-                  <h4 className="font-medium">Admin</h4>
-                  <Star className="h-4 w-4 text-primary" />
-                </div>
-                <p className="text-sm text-muted-foreground pl-8">
+                <h4 className="font-medium mb-1">Admin</h4>
+                <p className="text-sm text-muted-foreground">
                   Full access to manage users, datasets, and platform settings. Responsible for overall data integrity.
                 </p>
               </div>
@@ -117,10 +107,29 @@ const MissionModal: React.FC<MissionModalProps> = ({ open, onOpenChange }) => {
           </section>
 
           {/* CTA */}
-          <section className="text-center pt-4 border-t">
+          <section className="text-center pt-4 border-t space-y-4">
             <p className="text-muted-foreground">
               Ready to contribute? Sign up and apply to become a contributor today.
             </p>
+            <div className="flex justify-center gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  onOpenChange(false);
+                  onSignUpClick?.();
+                }}
+              >
+                Sign Up
+              </Button>
+              <Button 
+                onClick={() => {
+                  onOpenChange(false);
+                  onContributorClick?.();
+                }}
+              >
+                Become a Contributor
+              </Button>
+            </div>
           </section>
         </div>
       </DialogContent>
