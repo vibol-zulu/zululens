@@ -185,6 +185,19 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
             </span>
           )}
           
+          {/* Bright Sign Up button for Tier 1 users */}
+          {!user && (
+            <Button 
+              onClick={() => {
+                setSignInDefaultTab('signup');
+                setShowSignIn(true);
+              }}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg animate-pulse hover:animate-none"
+            >
+              Sign Up Free
+            </Button>
+          )}
+          
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon">
