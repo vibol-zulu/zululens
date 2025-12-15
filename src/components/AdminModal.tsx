@@ -177,6 +177,10 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   const [commentToDelete, setCommentToDelete] = useState<AdminComment | null>(null);
   const [showDeleteCommentDialog, setShowDeleteCommentDialog] = useState(false);
 
+  // Password confirmation state for delete actions
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deletePasswordError, setDeletePasswordError] = useState('');
+
   // Analytics state
   const [analyticsData, setAnalyticsData] = useState<UserSessionSummary[]>([]);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
@@ -342,9 +346,43 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
     }
   };
 
+  // Password verification helper
+  const verifyPassword = async (): Promise<boolean> => {
+    if (!user?.email || !deletePassword) {
+      setDeletePasswordError('Password is required');
+      return false;
+    }
+    
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: deletePassword
+      });
+      
+      if (error) {
+        setDeletePasswordError('Incorrect password');
+        return false;
+      }
+      
+      setDeletePasswordError('');
+      return true;
+    } catch {
+      setDeletePasswordError('Failed to verify password');
+      return false;
+    }
+  };
+
+  const resetDeleteState = () => {
+    setDeletePassword('');
+    setDeletePasswordError('');
+  };
+
   // Delete comment
   const deleteComment = async () => {
     if (!commentToDelete) return;
+    
+    const isValid = await verifyPassword();
+    if (!isValid) return;
 
     try {
       const { error } = await supabase
@@ -357,6 +395,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
       toast({ title: 'Comment deleted' });
       setShowDeleteCommentDialog(false);
       setCommentToDelete(null);
+      resetDeleteState();
       fetchComments();
     } catch (error) {
       console.error('Error deleting comment:', error);
@@ -566,6 +605,9 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
 
   const deleteChannel = async () => {
     if (!channelToDelete) return;
+    
+    const isValid = await verifyPassword();
+    if (!isValid) return;
 
     try {
       const { error } = await supabase
@@ -578,6 +620,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
       toast({ title: 'Channel deleted' });
       setShowDeleteDialog(false);
       setChannelToDelete(null);
+      resetDeleteState();
       fetchChannels();
     } catch (error) {
       console.error('Error deleting channel:', error);
@@ -610,6 +653,9 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
 
   const deleteUser = async () => {
     if (!userToDelete) return;
+    
+    const isValid = await verifyPassword();
+    if (!isValid) return;
 
     try {
       // Call edge function to delete user (needs service role)
@@ -622,6 +668,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
       toast({ title: 'User deleted' });
       setShowDeleteUserDialog(false);
       setUserToDelete(null);
+      resetDeleteState();
       fetchUsers();
     } catch (error) {
       console.error('Error deleting user:', error);
@@ -1382,7 +1429,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
         </Dialog>
 
         {/* Delete Channel Confirmation */}
-        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialog open={showDeleteDialog} onOpenChange={(open) => { setShowDeleteDialog(open); if (!open) resetDeleteState(); }}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Delete Channel</AlertDialogTitle>
@@ -1390,8 +1437,22 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                 Are you sure you want to delete "{channelToDelete?.name}"? This action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
+            <div className="py-4">
+              <Label htmlFor="delete-channel-password">Enter your password to confirm</Label>
+              <Input
+                id="delete-channel-password"
+                type="password"
+                value={deletePassword}
+                onChange={(e) => { setDeletePassword(e.target.value); setDeletePasswordError(''); }}
+                placeholder="Your password"
+                className="mt-2"
+              />
+              {deletePasswordError && (
+                <p className="text-sm text-destructive mt-1">{deletePasswordError}</p>
+              )}
+            </div>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel onClick={resetDeleteState}>Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={deleteChannel} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                 Delete
               </AlertDialogAction>
@@ -1400,7 +1461,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
         </AlertDialog>
 
         {/* Delete User Confirmation */}
-        <AlertDialog open={showDeleteUserDialog} onOpenChange={setShowDeleteUserDialog}>
+        <AlertDialog open={showDeleteUserDialog} onOpenChange={(open) => { setShowDeleteUserDialog(open); if (!open) resetDeleteState(); }}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Delete User</AlertDialogTitle>
@@ -1408,8 +1469,22 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                 Are you sure you want to delete "{userToDelete?.email}"? This will permanently remove their account.
               </AlertDialogDescription>
             </AlertDialogHeader>
+            <div className="py-4">
+              <Label htmlFor="delete-user-password">Enter your password to confirm</Label>
+              <Input
+                id="delete-user-password"
+                type="password"
+                value={deletePassword}
+                onChange={(e) => { setDeletePassword(e.target.value); setDeletePasswordError(''); }}
+                placeholder="Your password"
+                className="mt-2"
+              />
+              {deletePasswordError && (
+                <p className="text-sm text-destructive mt-1">{deletePasswordError}</p>
+              )}
+            </div>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel onClick={resetDeleteState}>Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={deleteUser} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                 Delete
               </AlertDialogAction>
@@ -1418,7 +1493,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
         </AlertDialog>
 
         {/* Delete Comment Confirmation */}
-        <AlertDialog open={showDeleteCommentDialog} onOpenChange={setShowDeleteCommentDialog}>
+        <AlertDialog open={showDeleteCommentDialog} onOpenChange={(open) => { setShowDeleteCommentDialog(open); if (!open) resetDeleteState(); }}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Delete Comment</AlertDialogTitle>
@@ -1426,8 +1501,22 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                 Are you sure you want to delete this comment? This action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
+            <div className="py-4">
+              <Label htmlFor="delete-comment-password">Enter your password to confirm</Label>
+              <Input
+                id="delete-comment-password"
+                type="password"
+                value={deletePassword}
+                onChange={(e) => { setDeletePassword(e.target.value); setDeletePasswordError(''); }}
+                placeholder="Your password"
+                className="mt-2"
+              />
+              {deletePasswordError && (
+                <p className="text-sm text-destructive mt-1">{deletePasswordError}</p>
+              )}
+            </div>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel onClick={resetDeleteState}>Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={deleteComment} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                 Delete
               </AlertDialogAction>
