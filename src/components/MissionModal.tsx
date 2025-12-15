@@ -26,7 +26,7 @@ const MissionModal: React.FC<MissionModalProps> = ({
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold flex items-center gap-2">
-            <Rocket className="h-6 w-6 text-orange-500" />
+            <Rocket className="h-6 w-6" style={{ color: '#F8D4C8' }} />
             Our Mission
           </DialogTitle>
         </DialogHeader>
