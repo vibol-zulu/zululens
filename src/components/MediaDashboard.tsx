@@ -127,6 +127,21 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
       {/* Header */}
       <header className="h-14 border-b bg-card flex items-center px-2 sm:px-4 justify-between shrink-0 z-20">
         <div className="flex items-center gap-1 sm:gap-3">
+          {/* Bright Sign Up button for Tier 1 users */}
+          {!user && (
+            <Button 
+              onClick={() => {
+                setSignInDefaultTab('signup');
+                setShowSignIn(true);
+              }}
+              size={isMobile ? 'sm' : 'default'}
+              className="font-semibold shadow-lg text-[#00564A]"
+              style={{ backgroundColor: '#F8D4C8' }}
+            >
+              Sign Up
+            </Button>
+          )}
+
           {/* Country Selector - Desktop only */}
           {!isMobile && (
             <Select value={country} onValueChange={handleCountryChange}>
@@ -187,20 +202,6 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                 title="Signed in"
               />
             </span>
-          )}
-          
-          {/* Bright Sign Up button for Tier 1 users */}
-          {!user && (
-            <Button 
-              onClick={() => {
-                setSignInDefaultTab('signup');
-                setShowSignIn(true);
-              }}
-              size={isMobile ? 'sm' : 'default'}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg"
-            >
-              Sign Up
-            </Button>
           )}
           
           <DropdownMenu>
