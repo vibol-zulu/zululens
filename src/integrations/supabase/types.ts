@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      comments: {
+        Row: {
+          content: string
+          country: string
+          created_at: string
+          id: string
+          is_edited: boolean
+          parent_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          country: string
+          created_at?: string
+          id?: string
+          is_edited?: boolean
+          parent_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          country?: string
+          created_at?: string
+          id?: string
+          is_edited?: boolean
+          parent_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contributor_requests: {
         Row: {
           country: string
@@ -76,6 +117,9 @@ export type Database = {
       }
       user_channels: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
+          author_id: string | null
           category: string
           content_type: string
           country: string
@@ -85,11 +129,15 @@ export type Database = {
           platform: string
           political_lean: string
           start_date: string
+          status: string
           updated_at: string
           value_millions: number
           year: number
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          author_id?: string | null
           category: string
           content_type: string
           country?: string
@@ -99,11 +147,15 @@ export type Database = {
           platform: string
           political_lean: string
           start_date: string
+          status?: string
           updated_at?: string
           value_millions: number
           year?: number
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          author_id?: string | null
           category?: string
           content_type?: string
           country?: string
@@ -113,6 +165,7 @@ export type Database = {
           platform?: string
           political_lean?: string
           start_date?: string
+          status?: string
           updated_at?: string
           value_millions?: number
           year?: number
