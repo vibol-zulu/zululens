@@ -115,6 +115,30 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          action: string
+          count: number
+          id: string
+          identifier: string
+          window_start: string
+        }
+        Insert: {
+          action: string
+          count?: number
+          id?: string
+          identifier: string
+          window_start?: string
+        }
+        Update: {
+          action?: string
+          count?: number
+          id?: string
+          identifier?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       tier1_visitors: {
         Row: {
           country: string
@@ -313,6 +337,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_rate_limit: {
+        Args: {
+          _action: string
+          _identifier: string
+          _max_requests: number
+          _window_minutes: number
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
