@@ -59,6 +59,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   const [showContributor, setShowContributor] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
+  const [signInDefaultTab, setSignInDefaultTab] = useState<'signin' | 'signup'>('signin');
 
   // Auth state for contributor access
   const { user, isContributor, isAdmin, signOut } = useAuth();
@@ -201,7 +202,10 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                 Contact
               </DropdownMenuItem>
               {!user && (
-                <DropdownMenuItem onClick={() => setShowSignIn(true)}>
+                <DropdownMenuItem onClick={() => {
+                  setSignInDefaultTab('signin');
+                  setShowSignIn(true);
+                }}>
                   Sign In
                 </DropdownMenuItem>
               )}
@@ -338,10 +342,20 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
         customMessage={`We don't have media landscape data for ${country}. Help us build it! Share your knowledge of local media outlets and become a contributor.`}
       />
       <AdminModal open={showAdmin} onClose={() => setShowAdmin(false)} />
-      <SignInModal open={showSignIn} onClose={() => setShowSignIn(false)} />
+      <SignInModal 
+        open={showSignIn} 
+        onClose={() => setShowSignIn(false)} 
+        defaultTab={signInDefaultTab}
+      />
       
-      {/* Comments Section - visible only for authenticated users */}
-      <CommentsSection country={country} />
+      {/* Comments Section - visible for all users */}
+      <CommentsSection 
+        country={country} 
+        onSignUpClick={() => {
+          setSignInDefaultTab('signup');
+          setShowSignIn(true);
+        }}
+      />
     </div>
   );
 };
