@@ -192,9 +192,9 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                 setSignInDefaultTab('signup');
                 setShowSignIn(true);
               }}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg animate-pulse hover:animate-none"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg"
             >
-              Sign Up Free
+              Sign Up
             </Button>
           )}
           
