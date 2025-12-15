@@ -485,7 +485,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="max-w-5xl max-h-[90vh] p-0 overflow-hidden">
+      <DialogContent className={`${isAuthenticated ? 'max-w-5xl' : 'max-w-sm'} max-h-[90vh] p-0 overflow-hidden`}>
         <button
           onClick={onClose}
           className="absolute right-4 top-4 z-50 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
@@ -500,7 +500,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
           </div>
         ) : !isAuthenticated ? (
           <div className="p-6 pr-12 flex justify-center">
-            <div className="w-full max-w-[200px]">
+            <div className="w-full max-w-[250px]">
               <DialogHeader>
                 <DialogTitle>Contributor Login</DialogTitle>
               </DialogHeader>
