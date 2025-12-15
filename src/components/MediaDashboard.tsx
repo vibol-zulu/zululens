@@ -166,12 +166,12 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
 
         {/* Right side menu */}
         <div className="flex items-center gap-3">
-          {!isMobile && (
+          {!isMobile && user && (
             <span className="text-sm text-muted-foreground flex items-start gap-1">
-              Welcome, {visitorName}
+              Welcome, {user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'}
               <span 
-                className={`w-1 h-1 rounded-full mt-1 ${user ? 'bg-green-500' : 'bg-red-500'}`}
-                title={user ? 'Signed in' : 'Not signed in'}
+                className="w-1 h-1 rounded-full mt-1 bg-green-500"
+                title="Signed in"
               />
             </span>
           )}
