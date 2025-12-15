@@ -41,7 +41,7 @@ const SignUpGate: React.FC<SignUpGateProps> = ({
 
       {/* Main Content */}
       <main className="flex-1 px-6 md:px-12 py-12 items-center justify-center flex flex-row lg:px-[56px]">
-        <div className="w-full max-w-2xl rounded-lg p-8 md:p-12" style={{
+        <div className="w-full max-w-md rounded-lg p-8" style={{
         background: 'linear-gradient(180deg, hsla(180 20% 35% / 0.4) 0%, hsla(170 25% 25% / 0.3) 100%)',
         backdropFilter: 'blur(20px)',
         border: '1px solid hsla(180 30% 50% / 0.15)'
@@ -65,7 +65,7 @@ We respect your privacy. No spam, only interesting ideas.</p>
 
           <iframe name="hiddenFrame" className="hidden" title="hiddenFrame" />
 
-          <form action={MAILCHIMP_ACTION} method="POST" target="hiddenFrame" onSubmit={handleSubmit} className="space-y-4 max-w-md">
+          <form action={MAILCHIMP_ACTION} method="POST" target="hiddenFrame" onSubmit={handleSubmit} className="space-y-4">
             <Input type="text" name="FNAME" value={name} onChange={e => setName(e.target.value)} placeholder="Full Name" className="h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus-visible:ring-white/30 focus-visible:ring-offset-0" />
             <Input type="email" name="EMAIL" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email Address" className="h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus-visible:ring-white/30 focus-visible:ring-offset-0" />
 
