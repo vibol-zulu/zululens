@@ -546,20 +546,6 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
           <div className="flex flex-col h-[80vh]">
             <div className="border-b p-4 flex items-center justify-between shrink-0 pr-12">
               <h2 className="font-semibold text-lg">Admin Panel</h2>
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button size="sm" variant="ghost">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={handleSignOut}>
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
