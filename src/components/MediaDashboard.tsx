@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { YearData, ViewMode } from '@/types/media';
 import { COUNTRIES } from '@/data/mediaData';
 import MediaCanvas from '@/components/MediaCanvas';
@@ -67,6 +67,13 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   
   // Get merged data for current year (static + user-added)
   const mergedData = useMemo(() => getMergedData(), [getMergedData]);
+
+  // Select all channels by default when data loads or changes
+  useEffect(() => {
+    if (mergedData.brands.length > 0) {
+      setSelectedIds(new Set(mergedData.brands.map(b => b.id)));
+    }
+  }, [mergedData.brands]);
 
   // Check if country has data (only United States has data currently)
   const countryHasData = country === 'United States';
