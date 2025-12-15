@@ -499,47 +499,49 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
             <p className="text-muted-foreground">Loading...</p>
           </div>
         ) : !isAuthenticated ? (
-          <div className="p-6 pr-12">
-            <DialogHeader>
-              <DialogTitle>Contributor Login</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <Label htmlFor="admin-email">Email</Label>
-                <Input
-                  id="admin-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="admin-password">Password</Label>
-                <Input
-                  id="admin-password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSignIn()}
-                />
-              </div>
-              
-              <div className="flex gap-3">
-                <Button variant="outline" onClick={onClose} className="flex-1">
-                  Cancel
-                </Button>
-                <Button onClick={handleSignIn} disabled={isSigningIn} className="flex-1">
-                  {isSigningIn ? 'Signing in...' : 'Sign In'}
-                </Button>
-              </div>
+          <div className="p-6 pr-12 flex justify-center">
+            <div className="w-full max-w-[200px]">
+              <DialogHeader>
+                <DialogTitle>Contributor Login</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="admin-email">Email</Label>
+                  <Input
+                    id="admin-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your@email.com"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="admin-password">Password</Label>
+                  <Input
+                    id="admin-password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSignIn()}
+                  />
+                </div>
+                
+                <div className="flex gap-3">
+                  <Button variant="outline" onClick={onClose} className="flex-1">
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSignIn} disabled={isSigningIn} className="flex-1">
+                    {isSigningIn ? 'Signing in...' : 'Sign In'}
+                  </Button>
+                </div>
 
-              {user && !isContributor && (
-                <p className="text-sm text-destructive text-center mt-2">
-                  Your account does not have contributor access.
-                </p>
-              )}
+                {user && !isContributor && (
+                  <p className="text-sm text-destructive text-center mt-2">
+                    Your account does not have contributor access.
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         ) : (
