@@ -75,8 +75,9 @@ transformed over 25 years</h1>
             <button type="submit" disabled={submitted} style={{
             background: 'white',
             color: 'hsl(170 30% 18%)',
-            mixBlendMode: 'screen'
-          }} className="h-12 px-8 tracking-widest uppercase transition-all duration-300 rounded-md text-xs bg-white font-sans opacity-100">
+            mixBlendMode: 'screen',
+            boxShadow: 'none'
+          }} className="h-12 px-8 tracking-widest uppercase transition-all duration-300 rounded-md text-xs bg-white font-sans opacity-100 shadow-none">
               {submitted ? 'Unlocking...' : 'Unlock Infographic'}
             </button>
           </form>
