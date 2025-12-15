@@ -115,6 +115,77 @@ export type Database = {
         }
         Relationships: []
       }
+      tier1_visitors: {
+        Row: {
+          country: string
+          created_at: string
+          email: string
+          id: string
+          last_visit_at: string
+          name: string
+          total_time_seconds: number
+          total_visits: number
+        }
+        Insert: {
+          country?: string
+          created_at?: string
+          email: string
+          id?: string
+          last_visit_at?: string
+          name: string
+          total_time_seconds?: number
+          total_visits?: number
+        }
+        Update: {
+          country?: string
+          created_at?: string
+          email?: string
+          id?: string
+          last_visit_at?: string
+          name?: string
+          total_time_seconds?: number
+          total_visits?: number
+        }
+        Relationships: []
+      }
+      user_analytics: {
+        Row: {
+          created_at: string
+          event_data: Json | null
+          event_type: string
+          id: string
+          session_id: string
+          user_id: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          session_id: string
+          user_id?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          session_id?: string
+          user_id?: string | null
+          visitor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_analytics_visitor_id_fkey"
+            columns: ["visitor_id"]
+            isOneToOne: false
+            referencedRelation: "tier1_visitors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_channels: {
         Row: {
           approved_at: string | null
@@ -189,6 +260,53 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_sessions: {
+        Row: {
+          country: string
+          duration_seconds: number | null
+          ended_at: string | null
+          id: string
+          interactions: number | null
+          page_views: number | null
+          session_id: string
+          started_at: string
+          user_id: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          country?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          interactions?: number | null
+          page_views?: number | null
+          session_id: string
+          started_at?: string
+          user_id?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          country?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          interactions?: number | null
+          page_views?: number | null
+          session_id?: string
+          started_at?: string
+          user_id?: string | null
+          visitor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_sessions_visitor_id_fkey"
+            columns: ["visitor_id"]
+            isOneToOne: false
+            referencedRelation: "tier1_visitors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

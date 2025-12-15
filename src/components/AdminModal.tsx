@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Database, MoreVertical, MessageCircle } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Database, MoreVertical, MessageCircle, BarChart3 } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -48,6 +48,7 @@ import {
 import { COUNTRIES } from '@/data/mediaData';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/useAuth';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface Channel {
   id: string;
@@ -91,6 +92,28 @@ interface AdminComment {
   is_edited: boolean;
   user_email?: string;
   user_name?: string;
+}
+
+interface Tier1Visitor {
+  id: string;
+  name: string;
+  email: string;
+  country: string;
+  created_at: string;
+  last_visit_at: string;
+  total_visits: number;
+  total_time_seconds: number;
+}
+
+interface UserSessionSummary {
+  user_type: 'tier1' | 'tier2' | 'contributor' | 'moderator';
+  user_name: string;
+  user_email: string;
+  total_sessions: number;
+  total_duration_seconds: number;
+  total_page_views: number;
+  total_interactions: number;
+  last_active: string;
 }
 
 interface AdminModalProps {
@@ -153,6 +176,11 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   const [commentsCountry, setCommentsCountry] = useState('United States');
   const [commentToDelete, setCommentToDelete] = useState<AdminComment | null>(null);
   const [showDeleteCommentDialog, setShowDeleteCommentDialog] = useState(false);
+
+  // Analytics state
+  const [analyticsData, setAnalyticsData] = useState<UserSessionSummary[]>([]);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [analyticsUserType, setAnalyticsUserType] = useState<'all' | 'tier1' | 'tier2' | 'contributor' | 'moderator'>('all');
 
   // Create contributor state
   const [showCreateUserDialog, setShowCreateUserDialog] = useState(false);
@@ -336,6 +364,93 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
     }
   };
 
+  // Fetch analytics data
+  const fetchAnalytics = async () => {
+    if (!isAdmin) return;
+    
+    setAnalyticsLoading(true);
+    try {
+      // Fetch Tier 1 visitors
+      const { data: tier1Data, error: tier1Error } = await supabase
+        .from('tier1_visitors')
+        .select('*')
+        .order('last_visit_at', { ascending: false });
+
+      if (tier1Error) throw tier1Error;
+
+      // Fetch sessions for Tier 1 visitors
+      const { data: visitorSessions } = await supabase
+        .from('user_sessions')
+        .select('visitor_id, duration_seconds, page_views, interactions, ended_at')
+        .not('visitor_id', 'is', null);
+
+      // Fetch Tier 2+ users with roles
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, email, full_name, created_at');
+
+      const { data: roles } = await supabase
+        .from('user_roles')
+        .select('user_id, role');
+
+      // Fetch sessions for authenticated users
+      const { data: userSessions } = await supabase
+        .from('user_sessions')
+        .select('user_id, duration_seconds, page_views, interactions, ended_at')
+        .not('user_id', 'is', null);
+
+      const summaries: UserSessionSummary[] = [];
+
+      // Process Tier 1 visitors
+      (tier1Data || []).forEach(visitor => {
+        const sessions = (visitorSessions || []).filter(s => s.visitor_id === visitor.id);
+        summaries.push({
+          user_type: 'tier1',
+          user_name: visitor.name,
+          user_email: visitor.email,
+          total_sessions: visitor.total_visits,
+          total_duration_seconds: sessions.reduce((acc, s) => acc + (s.duration_seconds || 0), 0),
+          total_page_views: sessions.reduce((acc, s) => acc + (s.page_views || 0), 0),
+          total_interactions: sessions.reduce((acc, s) => acc + (s.interactions || 0), 0),
+          last_active: visitor.last_visit_at
+        });
+      });
+
+      // Process Tier 2+ users (exclude admins)
+      (profiles || []).forEach(profile => {
+        const userRole = (roles || []).find(r => r.user_id === profile.id);
+        if (userRole?.role === 'admin') return; // Exclude admins
+
+        const sessions = (userSessions || []).filter(s => s.user_id === profile.id);
+        const lastSession = sessions.sort((a, b) => 
+          new Date(b.ended_at || 0).getTime() - new Date(a.ended_at || 0).getTime()
+        )[0];
+
+        let userType: 'tier2' | 'contributor' | 'moderator' = 'tier2';
+        if (userRole?.role === 'contributor') userType = 'contributor';
+        if (userRole?.role === 'moderator') userType = 'moderator';
+
+        summaries.push({
+          user_type: userType,
+          user_name: profile.full_name || 'Unknown',
+          user_email: profile.email,
+          total_sessions: sessions.length || 1,
+          total_duration_seconds: sessions.reduce((acc, s) => acc + (s.duration_seconds || 0), 0),
+          total_page_views: sessions.reduce((acc, s) => acc + (s.page_views || 0), 0),
+          total_interactions: sessions.reduce((acc, s) => acc + (s.interactions || 0), 0),
+          last_active: lastSession?.ended_at || profile.created_at
+        });
+      });
+
+      setAnalyticsData(summaries);
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
+      toast({ title: 'Failed to load analytics', variant: 'destructive' });
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (isAuthenticated && open) {
       fetchChannels();
@@ -353,6 +468,8 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
       fetchRequests();
     } else if (isAuthenticated && open && activeTab === 'comments' && isAdmin) {
       fetchComments();
+    } else if (isAuthenticated && open && activeTab === 'analytics' && isAdmin) {
+      fetchAnalytics();
     }
   }, [activeTab, isAuthenticated, open, isAdmin]);
 
@@ -361,6 +478,12 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
       fetchComments();
     }
   }, [commentsCountry]);
+
+  useEffect(() => {
+    if (isAuthenticated && open && activeTab === 'analytics' && isAdmin) {
+      fetchAnalytics();
+    }
+  }, [analyticsUserType]);
 
   const handleEdit = (channel: Channel) => {
     setEditingChannel(channel);
@@ -635,6 +758,10 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                       <TabsTrigger value="comments" className="gap-2">
                         <MessageCircle className="h-4 w-4" />
                         Comments
+                      </TabsTrigger>
+                      <TabsTrigger value="analytics" className="gap-2">
+                        <BarChart3 className="h-4 w-4" />
+                        Analytics
                       </TabsTrigger>
                     </>
                   )}
@@ -983,6 +1110,165 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                               </TableCell>
                             </TableRow>
                           ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              </TabsContent>
+
+              {/* Analytics Tab */}
+              <TabsContent value="analytics" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
+                <div className="border-b p-4 flex items-center gap-4 flex-wrap">
+                  <Select value={analyticsUserType} onValueChange={(v) => setAnalyticsUserType(v as typeof analyticsUserType)}>
+                    <SelectTrigger className="w-[160px]">
+                      <SelectValue placeholder="Filter by type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Users</SelectItem>
+                      <SelectItem value="tier1">Tier 1 (Visitors)</SelectItem>
+                      <SelectItem value="tier2">Tier 2 (Members)</SelectItem>
+                      <SelectItem value="contributor">Contributors</SelectItem>
+                      <SelectItem value="moderator">Moderators</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <div className="flex gap-4 ml-auto text-sm text-muted-foreground">
+                    <span>Total Users: {analyticsData.filter(d => analyticsUserType === 'all' || d.user_type === analyticsUserType).length}</span>
+                  </div>
+                </div>
+
+                {/* Summary Cards */}
+                <div className="p-4 grid grid-cols-2 md:grid-cols-4 gap-4 border-b">
+                  {(() => {
+                    const filtered = analyticsData.filter(d => analyticsUserType === 'all' || d.user_type === analyticsUserType);
+                    const totalSessions = filtered.reduce((acc, d) => acc + d.total_sessions, 0);
+                    const totalDuration = filtered.reduce((acc, d) => acc + d.total_duration_seconds, 0);
+                    const totalPageViews = filtered.reduce((acc, d) => acc + d.total_page_views, 0);
+                    const totalInteractions = filtered.reduce((acc, d) => acc + d.total_interactions, 0);
+                    const avgDuration = filtered.length > 0 ? Math.round(totalDuration / filtered.length) : 0;
+                    
+                    const formatDuration = (seconds: number) => {
+                      if (seconds < 60) return `${seconds}s`;
+                      const mins = Math.floor(seconds / 60);
+                      const secs = seconds % 60;
+                      return mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins}m ${secs}s`;
+                    };
+                    
+                    return (
+                      <>
+                        <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">Total Sessions</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold">{totalSessions}</div>
+                          </CardContent>
+                        </Card>
+                        <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">Avg. Time on Site</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold">{formatDuration(avgDuration)}</div>
+                          </CardContent>
+                        </Card>
+                        <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">Page Views</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold">{totalPageViews}</div>
+                          </CardContent>
+                        </Card>
+                        <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">Interactions</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold">{totalInteractions}</div>
+                          </CardContent>
+                        </Card>
+                      </>
+                    );
+                  })()}
+                </div>
+
+                <div className="flex-1 overflow-auto p-4">
+                  <div className="rounded-md border overflow-x-auto">
+                    <Table className="min-w-[700px]">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>User</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Sessions</TableHead>
+                          <TableHead>Time on Site</TableHead>
+                          <TableHead>Page Views</TableHead>
+                          <TableHead>Interactions</TableHead>
+                          <TableHead>Last Active</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {analyticsLoading ? (
+                          <TableRow>
+                            <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                              Loading...
+                            </TableCell>
+                          </TableRow>
+                        ) : analyticsData.filter(d => analyticsUserType === 'all' || d.user_type === analyticsUserType).length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                              No analytics data found
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          analyticsData
+                            .filter(d => analyticsUserType === 'all' || d.user_type === analyticsUserType)
+                            .sort((a, b) => new Date(b.last_active).getTime() - new Date(a.last_active).getTime())
+                            .map((data, idx) => {
+                              const formatDuration = (seconds: number) => {
+                                if (seconds < 60) return `${seconds}s`;
+                                const mins = Math.floor(seconds / 60);
+                                return mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins}m`;
+                              };
+                              
+                              const typeLabels = {
+                                tier1: 'Visitor',
+                                tier2: 'Member',
+                                contributor: 'Contributor',
+                                moderator: 'Moderator'
+                              };
+                              
+                              const typeBadgeColors = {
+                                tier1: 'bg-slate-100 text-slate-800',
+                                tier2: 'bg-blue-100 text-blue-800',
+                                contributor: 'bg-green-100 text-green-800',
+                                moderator: 'bg-purple-100 text-purple-800'
+                              };
+                              
+                              return (
+                                <TableRow key={idx}>
+                                  <TableCell>
+                                    <div className="flex flex-col">
+                                      <span className="font-medium text-sm">{data.user_name}</span>
+                                      <span className="text-xs text-muted-foreground">{data.user_email}</span>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge className={typeBadgeColors[data.user_type]}>
+                                      {typeLabels[data.user_type]}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell>{data.total_sessions}</TableCell>
+                                  <TableCell>{formatDuration(data.total_duration_seconds)}</TableCell>
+                                  <TableCell>{data.total_page_views}</TableCell>
+                                  <TableCell>{data.total_interactions}</TableCell>
+                                  <TableCell className="text-sm text-muted-foreground">
+                                    {new Date(data.last_active).toLocaleDateString()}
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })
                         )}
                       </TableBody>
                     </Table>

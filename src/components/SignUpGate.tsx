@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { registerTier1Visitor, useAnalytics } from '@/hooks/useAnalytics';
+
 interface SignUpGateProps {
   onJoin: (name: string, email: string) => void;
 }
+
 const MAILCHIMP_ACTION = "https://group.us14.list-manage.com/subscribe/post?u=8cebbb69cb233fee8e96a59fe&amp;id=de54a87f37";
+
 const SignUpGate: React.FC<SignUpGateProps> = ({
   onJoin
 }) => {
@@ -12,7 +15,9 @@ const SignUpGate: React.FC<SignUpGateProps> = ({
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
-  const handleSubmit = (e: React.FormEvent) => {
+  const { setVisitorId, initSession, trackEvent } = useAnalytics();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     if (!name.trim()) {
@@ -24,6 +29,15 @@ const SignUpGate: React.FC<SignUpGateProps> = ({
       return;
     }
     setSubmitted(true);
+
+    // Register visitor in database
+    const visitorId = await registerTier1Visitor(name, email);
+    if (visitorId) {
+      setVisitorId(visitorId);
+      await initSession();
+      trackEvent({ event_type: 'page_view', event_data: { page: 'dashboard' } });
+    }
+
     setTimeout(() => {
       onJoin(name, email);
     }, 500);
