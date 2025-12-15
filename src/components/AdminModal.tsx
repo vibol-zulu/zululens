@@ -622,7 +622,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                           <TableRow>
                             <TableHead>Name</TableHead>
                             <TableHead>Category</TableHead>
-                            <TableHead>Audience (M)</TableHead>
+                            <TableHead className="whitespace-nowrap">Audience (M)</TableHead>
                             <TableHead>Platform</TableHead>
                             <TableHead>Political Lean</TableHead>
                             <TableHead className="w-[80px]">Actions</TableHead>
