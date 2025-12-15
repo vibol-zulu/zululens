@@ -76,7 +76,7 @@ const MissionModal: React.FC<MissionModalProps> = ({
               <div className="border rounded-lg p-4 bg-muted/30">
                 <h4 className="font-medium mb-1">Member</h4>
                 <p className="text-sm text-muted-foreground">
-                  Create an account to join discussions, leave comments, and engage with the community.
+                  Create an account to join discussions, leave comments, and engage with the community. Apply to become a contributor.
                 </p>
               </div>
 
