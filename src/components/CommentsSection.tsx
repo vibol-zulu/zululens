@@ -131,10 +131,21 @@ const CommentItem: React.FC<CommentItemProps> = ({
   );
 };
 
+// Placeholder comments for cycling preview when collapsed
+const PLACEHOLDER_COMMENTS = [
+  { username: "MediaWatcher", content: "The consolidation trend since 2000 is remarkable. Great visualization!" },
+  { username: "NewsJunkie42", content: "Independent media has really grown in influence over the past decade." },
+  { username: "DigitalTrends", content: "Would love to see this data broken down by digital vs traditional." },
+  { username: "PolicyNerd", content: "The spectrum view really highlights the political positioning clearly." },
+  { username: "JournalismFan", content: "This tool should be required viewing in media literacy classes." },
+  { username: "DataVizPro", content: "Impressive work. The circle packing approach works really well here." },
+];
+
 const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClick }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [previewIndex, setPreviewIndex] = useState(0);
   
   const { user, isAdmin } = useAuth();
   const { comments, loading, addComment, updateComment, deleteComment } = useComments(country);
@@ -157,6 +168,17 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
     };
     checkModerator();
   }, [user]);
+
+  // Cycle through placeholder comments when collapsed
+  React.useEffect(() => {
+    if (isExpanded) return;
+    
+    const interval = setInterval(() => {
+      setPreviewIndex((prev) => (prev + 1) % PLACEHOLDER_COMMENTS.length);
+    }, 4000);
+    
+    return () => clearInterval(interval);
+  }, [isExpanded]);
 
   const handleSubmit = async () => {
     if (!newComment.trim()) return;
@@ -203,6 +225,8 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
 
   // Tier 1 users (not authenticated) see the section but with sign-up prompt
   const isAuthenticated = !!user;
+  
+  const currentPreview = PLACEHOLDER_COMMENTS[previewIndex];
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t shadow-lg">
@@ -211,17 +235,30 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors"
       >
-        <div className="flex items-center gap-2">
-          <MessageSquare className="h-4 w-4 text-primary" />
-          <span className="font-medium text-sm">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <MessageSquare className="h-4 w-4 text-primary shrink-0" />
+          <span className="font-medium text-sm shrink-0">
             Comments {totalComments > 0 && `(${totalComments})`}
           </span>
-          <span className="text-xs text-muted-foreground">— {country}</span>
+          
+          {/* Cycling preview when collapsed */}
+          {!isExpanded && (
+            <div className="flex items-center gap-2 ml-3 text-sm text-muted-foreground overflow-hidden">
+              <span className="text-muted-foreground/50">—</span>
+              <span 
+                key={previewIndex}
+                className="truncate animate-fade-in"
+              >
+                <span className="font-medium text-foreground/70">{currentPreview.username}:</span>{" "}
+                <span className="italic">{currentPreview.content}</span>
+              </span>
+            </div>
+          )}
         </div>
         {isExpanded ? (
-          <ChevronDown className="h-4 w-4" />
+          <ChevronDown className="h-4 w-4 shrink-0" />
         ) : (
-          <ChevronUp className="h-4 w-4" />
+          <ChevronUp className="h-4 w-4 shrink-0" />
         )}
       </button>
 
