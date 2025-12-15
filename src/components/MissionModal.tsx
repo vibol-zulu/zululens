@@ -6,7 +6,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Target, Users, TrendingUp } from 'lucide-react';
+import { Rocket, Users, TrendingUp } from 'lucide-react';
 
 interface MissionModalProps {
   open: boolean;
@@ -26,7 +26,7 @@ const MissionModal: React.FC<MissionModalProps> = ({
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold flex items-center gap-2">
-            <Target className="h-6 w-6 text-primary" />
+            <Rocket className="h-6 w-6 text-primary" />
             Our Mission
           </DialogTitle>
         </DialogHeader>
