@@ -6,6 +6,7 @@ import Sidebar from '@/components/MediaSidebar';
 import InsightsModal from '@/components/InsightsModal';
 import MethodologyModal from '@/components/MethodologyModal';
 import ContactModal from '@/components/ContactModal';
+import MissionModal from '@/components/MissionModal';
 import ContributorModal from '@/components/ContributorModal';
 import AdminModal from '@/components/AdminModal';
 import SignInModal from '@/components/SignInModal';
@@ -59,6 +60,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   const [showContributor, setShowContributor] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
+  const [showMission, setShowMission] = useState(false);
   const [signInDefaultTab, setSignInDefaultTab] = useState<'signin' | 'signup'>('signin');
 
   // Auth state for contributor access
@@ -206,6 +208,9 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuItem onClick={() => setShowMission(true)}>
+                Mission
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setShowInsights(true)}>
                 Insights
               </DropdownMenuItem>
@@ -343,6 +348,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
       <InsightsModal open={showInsights} onClose={() => setShowInsights(false)} />
       <MethodologyModal open={showMethodology} onClose={() => setShowMethodology(false)} />
       <ContactModal open={showContact} onClose={() => setShowContact(false)} />
+      <MissionModal open={showMission} onOpenChange={setShowMission} />
       <ContributorModal 
         open={showContributor} 
         onClose={() => {
