@@ -6,7 +6,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Rocket, Users, TrendingUp } from 'lucide-react';
+import { Rocket } from 'lucide-react';
 
 interface MissionModalProps {
   open: boolean;
@@ -26,7 +26,7 @@ const MissionModal: React.FC<MissionModalProps> = ({
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold flex items-center gap-2">
-            <Rocket className="h-6 w-6 text-primary" />
+            <Rocket className="h-6 w-6 text-orange-500" />
             Our Mission
           </DialogTitle>
         </DialogHeader>
@@ -44,8 +44,7 @@ const MissionModal: React.FC<MissionModalProps> = ({
 
           {/* Community Section */}
           <section>
-            <h3 className="text-lg font-semibold mb-2 text-foreground flex items-center gap-2">
-              <Users className="h-5 w-5 text-primary" />
+            <h3 className="text-lg font-semibold mb-2 text-foreground">
               Building a Community of Contributors
             </h3>
             <p className="text-muted-foreground leading-relaxed">
@@ -58,8 +57,7 @@ const MissionModal: React.FC<MissionModalProps> = ({
 
           {/* User Tiers Section */}
           <section>
-            <h3 className="text-lg font-semibold mb-4 text-foreground flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
+            <h3 className="text-lg font-semibold mb-4 text-foreground">
               Your Journey with Us
             </h3>
             
