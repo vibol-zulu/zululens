@@ -181,7 +181,12 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   const [deletePassword, setDeletePassword] = useState('');
   const [deletePasswordError, setDeletePasswordError] = useState('');
   const [isOAuthUser, setIsOAuthUser] = useState(false);
-  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [oAuthHasPassword, setOAuthHasPassword] = useState(false);
+  const [showCreatePasswordDialog, setShowCreatePasswordDialog] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [createPasswordError, setCreatePasswordError] = useState('');
+  const [pendingDeleteAction, setPendingDeleteAction] = useState<'channel' | 'user' | 'comment' | null>(null);
 
   // Check if current user signed up with OAuth
   useEffect(() => {
@@ -189,12 +194,16 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       if (currentUser?.app_metadata?.provider && currentUser.app_metadata.provider !== 'email') {
         setIsOAuthUser(true);
+        // Check if user has set a password by looking at identities
+        const hasEmailIdentity = currentUser.identities?.some(i => i.provider === 'email');
+        setOAuthHasPassword(!!hasEmailIdentity);
       }
     };
     if (user) {
       checkAuthMethod();
     }
   }, [user]);
+
 
   // Analytics state
   const [analyticsData, setAnalyticsData] = useState<UserSessionSummary[]>([]);
@@ -363,12 +372,9 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
 
   // Password verification helper
   const verifyPassword = async (): Promise<boolean> => {
-    // For OAuth users, check if they typed DELETE
-    if (isOAuthUser) {
-      if (deleteConfirmText === 'DELETE') {
-        return true;
-      }
-      setDeletePasswordError('Please type DELETE to confirm');
+    // For OAuth users without password, they need to create one first
+    if (isOAuthUser && !oAuthHasPassword) {
+      setDeletePasswordError('You need to create a password first');
       return false;
     }
     
@@ -396,10 +402,75 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
     }
   };
 
+  // Create password for OAuth users
+  const handleCreatePassword = async () => {
+    if (!newPassword || !confirmNewPassword) {
+      setCreatePasswordError('Both fields are required');
+      return;
+    }
+    
+    if (newPassword.length < 6) {
+      setCreatePasswordError('Password must be at least 6 characters');
+      return;
+    }
+    
+    if (newPassword !== confirmNewPassword) {
+      setCreatePasswordError('Passwords do not match');
+      return;
+    }
+    
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      
+      if (error) {
+        setCreatePasswordError(error.message);
+        return;
+      }
+      
+      setOAuthHasPassword(true);
+      setShowCreatePasswordDialog(false);
+      setNewPassword('');
+      setConfirmNewPassword('');
+      setCreatePasswordError('');
+      toast({ title: 'Password created successfully. You can now confirm delete actions.' });
+      
+      // Re-open the appropriate delete dialog
+      if (pendingDeleteAction === 'channel') setShowDeleteDialog(true);
+      if (pendingDeleteAction === 'user') setShowDeleteUserDialog(true);
+      if (pendingDeleteAction === 'comment') setShowDeleteCommentDialog(true);
+      setPendingDeleteAction(null);
+    } catch {
+      setCreatePasswordError('Failed to create password');
+    }
+  };
+
+  // Handle delete button click for OAuth users
+  const handleDeleteClick = (type: 'channel' | 'user' | 'comment', item: Channel | UserProfile | AdminComment) => {
+    if (isOAuthUser && !oAuthHasPassword) {
+      setPendingDeleteAction(type);
+      if (type === 'channel') setChannelToDelete(item as Channel);
+      if (type === 'user') setUserToDelete(item as UserProfile);
+      if (type === 'comment') setCommentToDelete(item as AdminComment);
+      setShowCreatePasswordDialog(true);
+    } else {
+      if (type === 'channel') {
+        setChannelToDelete(item as Channel);
+        setShowDeleteDialog(true);
+      }
+      if (type === 'user') {
+        setUserToDelete(item as UserProfile);
+        setShowDeleteUserDialog(true);
+      }
+      if (type === 'comment') {
+        setCommentToDelete(item as AdminComment);
+        setShowDeleteCommentDialog(true);
+      }
+    }
+  };
+
   const resetDeleteState = () => {
     setDeletePassword('');
     setDeletePasswordError('');
-    setDeleteConfirmText('');
   };
 
   // Delete comment
@@ -922,7 +993,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                                     <Button 
                                       variant="ghost" 
                                       size="icon" 
-                                      onClick={() => { setChannelToDelete(channel); setShowDeleteDialog(true); }}
+                                      onClick={() => handleDeleteClick('channel', channel)}
                                     >
                                       <Trash2 className="h-4 w-4 text-destructive" />
                                     </Button>
@@ -998,7 +1069,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                                   <Button 
                                     variant="ghost" 
                                     size="icon"
-                                    onClick={() => { setUserToDelete(u); setShowDeleteUserDialog(true); }}
+                                    onClick={() => handleDeleteClick('user', u)}
                                     disabled={u.id === user?.id}
                                   >
                                     <Trash2 className="h-4 w-4 text-destructive" />
@@ -1175,7 +1246,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                                 <Button 
                                   variant="ghost" 
                                   size="icon"
-                                  onClick={() => { setCommentToDelete(comment); setShowDeleteCommentDialog(true); }}
+                                  onClick={() => handleDeleteClick('comment', comment)}
                                 >
                                   <Trash2 className="h-4 w-4 text-destructive" />
                                 </Button>
@@ -1463,30 +1534,15 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <div className="py-4">
-              {isOAuthUser ? (
-                <div className="space-y-2">
-                  <Label htmlFor="delete-channel-confirm">Type DELETE to confirm</Label>
-                  <Input
-                    id="delete-channel-confirm"
-                    value={deleteConfirmText}
-                    onChange={(e) => { setDeleteConfirmText(e.target.value); setDeletePasswordError(''); }}
-                    placeholder="Type DELETE"
-                    className="mt-2"
-                  />
-                </div>
-              ) : (
-                <>
-                  <Label htmlFor="delete-channel-password">Enter your password to confirm</Label>
-                  <Input
-                    id="delete-channel-password"
-                    type="password"
-                    value={deletePassword}
-                    onChange={(e) => { setDeletePassword(e.target.value); setDeletePasswordError(''); }}
-                    placeholder="Your password"
-                    className="mt-2"
-                  />
-                </>
-              )}
+              <Label htmlFor="delete-channel-password">Enter your password to confirm</Label>
+              <Input
+                id="delete-channel-password"
+                type="password"
+                value={deletePassword}
+                onChange={(e) => { setDeletePassword(e.target.value); setDeletePasswordError(''); }}
+                placeholder="Your password"
+                className="mt-2"
+              />
               {deletePasswordError && (
                 <p className="text-sm text-destructive mt-1">{deletePasswordError}</p>
               )}
@@ -1510,30 +1566,15 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <div className="py-4">
-              {isOAuthUser ? (
-                <div className="space-y-2">
-                  <Label htmlFor="delete-user-confirm">Type DELETE to confirm</Label>
-                  <Input
-                    id="delete-user-confirm"
-                    value={deleteConfirmText}
-                    onChange={(e) => { setDeleteConfirmText(e.target.value); setDeletePasswordError(''); }}
-                    placeholder="Type DELETE"
-                    className="mt-2"
-                  />
-                </div>
-              ) : (
-                <>
-                  <Label htmlFor="delete-user-password">Enter your password to confirm</Label>
-                  <Input
-                    id="delete-user-password"
-                    type="password"
-                    value={deletePassword}
-                    onChange={(e) => { setDeletePassword(e.target.value); setDeletePasswordError(''); }}
-                    placeholder="Your password"
-                    className="mt-2"
-                  />
-                </>
-              )}
+              <Label htmlFor="delete-user-password">Enter your password to confirm</Label>
+              <Input
+                id="delete-user-password"
+                type="password"
+                value={deletePassword}
+                onChange={(e) => { setDeletePassword(e.target.value); setDeletePasswordError(''); }}
+                placeholder="Your password"
+                className="mt-2"
+              />
               {deletePasswordError && (
                 <p className="text-sm text-destructive mt-1">{deletePasswordError}</p>
               )}
@@ -1557,30 +1598,15 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <div className="py-4">
-              {isOAuthUser ? (
-                <div className="space-y-2">
-                  <Label htmlFor="delete-comment-confirm">Type DELETE to confirm</Label>
-                  <Input
-                    id="delete-comment-confirm"
-                    value={deleteConfirmText}
-                    onChange={(e) => { setDeleteConfirmText(e.target.value); setDeletePasswordError(''); }}
-                    placeholder="Type DELETE"
-                    className="mt-2"
-                  />
-                </div>
-              ) : (
-                <>
-                  <Label htmlFor="delete-comment-password">Enter your password to confirm</Label>
-                  <Input
-                    id="delete-comment-password"
-                    type="password"
-                    value={deletePassword}
-                    onChange={(e) => { setDeletePassword(e.target.value); setDeletePasswordError(''); }}
-                    placeholder="Your password"
-                    className="mt-2"
-                  />
-                </>
-              )}
+              <Label htmlFor="delete-comment-password">Enter your password to confirm</Label>
+              <Input
+                id="delete-comment-password"
+                type="password"
+                value={deletePassword}
+                onChange={(e) => { setDeletePassword(e.target.value); setDeletePasswordError(''); }}
+                placeholder="Your password"
+                className="mt-2"
+              />
               {deletePasswordError && (
                 <p className="text-sm text-destructive mt-1">{deletePasswordError}</p>
               )}
@@ -1711,6 +1737,64 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                 )}
               </div>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Create Password Dialog for OAuth users */}
+        <Dialog open={showCreatePasswordDialog} onOpenChange={(open) => { 
+          setShowCreatePasswordDialog(open); 
+          if (!open) {
+            setNewPassword('');
+            setConfirmNewPassword('');
+            setCreatePasswordError('');
+            setPendingDeleteAction(null);
+          }
+        }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create Password</DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4 mt-4">
+              <p className="text-sm text-muted-foreground">
+                Since you signed in with Google, you need to create a password to confirm sensitive actions like deletions.
+              </p>
+              
+              <div className="space-y-2">
+                <Label htmlFor="new-password">New Password</Label>
+                <Input
+                  id="new-password"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => { setNewPassword(e.target.value); setCreatePasswordError(''); }}
+                  placeholder="At least 6 characters"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password">Confirm Password</Label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  value={confirmNewPassword}
+                  onChange={(e) => { setConfirmNewPassword(e.target.value); setCreatePasswordError(''); }}
+                  placeholder="Confirm your password"
+                />
+              </div>
+
+              {createPasswordError && (
+                <p className="text-sm text-destructive">{createPasswordError}</p>
+              )}
+
+              <div className="flex gap-3 pt-4">
+                <Button variant="outline" onClick={() => setShowCreatePasswordDialog(false)} className="flex-1">
+                  Cancel
+                </Button>
+                <Button onClick={handleCreatePassword} className="flex-1">
+                  Create Password
+                </Button>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
       </DialogContent>
