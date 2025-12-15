@@ -9,6 +9,7 @@ import ContactModal from '@/components/ContactModal';
 import ContributorModal from '@/components/ContributorModal';
 import AdminModal from '@/components/AdminModal';
 import SignInModal from '@/components/SignInModal';
+import CommentsSection from '@/components/CommentsSection';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -338,6 +339,9 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
       />
       <AdminModal open={showAdmin} onClose={() => setShowAdmin(false)} />
       <SignInModal open={showSignIn} onClose={() => setShowSignIn(false)} />
+      
+      {/* Comments Section - visible only for authenticated users */}
+      <CommentsSection country={country} />
     </div>
   );
 };
