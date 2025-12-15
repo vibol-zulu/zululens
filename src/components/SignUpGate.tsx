@@ -47,7 +47,7 @@ const SignUpGate: React.FC<SignUpGateProps> = ({
         border: '1px solid hsla(180 30% 50% / 0.15)'
       }} className="w-full max-w-md rounded-lg p-8">
           {/* Icon */}
-          <div className="mb-8">
+          <div className="mb-2">
             
           </div>
 
