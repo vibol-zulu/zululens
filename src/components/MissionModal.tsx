@@ -92,15 +92,7 @@ const MissionModal: React.FC<MissionModalProps> = ({
               <div className="border rounded-lg p-4 bg-muted/30">
                 <h4 className="font-medium mb-1">Moderator</h4>
                 <p className="text-sm text-muted-foreground">
-                  Moderators review and approve channel submissions, ensuring data quality and accuracy.
-                </p>
-              </div>
-
-              {/* Tier 5 */}
-              <div className="border rounded-lg p-4 bg-primary/10 border-primary/30">
-                <h4 className="font-medium mb-1">Admin</h4>
-                <p className="text-sm text-muted-foreground">
-                  Full access to manage users, datasets, and platform settings. Responsible for overall data integrity.
+                  Moderators review and approve channel submissions, ensuring data quality and accuracy. Active contributors with consistent, high-quality submissions may be invited to become moderators.
                 </p>
               </div>
             </div>
