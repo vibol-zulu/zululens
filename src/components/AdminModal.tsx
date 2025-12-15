@@ -138,7 +138,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   const [showCreateUserDialog, setShowCreateUserDialog] = useState(false);
   const [newUserData, setNewUserData] = useState({ email: '', password: '', fullName: '', role: 'contributor' as 'admin' | 'contributor' });
 
-  const isAuthenticated = user && isContributor;
+  const isAuthenticated = user && isAdmin;
 
   const handleSignIn = async () => {
     if (!email || !password) {
@@ -533,9 +533,9 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                 />
               </div>
 
-              {user && !isContributor && (
+              {user && !isAdmin && (
                 <p className="text-sm text-destructive">
-                  Your account does not have contributor access.
+                  Your account does not have admin access.
                 </p>
               )}
 
