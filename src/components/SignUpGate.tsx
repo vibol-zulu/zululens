@@ -41,18 +41,18 @@ const SignUpGate: React.FC<SignUpGateProps> = ({
 
       {/* Main Content */}
       <main className="flex-1 px-6 md:px-12 py-12 items-center justify-center flex flex-row lg:px-[56px]">
-        <div className="w-full max-w-md rounded-lg p-8" style={{
+        <div style={{
         background: 'linear-gradient(180deg, hsla(180 20% 35% / 0.4) 0%, hsla(170 25% 25% / 0.3) 100%)',
         backdropFilter: 'blur(20px)',
         border: '1px solid hsla(180 30% 50% / 0.15)'
-      }}>
+      }} className="w-full max-w-md rounded-lg p-8">
           {/* Icon */}
           <div className="mb-8">
             
           </div>
 
           {/* Headline */}
-          <h1 className="text-3xl md:text-4xl text-white leading-tight mb-6 font-medium font-sans lg:text-2xl">Explore how media has
+          <h1 className="text-3xl md:text-4xl text-white leading-tight mb-6 lg:text-4xl font-medium font-sans">Explore how media has
 transformed over 25 years</h1>
 
           {/* Description */}
