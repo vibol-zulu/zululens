@@ -286,7 +286,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
         <div className="max-h-[50vh] overflow-hidden flex flex-col">
           {!isAuthenticated ? (
             /* Sign-up gate for Tier 1 users */
-            <div className="p-6 text-center">
+            <div className="p-6 text-center flex items-center justify-center flex-1">
               <div className="max-w-md mx-auto">
                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                   <UserPlus className="h-6 w-6 text-primary" />
