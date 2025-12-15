@@ -39,7 +39,7 @@ const InsightsModal: React.FC<InsightsModalProps> = ({ open, onClose }) => {
             
             <p className="text-muted-foreground italic">More detail on the data below.</p>
 
-            <h3 className="text-lg font-semibold text-primary mt-8 pb-2 border-b-2 border-secondary inline-block">
+            <h3 className="text-lg font-semibold text-primary mt-8">
               A Media Network Becoming Wiser? Core Insights from the data
             </h3>
             <p className="text-muted-foreground">The modern information environment is becoming denser, faster, and—paradoxically—more self-correcting:</p>
@@ -68,12 +68,12 @@ const InsightsModal: React.FC<InsightsModalProps> = ({ open, onClose }) => {
             <h4 className="font-semibold mt-5">The rise of information density</h4>
             <p className="text-muted-foreground">Independent long-form video and audio creators now reach audiences comparable to or larger than many legacy brands. Their format—more exploratory, more dialogic—reflects a shift from sound-bite communication toward deeper narrative bandwidth.</p>
 
-            <h3 className="text-lg font-semibold text-primary mt-8 pb-2 border-b-2 border-secondary inline-block">
+            <h3 className="text-lg font-semibold text-primary mt-8">
               Staying vigilant: what to look out for
             </h3>
             <p className="text-muted-foreground">Understand the incentives: all outlets, from the smallest independent voices to the largest corporate machines, are subject to implicit bias of their teams or explicit distortion of the agendas they serve. A number of independent media outlets have hidden agendas, powered often by funding which is obscured from viewers. As independent media outlets grow, it becomes tempting to adopt corporate habits: advertising pressures, larger teams, corporate ownership. This is not necessarily always bad but adds risk.</p>
 
-            <h3 className="text-lg font-semibold text-primary mt-8 pb-2 border-b-2 border-secondary inline-block">
+            <h3 className="text-lg font-semibold text-primary mt-8">
               A New Pillar of Networked Sensemaking
             </h3>
             <p className="text-muted-foreground">The Zulu Digital Microscope is not merely media analytics; it is emerging as a piece of epistemic infrastructure for Networked Sensemaking. By quantifying how audience power, narrative formation, and media incentives have shifted from 2000 to 2025, it illuminates both the bottlenecks and the new leverage points of the collective brain. The result is a clearer view of where coherence is generated, where it is constrained, and how a more adaptive, truth-aligned information ecosystem may continue to evolve.</p>
