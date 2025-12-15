@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Database, MoreVertical } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Database, MoreVertical, MessageCircle } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -80,6 +80,19 @@ interface ContributorRequest {
   created_at: string;
 }
 
+interface AdminComment {
+  id: string;
+  content: string;
+  country: string;
+  user_id: string;
+  parent_id: string | null;
+  created_at: string;
+  updated_at: string;
+  is_edited: boolean;
+  user_email?: string;
+  user_name?: string;
+}
+
 interface AdminModalProps {
   open: boolean;
   onClose: () => void;
@@ -133,6 +146,13 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   const [requestsLoading, setRequestsLoading] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<ContributorRequest | null>(null);
   const [showRequestDialog, setShowRequestDialog] = useState(false);
+
+  // Comments state
+  const [comments, setComments] = useState<AdminComment[]>([]);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [commentsCountry, setCommentsCountry] = useState('United States');
+  const [commentToDelete, setCommentToDelete] = useState<AdminComment | null>(null);
+  const [showDeleteCommentDialog, setShowDeleteCommentDialog] = useState(false);
 
   // Create contributor state
   const [showCreateUserDialog, setShowCreateUserDialog] = useState(false);
@@ -250,6 +270,72 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
     }
   };
 
+  // Fetch comments for admin
+  const fetchComments = async () => {
+    if (!isAdmin) return;
+    
+    setCommentsLoading(true);
+    try {
+      const { data: commentsData, error: commentsError } = await supabase
+        .from('comments')
+        .select('*')
+        .eq('country', commentsCountry)
+        .order('created_at', { ascending: false });
+
+      if (commentsError) throw commentsError;
+
+      // Fetch user profiles for comments
+      const userIds = [...new Set((commentsData || []).map(c => c.user_id))];
+      let profiles: { id: string; email: string; full_name: string | null }[] = [];
+      
+      if (userIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, email, full_name')
+          .in('id', userIds);
+        profiles = profilesData || [];
+      }
+
+      const commentsWithUsers: AdminComment[] = (commentsData || []).map(comment => {
+        const profile = profiles.find(p => p.id === comment.user_id);
+        return {
+          ...comment,
+          user_email: profile?.email,
+          user_name: profile?.full_name || undefined
+        };
+      });
+
+      setComments(commentsWithUsers);
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+      toast({ title: 'Failed to load comments', variant: 'destructive' });
+    } finally {
+      setCommentsLoading(false);
+    }
+  };
+
+  // Delete comment
+  const deleteComment = async () => {
+    if (!commentToDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from('comments')
+        .delete()
+        .eq('id', commentToDelete.id);
+
+      if (error) throw error;
+      
+      toast({ title: 'Comment deleted' });
+      setShowDeleteCommentDialog(false);
+      setCommentToDelete(null);
+      fetchComments();
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      toast({ title: 'Failed to delete comment', variant: 'destructive' });
+    }
+  };
+
   useEffect(() => {
     if (isAuthenticated && open) {
       fetchChannels();
@@ -265,8 +351,16 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
       fetchUsers();
     } else if (isAuthenticated && open && activeTab === 'requests' && isAdmin) {
       fetchRequests();
+    } else if (isAuthenticated && open && activeTab === 'comments' && isAdmin) {
+      fetchComments();
     }
   }, [activeTab, isAuthenticated, open, isAdmin]);
+
+  useEffect(() => {
+    if (isAuthenticated && open && activeTab === 'comments' && isAdmin) {
+      fetchComments();
+    }
+  }, [commentsCountry]);
 
   const handleEdit = (channel: Channel) => {
     setEditingChannel(channel);
@@ -537,6 +631,10 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                             {pendingRequestsCount}
                           </Badge>
                         )}
+                      </TabsTrigger>
+                      <TabsTrigger value="comments" className="gap-2">
+                        <MessageCircle className="h-4 w-4" />
+                        Comments
                       </TabsTrigger>
                     </>
                   )}
@@ -811,6 +909,86 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                   </div>
                 </div>
               </TabsContent>
+
+              {/* Comments Tab */}
+              <TabsContent value="comments" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
+                <div className="border-b p-4 flex items-center gap-2 flex-wrap">
+                  <Select value={commentsCountry} onValueChange={setCommentsCountry}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COUNTRIES.map(c => (
+                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <span className="text-sm text-muted-foreground ml-2">{comments.length} comments</span>
+                </div>
+
+                <div className="flex-1 overflow-auto p-4">
+                  <div className="rounded-md border overflow-x-auto">
+                    <Table className="min-w-[600px]">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>User</TableHead>
+                          <TableHead className="w-[40%]">Content</TableHead>
+                          <TableHead>Reply To</TableHead>
+                          <TableHead>Created</TableHead>
+                          <TableHead className="w-[80px]">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {commentsLoading ? (
+                          <TableRow>
+                            <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                              Loading...
+                            </TableCell>
+                          </TableRow>
+                        ) : comments.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                              No comments found for {commentsCountry}
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          comments.map(comment => (
+                            <TableRow key={comment.id}>
+                              <TableCell>
+                                <div className="flex flex-col">
+                                  <span className="font-medium text-sm">{comment.user_name || 'Unknown'}</span>
+                                  <span className="text-xs text-muted-foreground">{comment.user_email}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <p className="text-sm line-clamp-2">{comment.content}</p>
+                                {comment.is_edited && (
+                                  <span className="text-xs text-muted-foreground">(edited)</span>
+                                )}
+                              </TableCell>
+                              <TableCell className="text-sm text-muted-foreground">
+                                {comment.parent_id ? 'Reply' : '-'}
+                              </TableCell>
+                              <TableCell className="text-sm text-muted-foreground">
+                                {new Date(comment.created_at).toLocaleDateString()}
+                              </TableCell>
+                              <TableCell>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  onClick={() => { setCommentToDelete(comment); setShowDeleteCommentDialog(true); }}
+                                >
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              </TabsContent>
             </Tabs>
           </div>
         )}
@@ -947,6 +1125,24 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={deleteUser} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Delete Comment Confirmation */}
+        <AlertDialog open={showDeleteCommentDialog} onOpenChange={setShowDeleteCommentDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Comment</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete this comment? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={deleteComment} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                 Delete
               </AlertDialogAction>
             </AlertDialogFooter>
