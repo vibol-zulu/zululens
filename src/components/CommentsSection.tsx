@@ -134,12 +134,12 @@ const CommentItem: React.FC<CommentItemProps> = ({
 
 // Placeholder comments for cycling preview when collapsed
 const PLACEHOLDER_COMMENTS = [
-  { username: "MediaWatcher", content: "The consolidation trend since 2000 is remarkable. Great visualization!" },
-  { username: "NewsJunkie42", content: "Independent media has really grown in influence over the past decade." },
-  { username: "DigitalTrends", content: "Would love to see this data broken down by digital vs traditional." },
-  { username: "PolicyNerd", content: "The spectrum view really highlights the political positioning clearly." },
-  { username: "JournalismFan", content: "This tool should be required viewing in media literacy classes." },
-  { username: "DataVizPro", content: "Impressive work. The circle packing approach works really well here." },
+  { username: "Alex_T", content: "The consolidation trend since 2000 is remarkable. Great visualization!" },
+  { username: "Sarah92", content: "Independent media has really grown in influence over the past decade." },
+  { username: "Mike_Johnson", content: "Would love to see this data broken down by digital vs traditional." },
+  { username: "Chris_L", content: "The spectrum view really highlights the political positioning clearly." },
+  { username: "Emma_K", content: "This tool should be required viewing in media literacy classes." },
+  { username: "David_R", content: "Impressive work. The circle packing approach works really well here." },
 ];
 
 const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClick }) => {
