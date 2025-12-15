@@ -79,18 +79,20 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
     }
   }, [mergedData.brands]);
 
-  // Check if country has data (only United States has data currently)
-  const countryHasData = country === 'United States';
+  // Countries with static data (don't show contributor modal)
+  const countriesWithStaticData = ['United States'];
 
   const handleCountryChange = (value: string) => {
     setCountry(value);
     setSelectedIds(new Set());
-    
-    // Show contributor modal only if country has no data AND user is not authenticated
-    if (value !== 'United States' && !isContributor) {
+  };
+
+  // Show contributor modal after data loads if country has no data
+  useEffect(() => {
+    if (!countriesWithStaticData.includes(country) && mergedData.brands.length === 0 && !isContributor) {
       setShowContributor(true);
     }
-  };
+  }, [country, mergedData.brands.length, isContributor]);
 
   const toggleBrand = (id: string) => {
     const newSet = new Set(selectedIds);
