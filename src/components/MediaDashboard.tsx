@@ -8,6 +8,7 @@ import MethodologyModal from '@/components/MethodologyModal';
 import ContactModal from '@/components/ContactModal';
 import ContributorModal from '@/components/ContributorModal';
 import AdminModal from '@/components/AdminModal';
+import SignInModal from '@/components/SignInModal';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -56,6 +57,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   const [showContact, setShowContact] = useState(false);
   const [showContributor, setShowContributor] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(false);
 
   // Auth state for contributor access
   const { user, isContributor, isAdmin, signOut } = useAuth();
@@ -191,7 +193,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                 Contact
               </DropdownMenuItem>
               {!user && (
-                <DropdownMenuItem onClick={() => setShowAdmin(true)}>
+                <DropdownMenuItem onClick={() => setShowSignIn(true)}>
                   Sign In
                 </DropdownMenuItem>
               )}
@@ -328,6 +330,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
         customMessage={`We don't have media landscape data for ${country}. Help us build it! Share your knowledge of local media outlets and become a contributor.`}
       />
       <AdminModal open={showAdmin} onClose={() => setShowAdmin(false)} />
+      <SignInModal open={showSignIn} onClose={() => setShowSignIn(false)} />
     </div>
   );
 };

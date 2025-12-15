@@ -484,71 +484,32 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
 
   const pendingRequestsCount = requests.filter(r => r.status === 'pending').length;
 
+  // Close modal if user is not admin
+  useEffect(() => {
+    if (!authLoading && open && !isAuthenticated) {
+      onClose();
+    }
+  }, [authLoading, open, isAuthenticated, onClose]);
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className={`${isAuthenticated ? 'max-w-5xl max-h-[90vh] p-0 overflow-hidden' : 'sm:max-w-md'}`}>
-        {isAuthenticated && (
-          <button
-            onClick={onClose}
-            className="absolute right-4 top-4 z-50 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-          >
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
-          </button>
-        )}
+      <DialogContent className="max-w-5xl max-h-[90vh] p-0 overflow-hidden">
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 z-50 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        >
+          <X className="h-4 w-4" />
+          <span className="sr-only">Close</span>
+        </button>
 
         {authLoading ? (
           <div className="p-6 flex items-center justify-center">
             <p className="text-muted-foreground">Loading...</p>
           </div>
-        ) : !isAuthenticated ? (
-          <>
-            <DialogHeader>
-              <DialogTitle className="text-xl font-semibold">Sign In</DialogTitle>
-            </DialogHeader>
-            
-            <p className="text-sm text-muted-foreground">
-              Sign in to access the admin panel and manage media channels.
-            </p>
-            
-            <form onSubmit={(e) => { e.preventDefault(); handleSignIn(); }} className="space-y-4 mt-2">
-              <div className="space-y-2">
-                <Label htmlFor="admin-email">Email</Label>
-                <Input
-                  id="admin-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="admin-password">Password</Label>
-                <Input
-                  id="admin-password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-
-              {user && !isAdmin && (
-                <p className="text-sm text-destructive">
-                  Your account does not have admin access.
-                </p>
-              )}
-
-              <DialogFooter className="flex gap-2 sm:gap-0">
-                <Button type="button" variant="outline" onClick={onClose} disabled={isSigningIn}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isSigningIn}>
-                  {isSigningIn ? 'Signing in...' : 'Sign In'}
-                </Button>
-              </DialogFooter>
-            </form>
-          </>
         ) : (
           <div className="flex flex-col h-[80vh]">
             <div className="border-b p-4 flex items-center justify-between shrink-0 pr-12">
