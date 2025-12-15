@@ -196,9 +196,9 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                 setSignInDefaultTab('signup');
                 setShowSignIn(true);
               }}
-              size={isMobile ? 'sm' : 'default'}
-              className="rounded-full font-semibold shadow-lg text-[#00564A] hover:opacity-90"
-              style={{ backgroundColor: '#F8D4C8' }}
+              size="sm"
+              className="rounded-full font-medium text-xs px-3 py-1 h-7 text-white hover:opacity-90"
+              style={{ backgroundColor: '#00564A' }}
             >
               Sign Up
             </Button>
