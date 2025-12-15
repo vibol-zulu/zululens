@@ -211,9 +211,9 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   if (isMobile) {
     return (
-      <div className="flex-1 border-r last:border-r-0 border-border bg-card overflow-hidden flex flex-col">
+      <div className="w-1/2 border-r last:border-r-0 border-border bg-card overflow-hidden flex flex-col min-w-0">
         <div 
-          className="p-3 border-b border-border"
+          className="p-3 border-b border-border shrink-0"
           style={{ backgroundColor: headerBgColor }}
         >
           <h3 
@@ -225,16 +225,16 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
         
         <ScrollArea className="flex-1">
-          <div className="p-3">
-            <div className="flex gap-2 mb-2">
+          <div className="p-2">
+            <div className="flex gap-1 mb-2">
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={() => onToggleAll(category)}
                 disabled={sorted.length === 0}
-                className="flex-1 text-xs"
+                className="flex-1 text-xs px-1"
               >
-                {allSelected && sorted.length > 0 ? 'Deselect All' : 'Select All'}
+                {allSelected && sorted.length > 0 ? 'Deselect' : 'Select All'}
               </Button>
               <TooltipProvider>
                 <Tooltip>
@@ -243,7 +243,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                       variant="outline" 
                       size="sm" 
                       onClick={handleAddClick}
-                      className="px-2"
+                      className="px-2 shrink-0"
                     >
                       <Plus className="h-3 w-3" />
                     </Button>
@@ -254,13 +254,13 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </Tooltip>
               </TooltipProvider>
             </div>
-            <div className="relative mb-3">
+            <div className="relative mb-2">
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
               <Input
-                placeholder="Search channels..."
+                placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-7 h-8 text-xs focus-visible:ring-0 focus-visible:ring-offset-0"
+                className="pl-7 h-7 text-xs focus-visible:ring-0 focus-visible:ring-offset-0"
               />
             </div>
             {sorted.length === 0 && (
