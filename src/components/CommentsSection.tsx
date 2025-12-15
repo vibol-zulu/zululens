@@ -235,7 +235,9 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
       {/* Toggle Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className={`w-full px-4 py-2 hover:bg-muted/50 transition-colors ${
+        className={`w-full px-4 hover:bg-muted/50 transition-colors ${
+          isExpanded ? 'py-2' : 'py-4'
+        } ${
           isMobile && !isExpanded ? 'flex flex-col gap-1' : 'flex items-center justify-between'
         }`}
       >
