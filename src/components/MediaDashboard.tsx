@@ -186,9 +186,16 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               <DropdownMenuItem onClick={() => setShowContact(true)}>
                 Contact
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setShowAdmin(true)}>
-                Admin
-              </DropdownMenuItem>
+              {!user && (
+                <DropdownMenuItem onClick={() => setShowAdmin(true)}>
+                  Sign In
+                </DropdownMenuItem>
+              )}
+              {user && isContributor && (
+                <DropdownMenuItem onClick={() => setShowAdmin(true)}>
+                  Admin
+                </DropdownMenuItem>
+              )}
               {user && (
                 <DropdownMenuItem onClick={() => signOut()}>
                   Sign Out
