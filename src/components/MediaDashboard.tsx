@@ -121,8 +121,8 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   return (
     <div className="flex flex-col h-screen overflow-hidden">
       {/* Header */}
-      <header className="h-14 border-b bg-card flex items-center px-4 justify-between shrink-0 z-20">
-        <div className="flex items-center gap-3">
+      <header className="h-14 border-b bg-card flex items-center px-2 sm:px-4 justify-between shrink-0 z-20">
+        <div className="flex items-center gap-1 sm:gap-3">
           {/* Country Selector - Desktop only */}
           {!isMobile && (
             <Select value={country} onValueChange={handleCountryChange}>
@@ -139,42 +139,42 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
 
           {/* Year Selector */}
           <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
-            <SelectTrigger className={`${isMobile ? 'w-[100px]' : 'w-[120px]'} h-9`}>
+            <SelectTrigger className={`${isMobile ? 'w-[70px]' : 'w-[120px]'} h-9`}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="2000">Year: 2000</SelectItem>
-              <SelectItem value="2025">Year: 2025</SelectItem>
+              <SelectItem value="2000">{isMobile ? '2000' : 'Year: 2000'}</SelectItem>
+              <SelectItem value="2025">{isMobile ? '2025' : 'Year: 2025'}</SelectItem>
             </SelectContent>
           </Select>
 
           {/* View Toggle */}
-          <div className="flex bg-muted rounded-full p-0.5 ml-2">
+          <div className="flex bg-muted rounded-full p-0.5">
             <button 
               onClick={() => setViewMode('default')}
-              className={`${isMobile ? 'px-3' : 'px-4'} py-1.5 rounded-full text-sm font-medium transition-all ${
+              className={`${isMobile ? 'px-2 text-xs' : 'px-4 text-sm'} py-1.5 rounded-full font-medium transition-all ${
                 viewMode === 'default' 
                   ? 'bg-card shadow-sm text-foreground' 
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              Microscope
+              {isMobile ? 'Micro' : 'Microscope'}
             </button>
             <button 
               onClick={() => setViewMode('compass')}
-              className={`${isMobile ? 'px-3' : 'px-4'} py-1.5 rounded-full text-sm font-medium transition-all ${
+              className={`${isMobile ? 'px-2 text-xs' : 'px-4 text-sm'} py-1.5 rounded-full font-medium transition-all ${
                 viewMode === 'compass' 
                   ? 'bg-card shadow-sm text-foreground' 
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              Spectrum
+              {isMobile ? 'Spec' : 'Spectrum'}
             </button>
           </div>
         </div>
 
         {/* Right side menu */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1 sm:gap-3">
           {!isMobile && user && (
             <span className="text-sm text-muted-foreground flex items-start gap-1">
               Welcome, {user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'}
@@ -192,6 +192,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                 setSignInDefaultTab('signup');
                 setShowSignIn(true);
               }}
+              size={isMobile ? 'sm' : 'default'}
               className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg"
             >
               Sign Up
