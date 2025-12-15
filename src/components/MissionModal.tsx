@@ -50,9 +50,9 @@ const MissionModal: React.FC<MissionModalProps> = ({
             </h3>
             <p className="text-muted-foreground leading-relaxed">
               No single team can map the global media landscape alone. We're building a community of 
-              passionate contributors who can help us expand coverage to every country. Whether you're 
-              a media researcher, journalist, or simply someone who cares about media transparency, 
-              your knowledge is invaluable.
+              passionate contributors who can help us expand coverage to every country and refine data 
+              accuracy over time. Whether you're a media researcher, journalist, or simply someone who 
+              cares about media transparency, your knowledge is invaluable.
             </p>
           </section>
 
