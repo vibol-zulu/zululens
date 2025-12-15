@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useComments, Comment } from '@/hooks/useComments';
 import { useAuth } from '@/hooks/useAuth';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -147,6 +148,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [previewIndex, setPreviewIndex] = useState(0);
   
+  const isMobile = useIsMobile();
   const { user, isAdmin } = useAuth();
   const { comments, loading, addComment, updateComment, deleteComment } = useComments(country);
 
@@ -233,33 +235,50 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
       {/* Toggle Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors"
+        className={`w-full px-4 py-2 hover:bg-muted/50 transition-colors ${
+          isMobile && !isExpanded ? 'flex flex-col gap-1' : 'flex items-center justify-between'
+        }`}
       >
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          <MessageSquare className="h-4 w-4 text-primary shrink-0" />
-          <span className="font-medium text-sm shrink-0">
-            Comments {totalComments > 0 && `(${totalComments})`}
-          </span>
-          <span className="text-xs text-muted-foreground shrink-0">— {country}</span>
-          
-          {/* Cycling preview when collapsed */}
-          {!isExpanded && (
-            <div className="flex items-center gap-2 ml-2 text-sm text-muted-foreground overflow-hidden">
-              <span 
-                key={previewIndex}
-                className="truncate animate-fade-in"
-              >
-                <span className="font-medium text-foreground/70">{currentPreview.username}:</span>{" "}
-                <span className="italic">{currentPreview.content}</span>
-              </span>
-            </div>
+        {/* Mobile: Preview on top when collapsed */}
+        {isMobile && !isExpanded && (
+          <div className="w-full text-sm text-muted-foreground overflow-hidden text-left">
+            <span 
+              key={previewIndex}
+              className="block truncate animate-fade-in"
+            >
+              <span className="font-medium text-foreground/70">{currentPreview.username}:</span>{" "}
+              <span className="italic">{currentPreview.content}</span>
+            </span>
+          </div>
+        )}
+        
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <MessageSquare className="h-4 w-4 text-primary shrink-0" />
+            <span className="font-medium text-sm shrink-0">
+              Comments {totalComments > 0 && `(${totalComments})`}
+            </span>
+            <span className="text-xs text-muted-foreground shrink-0">— {country}</span>
+            
+            {/* Desktop: Cycling preview inline when collapsed */}
+            {!isMobile && !isExpanded && (
+              <div className="flex items-center gap-2 ml-2 text-sm text-muted-foreground overflow-hidden">
+                <span 
+                  key={previewIndex}
+                  className="truncate animate-fade-in"
+                >
+                  <span className="font-medium text-foreground/70">{currentPreview.username}:</span>{" "}
+                  <span className="italic">{currentPreview.content}</span>
+                </span>
+              </div>
+            )}
+          </div>
+          {isExpanded ? (
+            <ChevronDown className="h-4 w-4 shrink-0" />
+          ) : (
+            <ChevronUp className="h-4 w-4 shrink-0" />
           )}
         </div>
-        {isExpanded ? (
-          <ChevronDown className="h-4 w-4 shrink-0" />
-        ) : (
-          <ChevronUp className="h-4 w-4 shrink-0" />
-        )}
       </button>
 
       {/* Expanded Content */}
