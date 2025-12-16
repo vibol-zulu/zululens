@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Category, calcRadius } from '@/types/media';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 interface AddChannelModalProps {
   isOpen: boolean;
@@ -71,6 +72,7 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
   existingChannelNames = []
 }) => {
   const { toast } = useToast();
+  const { user, isAdmin, isModerator } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -112,7 +114,10 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase
+      // Admins and moderators can auto-approve, members submit as pending
+      const canAutoApprove = isAdmin || isModerator;
+      
+      const { data: channelData, error } = await supabase
         .from('user_channels')
         .insert({
           name: formData.name.trim(),
@@ -123,15 +128,42 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
           content_type: formData.contentType,
           political_lean: formData.politicalLean,
           country,
-          year
-        });
+          year,
+          author_id: user?.id,
+          status: canAutoApprove ? 'approved' : 'pending',
+          approved_at: canAutoApprove ? new Date().toISOString() : null,
+          approved_by: canAutoApprove ? user?.id : null
+        })
+        .select('id')
+        .single();
 
       if (error) throw error;
 
-      toast({
-        title: "Channel added!",
-        description: `${formData.name} has been added to the ${category} list.`
-      });
+      // If member submission (pending), create notification for admins/moderators
+      if (!canAutoApprove && channelData) {
+        await supabase
+          .from('notifications')
+          .insert({
+            title: 'New Channel Suggestion',
+            message: `A new ${category} channel "${formData.name.trim()}" has been suggested for ${country} (${year}) and needs review.`,
+            type: 'channel_suggestion',
+            target_role: 'moderator',
+            channel_id: channelData.id,
+            created_by: user?.id
+          });
+      }
+
+      if (canAutoApprove) {
+        toast({
+          title: "Channel added!",
+          description: `${formData.name} has been added to the ${category} list.`
+        });
+      } else {
+        toast({
+          title: "Pending Approval",
+          description: `Your suggestion "${formData.name}" has been submitted and is awaiting review by a moderator or admin.`
+        });
+      }
 
       setFormData({
         name: '',

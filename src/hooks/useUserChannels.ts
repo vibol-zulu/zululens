@@ -23,11 +23,13 @@ export const useUserChannels = (country: string, year: number) => {
   const fetchUserChannels = useCallback(async () => {
     setLoading(true);
     try {
+      // Only fetch approved channels for visualization
       const { data, error } = await supabase
         .from('user_channels')
         .select('*')
         .eq('country', country)
-        .eq('year', year);
+        .eq('year', year)
+        .eq('status', 'approved');
 
       if (error) {
         console.error('Error fetching user channels:', error);
