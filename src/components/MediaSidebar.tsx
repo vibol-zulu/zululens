@@ -212,8 +212,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   // Determine header colors - corporate gets teal bg with peach text, independent gets peach bg with teal text
   const headerBgColor = category === 'corporate' ? COLORS.corporate : COLORS.independent;
   const headerTextColor = category === 'corporate' ? COLORS.independent : COLORS.corporate;
-  // Button text uses the same color as background (corporate = green, independent = peach)
-  const buttonTextColor = headerBgColor;
+  // Button text always uses corporate (green/teal) color
+  const buttonTextColor = COLORS.corporate;
 
   if (isMobile) {
     return (
