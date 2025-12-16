@@ -12,6 +12,24 @@ const Index = () => {
   const [view, setView] = useState<'gate' | 'dashboard'>('gate');
   const [visitor, setVisitor] = useState<{name: string, email: string} | null>(null);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [isOAuthCallback, setIsOAuthCallback] = useState(false);
+
+  // Detect OAuth callback (tokens in URL hash)
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash && (hash.includes('access_token') || hash.includes('refresh_token'))) {
+      setIsOAuthCallback(true);
+    }
+  }, []);
+
+  // Clear OAuth callback state once user is loaded
+  useEffect(() => {
+    if (user && isOAuthCallback) {
+      setIsOAuthCallback(false);
+      // Clean up URL hash
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, [user, isOAuthCallback]);
 
   // Bypass gate for authenticated users
   useEffect(() => {
@@ -39,8 +57,8 @@ const Index = () => {
     setShowWelcome(true);
   };
 
-  // Show loading while checking auth
-  if (loading) {
+  // Show loading while checking auth or processing OAuth callback
+  if (loading || isOAuthCallback) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-pulse text-muted-foreground">Loading...</div>
