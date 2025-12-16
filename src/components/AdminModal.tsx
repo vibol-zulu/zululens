@@ -49,6 +49,7 @@ import { COUNTRIES } from '@/data/mediaData';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface Channel {
   id: string;
@@ -1148,6 +1149,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
           <div className="flex flex-col h-[80vh]">
             <div className="border-b p-4 flex items-center justify-between shrink-0 pr-12">
               <h2 className="font-semibold text-lg">Admin Panel</h2>
+              <ThemeToggle />
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">

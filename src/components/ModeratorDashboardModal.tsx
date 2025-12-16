@@ -50,6 +50,7 @@ import {
   Trash2,
   Flag
 } from 'lucide-react';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface ChannelEntry {
   id: string;
@@ -496,6 +497,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
               <h2 className="font-semibold text-lg">{userName}'s Dashboard</h2>
               <Badge variant="secondary">Moderator</Badge>
             </div>
+            <ThemeToggle />
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
