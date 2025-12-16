@@ -72,6 +72,10 @@ interface ChannelEntry {
   author_id: string | null;
   author_name?: string;
   author_email?: string;
+  platform?: string;
+  content_type?: string;
+  political_lean?: string;
+  start_date?: string;
 }
 
 interface CommentEntry {
@@ -782,10 +786,10 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
       name: channel.name,
       value_millions: channel.value_millions,
       category: channel.category,
-      platform: '',
-      content_type: '',
-      political_lean: '',
-      start_date: ''
+      platform: channel.platform || '',
+      content_type: channel.content_type || '',
+      political_lean: channel.political_lean || '',
+      start_date: channel.start_date || ''
     });
     setShowEditMyChannelDialog(true);
   };
@@ -802,7 +806,11 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
         .update({
           name: myChannelFormData.name,
           value_millions: myChannelFormData.value_millions,
-          category: myChannelFormData.category
+          category: myChannelFormData.category,
+          platform: myChannelFormData.platform,
+          content_type: myChannelFormData.content_type,
+          political_lean: myChannelFormData.political_lean,
+          start_date: myChannelFormData.start_date
         })
         .eq('id', editingMyChannel.id);
 
@@ -1537,8 +1545,8 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
           <DialogContent className="max-w-md">
             <div className="space-y-4">
               <h3 className="font-semibold">Edit Submission</h3>
-              <div className="space-y-3">
-                <div>
+              <div className="grid grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto pr-2">
+                <div className="col-span-2">
                   <Label>Channel Name</Label>
                   <Input
                     value={myChannelFormData.name}
@@ -1549,6 +1557,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                   <Label>Audience (Millions)</Label>
                   <Input
                     type="number"
+                    step="0.1"
                     value={myChannelFormData.value_millions}
                     onChange={(e) => setMyChannelFormData({ ...myChannelFormData, value_millions: parseFloat(e.target.value) || 0 })}
                   />
@@ -1563,8 +1572,45 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                     </SelectContent>
                   </Select>
                 </div>
+                <div>
+                  <Label>Platform</Label>
+                  <Input
+                    value={myChannelFormData.platform}
+                    onChange={(e) => setMyChannelFormData({ ...myChannelFormData, platform: e.target.value })}
+                    placeholder="e.g., TV, Digital, Print"
+                  />
+                </div>
+                <div>
+                  <Label>Content Type</Label>
+                  <Input
+                    value={myChannelFormData.content_type}
+                    onChange={(e) => setMyChannelFormData({ ...myChannelFormData, content_type: e.target.value })}
+                    placeholder="e.g., News, Entertainment"
+                  />
+                </div>
+                <div>
+                  <Label>Political Lean</Label>
+                  <Select value={myChannelFormData.political_lean} onValueChange={(v) => setMyChannelFormData({ ...myChannelFormData, political_lean: v })}>
+                    <SelectTrigger><SelectValue placeholder="Select lean" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="left">Left</SelectItem>
+                      <SelectItem value="center-left">Center-Left</SelectItem>
+                      <SelectItem value="center">Center</SelectItem>
+                      <SelectItem value="center-right">Center-Right</SelectItem>
+                      <SelectItem value="right">Right</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Start Date</Label>
+                  <Input
+                    value={myChannelFormData.start_date}
+                    onChange={(e) => setMyChannelFormData({ ...myChannelFormData, start_date: e.target.value })}
+                    placeholder="e.g., 1980, 2010"
+                  />
+                </div>
               </div>
-              <div className="flex justify-end gap-2">
+              <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={() => setShowEditMyChannelDialog(false)}>Cancel</Button>
                 <Button onClick={saveMyChannelEdit}>Save</Button>
               </div>
