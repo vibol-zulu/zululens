@@ -39,34 +39,70 @@ const Index = () => {
     setShowWelcome(true);
   };
 
-  if (view === 'gate') {
+  // Show loading while checking auth
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
+
+  // Authenticated users go straight to dashboard
+  if (user) {
+    const userName = visitor?.name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+    const userEmail = visitor?.email || user.email || '';
+    
     return (
       <>
         <Helmet>
-          <title>Zulu Digital Microscope | US Media Landscape 2000-2025</title>
-          <meta name="description" content="Explore how the US media landscape has transformed from 2000 to 2025. Visualize corporate vs independent media audiences interactively." />
+          <title>Media Dashboard | Zulu Digital Microscope</title>
+          <meta name="description" content="Interactive visualization of US media landscape comparing corporate and independent media outlets from 2000 to 2025." />
         </Helmet>
-        <SignUpGate onJoin={handleJoin} />
+        <MediaDashboard 
+          visitorName={userName} 
+          visitorEmail={userEmail}
+          data={data} 
+        />
+        <WelcomeModal 
+          open={showWelcome} 
+          onOpenChange={setShowWelcome} 
+          userName={userName} 
+        />
       </>
     );
   }
 
+  // Tier 1 visitors who completed sign-up gate
+  if (view === 'dashboard' && visitor) {
+    return (
+      <>
+        <Helmet>
+          <title>Media Dashboard | Zulu Digital Microscope</title>
+          <meta name="description" content="Interactive visualization of US media landscape comparing corporate and independent media outlets from 2000 to 2025." />
+        </Helmet>
+        <MediaDashboard 
+          visitorName={visitor.name} 
+          visitorEmail={visitor.email}
+          data={data} 
+        />
+        <WelcomeModal 
+          open={showWelcome} 
+          onOpenChange={setShowWelcome} 
+          userName={visitor.name} 
+        />
+      </>
+    );
+  }
+
+  // Show sign-up gate for unauthenticated visitors
   return (
     <>
       <Helmet>
-        <title>Media Dashboard | Zulu Digital Microscope</title>
-        <meta name="description" content="Interactive visualization of US media landscape comparing corporate and independent media outlets from 2000 to 2025." />
+        <title>Zulu Digital Microscope | US Media Landscape 2000-2025</title>
+        <meta name="description" content="Explore how the US media landscape has transformed from 2000 to 2025. Visualize corporate vs independent media audiences interactively." />
       </Helmet>
-      <MediaDashboard 
-        visitorName={visitor?.name || 'Guest'} 
-        visitorEmail={visitor?.email || ''}
-        data={data} 
-      />
-      <WelcomeModal 
-        open={showWelcome} 
-        onOpenChange={setShowWelcome} 
-        userName={visitor?.name || 'Guest'} 
-      />
+      <SignUpGate onJoin={handleJoin} />
     </>
   );
 };
