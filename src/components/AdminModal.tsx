@@ -224,11 +224,20 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   useEffect(() => {
     const checkAuthMethod = async () => {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
-      if (currentUser?.app_metadata?.provider && currentUser.app_metadata.provider !== 'email') {
-        setIsOAuthUser(true);
-        // Check if user has set a password by looking at identities
+      if (currentUser) {
+        // Check identities to determine sign-in method
         const hasEmailIdentity = currentUser.identities?.some(i => i.provider === 'email');
-        setOAuthHasPassword(!!hasEmailIdentity);
+        const hasOAuthIdentity = currentUser.identities?.some(i => i.provider === 'google' || i.provider === 'github' || i.provider === 'facebook');
+        
+        // User is OAuth if they have OAuth identity but NO email identity (meaning they never set a password)
+        if (hasOAuthIdentity && !hasEmailIdentity) {
+          setIsOAuthUser(true);
+          setOAuthHasPassword(false);
+        } else {
+          // User signed up with email/password OR has added a password to their OAuth account
+          setIsOAuthUser(false);
+          setOAuthHasPassword(true);
+        }
       }
     };
     if (user) {
