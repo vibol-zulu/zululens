@@ -44,7 +44,7 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({
   open,
   onOpenChange,
 }) => {
-  const { user, isAdmin } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
@@ -109,7 +109,7 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({
   }, [open, fetchNotifications]);
 
   const markAsRead = async (id: string) => {
-    if (!isAdmin) return;
+    if (!user) return;
     
     try {
       const { error } = await supabase
@@ -134,7 +134,7 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({
   };
 
   const deleteNotification = async (id: string) => {
-    if (!isAdmin) return;
+    if (!user) return;
     
     try {
       const { error } = await supabase
@@ -153,7 +153,7 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({
   };
 
   const clearAllNotifications = async () => {
-    if (!isAdmin) return;
+    if (!user) return;
     
     try {
       const { error } = await supabase
@@ -196,7 +196,7 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({
               </Badge>
             )}
           </DialogTitle>
-          {isAdmin && notifications.length > 0 && (
+          {notifications.length > 0 && (
             <Button 
               variant="outline" 
               size="sm" 
@@ -228,7 +228,7 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({
                     <TableHead>Message</TableHead>
                     <TableHead>From</TableHead>
                     <TableHead>Date</TableHead>
-                    {isAdmin && <TableHead className="text-right">Actions</TableHead>}
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -250,30 +250,28 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({
                       <TableCell className="text-sm text-muted-foreground">
                         {formatDate(notif.created_at)}
                       </TableCell>
-                      {isAdmin && (
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            {!notif.is_read && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => markAsRead(notif.id)}
-                                title="Mark as read"
-                              >
-                                <CheckCircle className="h-4 w-4 text-green-600" />
-                              </Button>
-                            )}
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          {!notif.is_read && (
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => deleteNotification(notif.id)}
-                              title="Delete"
+                              onClick={() => markAsRead(notif.id)}
+                              title="Mark as read"
                             >
-                              <Trash2 className="h-4 w-4 text-destructive" />
+                              <CheckCircle className="h-4 w-4 text-green-600" />
                             </Button>
-                          </div>
-                        </TableCell>
-                      )}
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => deleteNotification(notif.id)}
+                            title="Delete"
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
