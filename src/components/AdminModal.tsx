@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Database, MoreVertical, MessageCircle, BarChart3 } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Database, MoreVertical, MessageCircle, BarChart3, Trophy, Flame, TrendingUp } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -116,6 +116,19 @@ interface UserSessionSummary {
   last_active: string;
 }
 
+interface LeaderboardEntry {
+  rank: number;
+  user_id: string;
+  user_name: string;
+  user_email: string;
+  current_streak: number;
+  longest_streak: number;
+  total_suggestions: number;
+  approved_suggestions: number;
+  engagement_score: number;
+  last_activity_date: string | null;
+}
+
 interface AdminModalProps {
   open: boolean;
   onClose: () => void;
@@ -209,6 +222,10 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   const [analyticsData, setAnalyticsData] = useState<UserSessionSummary[]>([]);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [analyticsUserType, setAnalyticsUserType] = useState<'all' | 'tier1' | 'tier2' | 'contributor' | 'moderator'>('all');
+
+  // Leaderboard state
+  const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
 
   // Create contributor state
   const [showCreateUserDialog, setShowCreateUserDialog] = useState(false);
@@ -586,6 +603,67 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
     }
   };
 
+  // Fetch leaderboard data
+  const fetchLeaderboard = async () => {
+    if (!isAdmin) return;
+    
+    setLeaderboardLoading(true);
+    try {
+      // Fetch all contributor metrics
+      const { data: metricsData, error: metricsError } = await supabase
+        .from('contributor_metrics')
+        .select('*')
+        .order('engagement_score', { ascending: false });
+
+      if (metricsError) throw metricsError;
+
+      if (!metricsData || metricsData.length === 0) {
+        setLeaderboardData([]);
+        return;
+      }
+
+      // Fetch user profiles for names
+      const userIds = metricsData.map(m => m.user_id);
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, email, full_name')
+        .in('id', userIds);
+
+      // Only include users who have the contributor role
+      const { data: contributorRoles } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'contributor');
+
+      const contributorUserIds = new Set(contributorRoles?.map(r => r.user_id) || []);
+
+      const entries: LeaderboardEntry[] = metricsData
+        .filter(m => contributorUserIds.has(m.user_id))
+        .map((m, idx) => {
+          const profile = profiles?.find(p => p.id === m.user_id);
+          return {
+            rank: idx + 1,
+            user_id: m.user_id,
+            user_name: profile?.full_name || 'Unknown',
+            user_email: profile?.email || '',
+            current_streak: m.current_streak,
+            longest_streak: m.longest_streak,
+            total_suggestions: m.total_suggestions,
+            approved_suggestions: m.approved_suggestions,
+            engagement_score: m.engagement_score,
+            last_activity_date: m.last_activity_date
+          };
+        });
+
+      setLeaderboardData(entries);
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error);
+      toast({ title: 'Failed to load leaderboard', variant: 'destructive' });
+    } finally {
+      setLeaderboardLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (isAuthenticated && open) {
       fetchChannels();
@@ -605,6 +683,8 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
       fetchComments();
     } else if (isAuthenticated && open && activeTab === 'analytics' && isAdmin) {
       fetchAnalytics();
+    } else if (isAuthenticated && open && activeTab === 'leaderboard' && isAdmin) {
+      fetchLeaderboard();
     }
   }, [activeTab, isAuthenticated, open, isAdmin]);
 
@@ -911,6 +991,10 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                       <TabsTrigger value="analytics" className="gap-2">
                         <BarChart3 className="h-4 w-4" />
                         Analytics
+                      </TabsTrigger>
+                      <TabsTrigger value="leaderboard" className="gap-2">
+                        <Trophy className="h-4 w-4" />
+                        Leaderboard
                       </TabsTrigger>
                     </>
                   )}
@@ -1419,6 +1503,172 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                                 </TableRow>
                               );
                             })
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              </TabsContent>
+
+              {/* Leaderboard Tab */}
+              <TabsContent value="leaderboard" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
+                <div className="border-b p-4 flex items-center justify-between flex-wrap">
+                  <div>
+                    <h3 className="font-medium">Contributor Promotion Leaderboard</h3>
+                    <p className="text-sm text-muted-foreground">Top contributors ranked by engagement for potential promotion to Moderator</p>
+                  </div>
+                  <span className="text-sm text-muted-foreground">{leaderboardData.length} contributors</span>
+                </div>
+
+                {/* Summary Cards */}
+                <div className="p-4 grid grid-cols-2 md:grid-cols-4 gap-4 border-b">
+                  {(() => {
+                    const topContributor = leaderboardData[0];
+                    const avgScore = leaderboardData.length > 0 
+                      ? Math.round(leaderboardData.reduce((acc, d) => acc + d.engagement_score, 0) / leaderboardData.length)
+                      : 0;
+                    const totalApproved = leaderboardData.reduce((acc, d) => acc + d.approved_suggestions, 0);
+                    const activeContributors = leaderboardData.filter(d => {
+                      if (!d.last_activity_date) return false;
+                      const lastActive = new Date(d.last_activity_date);
+                      const weekAgo = new Date();
+                      weekAgo.setDate(weekAgo.getDate() - 7);
+                      return lastActive >= weekAgo;
+                    }).length;
+                    
+                    return (
+                      <>
+                        <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">Top Contributor</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-lg font-bold truncate">{topContributor?.user_name || '-'}</div>
+                            <div className="text-xs text-muted-foreground">Score: {topContributor?.engagement_score || 0}</div>
+                          </CardContent>
+                        </Card>
+                        <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">Avg. Engagement</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold">{avgScore}</div>
+                          </CardContent>
+                        </Card>
+                        <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">Total Approved</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold">{totalApproved}</div>
+                          </CardContent>
+                        </Card>
+                        <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">Active This Week</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold">{activeContributors}</div>
+                          </CardContent>
+                        </Card>
+                      </>
+                    );
+                  })()}
+                </div>
+
+                <div className="flex-1 overflow-auto p-4">
+                  <div className="rounded-md border overflow-x-auto">
+                    <Table className="min-w-[800px]">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[60px]">Rank</TableHead>
+                          <TableHead>Contributor</TableHead>
+                          <TableHead className="text-center">
+                            <div className="flex items-center justify-center gap-1">
+                              <Flame className="h-4 w-4 text-orange-500" />
+                              Streak
+                            </div>
+                          </TableHead>
+                          <TableHead className="text-center">Best Streak</TableHead>
+                          <TableHead className="text-center">Suggestions</TableHead>
+                          <TableHead className="text-center">Approved</TableHead>
+                          <TableHead className="text-center">
+                            <div className="flex items-center justify-center gap-1">
+                              <TrendingUp className="h-4 w-4 text-green-500" />
+                              Score
+                            </div>
+                          </TableHead>
+                          <TableHead>Last Active</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {leaderboardLoading ? (
+                          <TableRow>
+                            <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                              Loading...
+                            </TableCell>
+                          </TableRow>
+                        ) : leaderboardData.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                              No contributors found. Promote members to contributors to see them here.
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          leaderboardData.map((entry) => {
+                            const getRankDisplay = (rank: number) => {
+                              if (rank === 1) return <span className="text-yellow-500 font-bold">🥇</span>;
+                              if (rank === 2) return <span className="text-gray-400 font-bold">🥈</span>;
+                              if (rank === 3) return <span className="text-amber-600 font-bold">🥉</span>;
+                              return <span className="text-muted-foreground">#{rank}</span>;
+                            };
+                            
+                            const isEligibleForPromotion = entry.approved_suggestions >= 50;
+                            
+                            return (
+                              <TableRow key={entry.user_id} className={isEligibleForPromotion ? 'bg-green-50 dark:bg-green-950/20' : ''}>
+                                <TableCell className="font-medium text-center">
+                                  {getRankDisplay(entry.rank)}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex flex-col">
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-medium">{entry.user_name}</span>
+                                      {isEligibleForPromotion && (
+                                        <Badge variant="default" className="bg-green-600 text-xs">
+                                          Promotion Ready
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <span className="text-xs text-muted-foreground">{entry.user_email}</span>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="text-center">
+                                  <div className="flex items-center justify-center gap-1">
+                                    <Flame className="h-4 w-4 text-orange-500" />
+                                    <span className="font-medium">{entry.current_streak}</span>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="text-center">{entry.longest_streak}</TableCell>
+                                <TableCell className="text-center">{entry.total_suggestions}</TableCell>
+                                <TableCell className="text-center">
+                                  <span className="font-medium text-green-600">{entry.approved_suggestions}</span>
+                                  <span className="text-muted-foreground">/50</span>
+                                </TableCell>
+                                <TableCell className="text-center">
+                                  <Badge variant="secondary" className="font-bold">
+                                    {entry.engagement_score}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="text-sm text-muted-foreground">
+                                  {entry.last_activity_date 
+                                    ? new Date(entry.last_activity_date).toLocaleDateString()
+                                    : 'Never'
+                                  }
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })
                         )}
                       </TableBody>
                     </Table>

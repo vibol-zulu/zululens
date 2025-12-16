@@ -55,6 +55,51 @@ export type Database = {
           },
         ]
       }
+      contributor_metrics: {
+        Row: {
+          approved_suggestions: number
+          created_at: string
+          current_streak: number
+          engagement_score: number
+          id: string
+          last_activity_date: string | null
+          longest_streak: number
+          total_comments: number
+          total_interactions: number
+          total_suggestions: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          approved_suggestions?: number
+          created_at?: string
+          current_streak?: number
+          engagement_score?: number
+          id?: string
+          last_activity_date?: string | null
+          longest_streak?: number
+          total_comments?: number
+          total_interactions?: number
+          total_suggestions?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          approved_suggestions?: number
+          created_at?: string
+          current_streak?: number
+          engagement_score?: number
+          id?: string
+          last_activity_date?: string | null
+          longest_streak?: number
+          total_comments?: number
+          total_interactions?: number
+          total_suggestions?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       contributor_requests: {
         Row: {
           country: string

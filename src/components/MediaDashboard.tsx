@@ -12,6 +12,7 @@ import ContributorModal from '@/components/ContributorModal';
 import AdminModal from '@/components/AdminModal';
 import SignInModal from '@/components/SignInModal';
 import MemberDashboardModal from '@/components/MemberDashboardModal';
+import ContributorDashboardModal from '@/components/ContributorDashboardModal';
 import CommentsSection from '@/components/CommentsSection';
 import { Button } from '@/components/ui/button';
 import {
@@ -64,6 +65,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   const [showSignIn, setShowSignIn] = useState(false);
   const [showMission, setShowMission] = useState(false);
   const [showMemberDashboard, setShowMemberDashboard] = useState(false);
+  const [showContributorDashboard, setShowContributorDashboard] = useState(false);
   const [signInDefaultTab, setSignInDefaultTab] = useState<'signin' | 'signup'>('signin');
 
   // Auth state for contributor access
@@ -253,6 +255,11 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                   My Dashboard
                 </DropdownMenuItem>
               )}
+              {user && isContributor && !isAdmin && !isModerator && (
+                <DropdownMenuItem onClick={() => setShowContributorDashboard(true)}>
+                  My Dashboard
+                </DropdownMenuItem>
+              )}
               {user && (isAdmin || isModerator) && (
                 <DropdownMenuItem onClick={() => setShowAdmin(true)}>
                   Admin
@@ -404,6 +411,11 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
         open={showMemberDashboard}
         onOpenChange={setShowMemberDashboard}
         userName={user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Member'}
+      />
+      <ContributorDashboardModal
+        open={showContributorDashboard}
+        onOpenChange={setShowContributorDashboard}
+        userName={user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Contributor'}
       />
       
       {/* Comments Section - visible for all users */}
