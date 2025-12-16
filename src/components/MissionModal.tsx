@@ -1,32 +1,26 @@
 import React from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Rocket } from 'lucide-react';
-
 interface MissionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSignUpClick?: () => void;
   onContributorClick?: () => void;
 }
-
-const MissionModal: React.FC<MissionModalProps> = ({ 
-  open, 
+const MissionModal: React.FC<MissionModalProps> = ({
+  open,
   onOpenChange,
   onSignUpClick,
   onContributorClick
 }) => {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+  return <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold flex items-center gap-2">
-            <Rocket className="h-6 w-6" style={{ color: '#F8D4C8' }} />
+            <Rocket className="h-6 w-6" style={{
+            color: '#F8D4C8'
+          }} />
             Our Mission
           </DialogTitle>
         </DialogHeader>
@@ -66,7 +60,7 @@ const MissionModal: React.FC<MissionModalProps> = ({
               <div className="border rounded-lg p-4 bg-muted/30">
                 <h4 className="font-medium mb-1">Visitor</h4>
                 <p className="text-sm text-muted-foreground">
-                  Explore the visualization, view media data, and join our newsletter. Apply to become a contributor.
+                  Explore the visualization, view media data, and join our newsletter. Create an account to become a Member.      
                 </p>
               </div>
 
@@ -102,29 +96,22 @@ const MissionModal: React.FC<MissionModalProps> = ({
               Ready to contribute? Sign up and apply to become a contributor today.
             </p>
             <div className="flex justify-center gap-3">
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  onOpenChange(false);
-                  onSignUpClick?.();
-                }}
-              >
+              <Button variant="outline" onClick={() => {
+              onOpenChange(false);
+              onSignUpClick?.();
+            }}>
                 Sign Up
               </Button>
-              <Button 
-                onClick={() => {
-                  onOpenChange(false);
-                  onContributorClick?.();
-                }}
-              >
+              <Button onClick={() => {
+              onOpenChange(false);
+              onContributorClick?.();
+            }}>
                 Become a Contributor
               </Button>
             </div>
           </section>
         </div>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>;
 };
-
 export default MissionModal;
