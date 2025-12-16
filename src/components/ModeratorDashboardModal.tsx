@@ -2,14 +2,13 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Table,
   TableBody,
@@ -150,7 +149,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
         .from('user_channels')
         .select('*')
         .eq('status', 'pending')
-        .neq('author_id', user.id) // Exclude own submissions - moderators can't approve their own
+        .neq('author_id', user.id)
         .order('created_at', { ascending: false });
       
       if (selectedCountry !== 'all') {
@@ -189,6 +188,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
       setSuggestionsLoading(false);
     }
   }, [selectedCountry, toast, user]);
+
   const fetchMyChannels = useCallback(async () => {
     if (!user) return;
     setMyChannelsLoading(true);
@@ -363,7 +363,6 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
 
       if (error) throw error;
 
-      // Notify the author about the review decision
       if (channelToReview.author_id) {
         await supabase
           .from('notifications')
@@ -489,465 +488,418 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            Welcome, {userName}!
-            <Badge variant="secondary">Moderator</Badge>
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="max-w-5xl max-h-[90vh] p-0 overflow-hidden">
+        <div className="flex flex-col h-[80vh]">
+          {/* Header */}
+          <div className="border-b p-4 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-3">
+              <h2 className="font-semibold text-lg">{userName}'s Dashboard</h2>
+              <Badge variant="secondary">Moderator</Badge>
+            </div>
+          </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="suggestions" className="flex items-center gap-1 text-xs">
-              <Clock className="h-3 w-3" />
-              <span className="hidden sm:inline">Pending</span>
-              {stats.pending > 0 && (
-                <Badge variant="destructive" className="ml-1 h-4 px-1 text-xs">
-                  {stats.pending}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="my-suggestions" className="flex items-center gap-1 text-xs">
-              <FileText className="h-3 w-3" />
-              <span className="hidden sm:inline">My Suggestions</span>
-            </TabsTrigger>
-            <TabsTrigger value="all-channels" className="flex items-center gap-1 text-xs">
-              <Database className="h-3 w-3" />
-              <span className="hidden sm:inline">All Channels</span>
-            </TabsTrigger>
-            <TabsTrigger value="comments" className="flex items-center gap-1 text-xs">
-              <MessageSquare className="h-3 w-3" />
-              <span className="hidden sm:inline">Comments</span>
-            </TabsTrigger>
-            <TabsTrigger value="news" className="flex items-center gap-1 text-xs">
-              <Newspaper className="h-3 w-3" />
-              <span className="hidden sm:inline">News</span>
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Pending Suggestions Tab */}
-          <TabsContent value="suggestions" className="flex-1 overflow-hidden mt-4 space-y-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Filter by country:</span>
-              <Select value={selectedCountry} onValueChange={setSelectedCountry}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Countries</SelectItem>
-                  {COUNTRIES.map(c => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
+            <div className="border-b px-4 shrink-0">
+              <TabsList className="h-12">
+                <TabsTrigger value="suggestions" className="gap-2">
+                  <Clock className="h-4 w-4" />
+                  Pending
+                  {stats.pending > 0 && (
+                    <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                      {stats.pending}
+                    </Badge>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="my-suggestions" className="gap-2">
+                  <FileText className="h-4 w-4" />
+                  My Suggestions
+                </TabsTrigger>
+                <TabsTrigger value="all-channels" className="gap-2">
+                  <Database className="h-4 w-4" />
+                  All Channels
+                </TabsTrigger>
+                <TabsTrigger value="comments" className="gap-2">
+                  <MessageSquare className="h-4 w-4" />
+                  Comments
+                </TabsTrigger>
+                <TabsTrigger value="news" className="gap-2">
+                  <Newspaper className="h-4 w-4" />
+                  News
+                </TabsTrigger>
+              </TabsList>
             </div>
 
-            <ScrollArea className="flex-1 h-[350px]">
-              {suggestionsLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                </div>
-              ) : pendingChannels.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <CheckCircle className="h-12 w-12 mx-auto mb-4 text-green-500 opacity-50" />
-                  <p>No pending suggestions to review!</p>
-                </div>
-              ) : (
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Channel</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Country</TableHead>
-                        <TableHead>Audience (M)</TableHead>
-                        <TableHead>Submitted By</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {pendingChannels.map((channel) => (
-                        <TableRow key={channel.id}>
-                          <TableCell className="font-medium">{channel.name}</TableCell>
-                          <TableCell>
-                            <Badge variant={channel.category === 'corporate' ? 'default' : 'secondary'}>
-                              {channel.category}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>{channel.country}</TableCell>
-                          <TableCell>{channel.value_millions}</TableCell>
-                          <TableCell>
-                            <div className="flex flex-col">
-                              <span className="text-sm">{channel.author_name || 'Unknown'}</span>
-                              <span className="text-xs text-muted-foreground">{channel.author_email}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-muted-foreground text-sm">
-                            {formatDate(channel.created_at)}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-1">
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleFlagItem('channel', channel.id, channel.name)}
-                                title="Flag for admin review"
-                              >
-                                <Flag className="h-4 w-4 text-orange-500" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                                onClick={() => handleReviewChannel(channel, 'approve')}
-                              >
-                                <CheckCircle className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                onClick={() => handleReviewChannel(channel, 'reject')}
-                              >
-                                <XCircle className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </ScrollArea>
-          </TabsContent>
+            {/* Pending Suggestions Tab */}
+            <TabsContent value="suggestions" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
+              <div className="border-b p-4 flex items-center gap-2 shrink-0">
+                <Select value={selectedCountry} onValueChange={setSelectedCountry}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Filter by country" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Countries</SelectItem>
+                    {COUNTRIES.map(c => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-          {/* My Suggestions Tab */}
-          <TabsContent value="my-suggestions" className="flex-1 overflow-hidden mt-4 space-y-4">
-            <div className="grid grid-cols-3 gap-4">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Total Submitted</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.myTotal}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Approved</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-green-600">{stats.myApproved}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Approval Rate</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    {stats.myTotal > 0 ? Math.round((stats.myApproved / stats.myTotal) * 100) : 0}%
+              <div className="flex-1 overflow-auto p-4">
+                {suggestionsLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                   </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <ScrollArea className="flex-1 h-[300px]">
-              {myChannelsLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                </div>
-              ) : myChannels.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>You haven't submitted any channels yet.</p>
-                </div>
-              ) : (
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Channel</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Country</TableHead>
-                        <TableHead>Audience (M)</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Date</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {myChannels.map((channel) => (
-                        <TableRow key={channel.id}>
-                          <TableCell className="font-medium">{channel.name}</TableCell>
-                          <TableCell>
-                            <Badge variant={channel.category === 'corporate' ? 'default' : 'secondary'}>
-                              {channel.category}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>{channel.country}</TableCell>
-                          <TableCell>{channel.value_millions}</TableCell>
-                          <TableCell>{getStatusBadge(channel.status)}</TableCell>
-                          <TableCell className="text-muted-foreground text-sm">
-                            {formatDate(channel.created_at)}
-                          </TableCell>
+                ) : pendingChannels.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    No pending suggestions to review
+                  </div>
+                ) : (
+                  <div className="rounded-md border overflow-x-auto">
+                    <Table className="min-w-[700px]">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Channel</TableHead>
+                          <TableHead>Category</TableHead>
+                          <TableHead>Country</TableHead>
+                          <TableHead>Author</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead className="w-[140px]">Actions</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </ScrollArea>
-          </TabsContent>
+                      </TableHeader>
+                      <TableBody>
+                        {pendingChannels.map((channel) => (
+                          <TableRow key={channel.id}>
+                            <TableCell className="font-medium">{channel.name}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{channel.category}</Badge>
+                            </TableCell>
+                            <TableCell>{channel.country}</TableCell>
+                            <TableCell>
+                              <div className="flex flex-col">
+                                <span className="text-sm">{channel.author_name || 'Unknown'}</span>
+                                <span className="text-xs text-muted-foreground">{channel.author_email}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-muted-foreground">
+                              {formatDate(channel.created_at)}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
+                                  onClick={() => handleReviewChannel(channel, 'approve')}
+                                >
+                                  <CheckCircle className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  onClick={() => handleReviewChannel(channel, 'reject')}
+                                >
+                                  <XCircle className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0"
+                                  onClick={() => handleFlagItem('channel', channel.id, channel.name)}
+                                >
+                                  <Flag className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
 
-          {/* All Channels Tab */}
-          <TabsContent value="all-channels" className="flex-1 overflow-hidden mt-4 space-y-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Filter by country:</span>
-              <Select value={allChannelsCountry} onValueChange={setAllChannelsCountry}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Countries</SelectItem>
-                  {COUNTRIES.map(c => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <span className="text-sm text-muted-foreground ml-4">
-                Total: {allChannels.length} channels
-              </span>
-            </div>
+            {/* My Suggestions Tab */}
+            <TabsContent value="my-suggestions" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
+              <div className="flex-1 overflow-auto p-4">
+                {myChannelsLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                ) : myChannels.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    You haven't submitted any channels yet
+                  </div>
+                ) : (
+                  <div className="rounded-md border overflow-x-auto">
+                    <Table className="min-w-[600px]">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Channel</TableHead>
+                          <TableHead>Category</TableHead>
+                          <TableHead>Country</TableHead>
+                          <TableHead>Year</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Date</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {myChannels.map((channel) => (
+                          <TableRow key={channel.id}>
+                            <TableCell className="font-medium">{channel.name}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{channel.category}</Badge>
+                            </TableCell>
+                            <TableCell>{channel.country}</TableCell>
+                            <TableCell>{channel.year}</TableCell>
+                            <TableCell>{getStatusBadge(channel.status)}</TableCell>
+                            <TableCell className="text-muted-foreground">
+                              {formatDate(channel.created_at)}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
 
-            <ScrollArea className="flex-1 h-[350px]">
-              {allChannelsLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                </div>
-              ) : allChannels.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <Database className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No channels found.</p>
-                </div>
-              ) : (
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Channel</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Country</TableHead>
-                        <TableHead>Year</TableHead>
-                        <TableHead>Audience (M)</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Author</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {allChannels.map((channel) => (
-                        <TableRow key={channel.id}>
-                          <TableCell className="font-medium">{channel.name}</TableCell>
-                          <TableCell>
-                            <Badge variant={channel.category === 'corporate' ? 'default' : 'secondary'}>
-                              {channel.category}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>{channel.country}</TableCell>
-                          <TableCell>{channel.year}</TableCell>
-                          <TableCell>{channel.value_millions}</TableCell>
-                          <TableCell>{getStatusBadge(channel.status)}</TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
-                            {channel.author_name || (channel.author_id ? 'Unknown' : 'System')}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {channel.status === 'approved' && (
+            {/* All Channels Tab */}
+            <TabsContent value="all-channels" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
+              <div className="border-b p-4 flex items-center gap-2 shrink-0">
+                <Select value={allChannelsCountry} onValueChange={setAllChannelsCountry}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Filter by country" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Countries</SelectItem>
+                    {COUNTRIES.map(c => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex-1 overflow-auto p-4">
+                {allChannelsLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                ) : allChannels.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    No channels found
+                  </div>
+                ) : (
+                  <div className="rounded-md border overflow-x-auto">
+                    <Table className="min-w-[700px]">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Channel</TableHead>
+                          <TableHead>Category</TableHead>
+                          <TableHead>Country</TableHead>
+                          <TableHead>Year</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Author</TableHead>
+                          <TableHead className="w-[60px]">Flag</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {allChannels.map((channel) => (
+                          <TableRow key={channel.id}>
+                            <TableCell className="font-medium">{channel.name}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{channel.category}</Badge>
+                            </TableCell>
+                            <TableCell>{channel.country}</TableCell>
+                            <TableCell>{channel.year}</TableCell>
+                            <TableCell>{getStatusBadge(channel.status)}</TableCell>
+                            <TableCell>
+                              <span className="text-sm text-muted-foreground">
+                                {channel.author_name || channel.author_email || 'System'}
+                              </span>
+                            </TableCell>
+                            <TableCell>
                               <Button
-                                variant="ghost"
                                 size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0"
                                 onClick={() => handleFlagItem('channel', channel.id, channel.name)}
-                                title="Flag this channel for admin review"
                               >
-                                <Flag className="h-4 w-4 text-orange-500" />
+                                <Flag className="h-4 w-4" />
                               </Button>
-                            )}
-                          </TableCell>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+
+            {/* Comments Tab */}
+            <TabsContent value="comments" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
+              <div className="border-b p-4 flex items-center gap-2 shrink-0">
+                <Select value={commentsCountry} onValueChange={setCommentsCountry}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Filter by country" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Countries</SelectItem>
+                    {COUNTRIES.map(c => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex-1 overflow-auto p-4">
+                {commentsLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                ) : comments.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    No comments found
+                  </div>
+                ) : (
+                  <div className="rounded-md border overflow-x-auto">
+                    <Table className="min-w-[600px]">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>User</TableHead>
+                          <TableHead>Comment</TableHead>
+                          <TableHead>Country</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead className="w-[80px]">Actions</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </ScrollArea>
-          </TabsContent>
+                      </TableHeader>
+                      <TableBody>
+                        {comments.map((comment) => (
+                          <TableRow key={comment.id}>
+                            <TableCell>
+                              <div className="flex flex-col">
+                                <span className="text-sm font-medium">{comment.user_name || 'Unknown'}</span>
+                                <span className="text-xs text-muted-foreground">{comment.user_email}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-[200px] truncate">
+                              {comment.content}
+                            </TableCell>
+                            <TableCell>{comment.country}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">
+                                {comment.parent_id ? 'Reply' : 'Comment'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-muted-foreground">
+                              {formatDate(comment.created_at)}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  onClick={() => handleDeleteComment(comment)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0"
+                                  onClick={() => handleFlagItem('comment', comment.id, comment.content.slice(0, 30))}
+                                >
+                                  <Flag className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
 
-          {/* Comments Tab */}
-          <TabsContent value="comments" className="flex-1 overflow-hidden mt-4 space-y-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Filter by country:</span>
-              <Select value={commentsCountry} onValueChange={setCommentsCountry}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Countries</SelectItem>
-                  {COUNTRIES.map(c => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <span className="text-sm text-muted-foreground ml-4">
-                Total: {comments.length} comments
-              </span>
-            </div>
-
-            <ScrollArea className="flex-1 h-[350px]">
-              {commentsLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                </div>
-              ) : comments.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No comments found.</p>
-                </div>
-              ) : (
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>User</TableHead>
-                        <TableHead className="w-[300px]">Content</TableHead>
-                        <TableHead>Country</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {comments.map((comment) => (
-                        <TableRow key={comment.id}>
-                          <TableCell>
-                            <div className="flex flex-col">
-                              <span className="text-sm font-medium">{comment.user_name || 'Unknown'}</span>
-                              <span className="text-xs text-muted-foreground">{comment.user_email}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="max-w-[300px] truncate">
-                            {comment.content}
-                          </TableCell>
-                          <TableCell>{comment.country}</TableCell>
-                          <TableCell>
-                            <Badge variant={comment.parent_id ? 'outline' : 'secondary'}>
-                              {comment.parent_id ? 'Reply' : 'Comment'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-muted-foreground text-sm">
-                            {formatDate(comment.created_at)}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-1">
+            {/* News Tab */}
+            <TabsContent value="news" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
+              <div className="flex-1 overflow-auto p-4">
+                {newsLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                ) : news.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    No news updates published
+                  </div>
+                ) : (
+                  <div className="rounded-md border overflow-x-auto">
+                    <Table className="min-w-[500px]">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Title</TableHead>
+                          <TableHead>Category</TableHead>
+                          <TableHead>Published</TableHead>
+                          <TableHead className="w-[60px]">Flag</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {news.map((item) => (
+                          <TableRow key={item.id}>
+                            <TableCell className="font-medium">{item.title}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{item.category}</Badge>
+                            </TableCell>
+                            <TableCell className="text-muted-foreground">
+                              {formatDate(item.created_at)}
+                            </TableCell>
+                            <TableCell>
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                onClick={() => handleFlagItem('comment', comment.id, comment.content.slice(0, 30) + '...')}
-                                title="Flag for admin review"
+                                className="h-8 w-8 p-0"
+                                onClick={() => handleFlagItem('news', item.id, item.title)}
                               >
-                                <Flag className="h-4 w-4 text-orange-500" />
+                                <Flag className="h-4 w-4" />
                               </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                onClick={() => handleDeleteComment(comment)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </ScrollArea>
-          </TabsContent>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
 
-          {/* News Tab */}
-          <TabsContent value="news" className="flex-1 overflow-hidden mt-4">
-            <ScrollArea className="h-[400px]">
-              {newsLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                </div>
-              ) : news.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <Newspaper className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No news updates available.</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {news.map((item) => (
-                    <Card key={item.id}>
-                      <CardHeader className="pb-2">
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="text-lg">{item.title}</CardTitle>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline">{item.category}</Badge>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleFlagItem('news', item.id, item.title)}
-                              title="Flag for admin review"
-                            >
-                              <Flag className="h-4 w-4 text-orange-500" />
-                            </Button>
-                          </div>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{formatDate(item.created_at)}</p>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm">{item.content}</p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </ScrollArea>
-          </TabsContent>
-        </Tabs>
-
-        {/* Review Confirmation Dialog */}
+        {/* Review Dialog */}
         <AlertDialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>
-                {reviewAction === 'approve' ? 'Approve Channel' : 'Reject Channel'}
+                {reviewAction === 'approve' ? 'Approve' : 'Reject'} Channel
               </AlertDialogTitle>
               <AlertDialogDescription>
                 Are you sure you want to {reviewAction} "{channelToReview?.name}"?
                 {reviewAction === 'approve' 
-                  ? ' This channel will be added to the visualization.'
-                  : ' This channel will be removed from pending review.'}
+                  ? ' This will make it visible in the visualization.'
+                  : ' The submitter will be notified.'}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => {
-                setShowReviewDialog(false);
-                setChannelToReview(null);
-                setReviewAction(null);
-              }}>
-                Cancel
-              </AlertDialogCancel>
-              <AlertDialogAction 
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
                 onClick={confirmReview}
-                className={reviewAction === 'approve' 
-                  ? 'bg-green-600 hover:bg-green-700' 
-                  : 'bg-red-600 hover:bg-red-700'}
+                className={reviewAction === 'approve' ? 'bg-green-600 hover:bg-green-700' : ''}
               >
                 {reviewAction === 'approve' ? 'Approve' : 'Reject'}
               </AlertDialogAction>
@@ -955,7 +907,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
           </AlertDialogContent>
         </AlertDialog>
 
-        {/* Delete Comment Confirmation Dialog */}
+        {/* Delete Comment Dialog */}
         <AlertDialog open={showDeleteCommentDialog} onOpenChange={setShowDeleteCommentDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>
@@ -965,60 +917,40 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => {
-                setShowDeleteCommentDialog(false);
-                setCommentToDelete(null);
-              }}>
-                Cancel
-              </AlertDialogCancel>
-              <AlertDialogAction 
-                onClick={confirmDeleteComment}
-                className="bg-red-600 hover:bg-red-700"
-              >
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmDeleteComment} className="bg-destructive hover:bg-destructive/90">
                 Delete
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
 
-        {/* Flag Channel Dialog */}
+        {/* Flag Dialog */}
         <AlertDialog open={showFlagDialog} onOpenChange={setShowFlagDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle className="flex items-center gap-2">
-                <Flag className="h-5 w-5 text-orange-500" />
-                Flag {flagItem?.type === 'channel' ? 'Channel' : flagItem?.type === 'comment' ? 'Comment' : 'News Update'} for Review
-              </AlertDialogTitle>
+              <AlertDialogTitle>Flag for Admin Review</AlertDialogTitle>
               <AlertDialogDescription>
-                Flag "{flagItem?.name}" for admin review. Please provide a reason.
+                Provide a reason for flagging "{flagItem?.name}". An admin will be notified.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <div className="py-4">
-              <textarea
+              <Label htmlFor="flagReason">Reason</Label>
+              <Textarea
+                id="flagReason"
+                placeholder="Explain why this item needs admin attention..."
                 value={flagReason}
                 onChange={(e) => setFlagReason(e.target.value)}
-                placeholder="Describe why this content should be reviewed..."
-                className="w-full min-h-[100px] p-3 rounded-md border border-input bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+                className="mt-2"
               />
             </div>
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => {
-                setShowFlagDialog(false);
-                setFlagItem(null);
-                setFlagReason('');
-              }}>
-                Cancel
-              </AlertDialogCancel>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction 
                 onClick={confirmFlagItem}
                 disabled={!flagReason.trim() || flagging}
-                className="bg-orange-600 hover:bg-orange-700"
               >
-                {flagging ? (
-                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Flagging...</>
-                ) : (
-                  'Flag Content'
-                )}
+                {flagging ? 'Flagging...' : 'Submit Flag'}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
