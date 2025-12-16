@@ -80,9 +80,6 @@ const InsightsModal: React.FC<InsightsModalProps> = ({ open, onClose }) => {
           </div>
         </ScrollArea>
         
-        <div className="flex justify-center py-4">
-          <Button onClick={onClose}>Close Insights</Button>
-        </div>
       </DialogContent>
     </Dialog>
   );
