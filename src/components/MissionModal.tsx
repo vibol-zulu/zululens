@@ -60,7 +60,7 @@ const MissionModal: React.FC<MissionModalProps> = ({
               <div className="border rounded-lg p-4 bg-muted/30">
                 <h4 className="font-medium mb-1">Visitor</h4>
                 <p className="text-sm text-muted-foreground">
-                  Explore the visualization, view media data, and join our newsletter. Create an account to become a Member.      
+                  Explore the visualization. Create an account to become a Member.      
                 </p>
               </div>
 
