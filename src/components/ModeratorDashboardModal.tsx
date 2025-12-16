@@ -48,7 +48,8 @@ import {
   Database,
   FileText,
   Trash2,
-  Flag
+  Flag,
+  Pencil
 } from 'lucide-react';
 
 interface ChannelEntry {
@@ -127,6 +128,16 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
   // News state
   const [news, setNews] = useState<NewsEntry[]>([]);
   const [newsLoading, setNewsLoading] = useState(false);
+  const [editingNews, setEditingNews] = useState<NewsEntry | null>(null);
+  const [showEditNewsDialog, setShowEditNewsDialog] = useState(false);
+  const [newsToDelete, setNewsToDelete] = useState<NewsEntry | null>(null);
+  const [showDeleteNewsDialog, setShowDeleteNewsDialog] = useState(false);
+  const [newsFormData, setNewsFormData] = useState({
+    title: '',
+    content: '',
+    category: 'update',
+    is_published: true
+  });
 
   // Flag state
   const [flagItem, setFlagItem] = useState<{ type: 'channel' | 'comment' | 'news'; id: string; name: string } | null>(null);
@@ -462,6 +473,74 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
       toast({ title: 'Failed to flag item', variant: 'destructive' });
     } finally {
       setFlagging(false);
+    }
+  };
+
+  // News edit/delete handlers
+  const handleEditNews = (item: NewsEntry) => {
+    setEditingNews(item);
+    setNewsFormData({
+      title: item.title,
+      content: item.content,
+      category: item.category,
+      is_published: item.is_published
+    });
+    setShowEditNewsDialog(true);
+  };
+
+  const saveNewsEdit = async () => {
+    if (!editingNews || !newsFormData.title || !newsFormData.content) {
+      toast({ title: 'Title and content are required', variant: 'destructive' });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('news_updates')
+        .update({
+          title: newsFormData.title,
+          content: newsFormData.content,
+          category: newsFormData.category,
+          is_published: newsFormData.is_published,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', editingNews.id);
+
+      if (error) throw error;
+
+      toast({ title: 'News updated successfully' });
+      setShowEditNewsDialog(false);
+      setEditingNews(null);
+      fetchNews();
+    } catch (error) {
+      console.error('Error updating news:', error);
+      toast({ title: 'Failed to update news', variant: 'destructive' });
+    }
+  };
+
+  const handleDeleteNews = (item: NewsEntry) => {
+    setNewsToDelete(item);
+    setShowDeleteNewsDialog(true);
+  };
+
+  const confirmDeleteNews = async () => {
+    if (!newsToDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from('news_updates')
+        .delete()
+        .eq('id', newsToDelete.id);
+
+      if (error) throw error;
+
+      toast({ title: 'News deleted' });
+      setShowDeleteNewsDialog(false);
+      setNewsToDelete(null);
+      fetchNews();
+    } catch (error) {
+      console.error('Error deleting news:', error);
+      toast({ title: 'Failed to delete news', variant: 'destructive' });
     }
   };
 
@@ -846,8 +925,9 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                         <TableRow>
                           <TableHead>Title</TableHead>
                           <TableHead>Category</TableHead>
+                          <TableHead>Status</TableHead>
                           <TableHead>Published</TableHead>
-                          <TableHead className="w-[60px]">Flag</TableHead>
+                          <TableHead className="w-[100px]">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -857,18 +937,41 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                             <TableCell>
                               <Badge variant="outline">{item.category}</Badge>
                             </TableCell>
+                            <TableCell>
+                              <Badge variant={item.is_published ? 'default' : 'secondary'}>
+                                {item.is_published ? 'Published' : 'Draft'}
+                              </Badge>
+                            </TableCell>
                             <TableCell className="text-muted-foreground">
                               {formatDate(item.created_at)}
                             </TableCell>
                             <TableCell>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-8 w-8 p-0"
-                                onClick={() => handleFlagItem('news', item.id, item.title)}
-                              >
-                                <Flag className="h-4 w-4" />
-                              </Button>
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0"
+                                  onClick={() => handleEditNews(item)}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  onClick={() => handleDeleteNews(item)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0"
+                                  onClick={() => handleFlagItem('news', item.id, item.title)}
+                                >
+                                  <Flag className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -951,6 +1054,87 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                 disabled={!flagReason.trim() || flagging}
               >
                 {flagging ? 'Flagging...' : 'Submit Flag'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Edit News Dialog */}
+        <Dialog open={showEditNewsDialog} onOpenChange={setShowEditNewsDialog}>
+          <DialogContent className="max-w-md">
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Edit News</h3>
+              <div className="space-y-2">
+                <Label htmlFor="newsTitle">Title</Label>
+                <Input
+                  id="newsTitle"
+                  value={newsFormData.title}
+                  onChange={(e) => setNewsFormData({ ...newsFormData, title: e.target.value })}
+                  placeholder="News title"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="newsContent">Content</Label>
+                <Textarea
+                  id="newsContent"
+                  value={newsFormData.content}
+                  onChange={(e) => setNewsFormData({ ...newsFormData, content: e.target.value })}
+                  placeholder="News content..."
+                  rows={4}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="newsCategory">Category</Label>
+                <Select
+                  value={newsFormData.category}
+                  onValueChange={(v) => setNewsFormData({ ...newsFormData, category: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="update">Update</SelectItem>
+                    <SelectItem value="feature">Feature</SelectItem>
+                    <SelectItem value="announcement">Announcement</SelectItem>
+                    <SelectItem value="milestone">Milestone</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="newsPublished"
+                  checked={newsFormData.is_published}
+                  onChange={(e) => setNewsFormData({ ...newsFormData, is_published: e.target.checked })}
+                  className="rounded"
+                />
+                <Label htmlFor="newsPublished">Published</Label>
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setShowEditNewsDialog(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={saveNewsEdit}>
+                  Save Changes
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete News Dialog */}
+        <AlertDialog open={showDeleteNewsDialog} onOpenChange={setShowDeleteNewsDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete News</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete "{newsToDelete?.title}"? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmDeleteNews} className="bg-destructive hover:bg-destructive/90">
+                Delete
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
