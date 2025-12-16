@@ -317,20 +317,20 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
             <div className={`flex flex-col h-full ${isMobile ? 'w-full' : 'flex-1 border-r border-border'}`}>
               {!isAuthenticated ? (
                 /* Sign-up gate for Tier 1 users */
-                <div className="p-6 pt-8 pb-16 text-center flex items-start justify-center flex-1 overflow-y-auto">
-                  <div className="max-w-md mx-auto">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                      <UserPlus className="h-6 w-6 text-primary" />
-                    </div>
-                    <h3 className="text-lg font-semibold mb-2">Join the Conversation</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Create a free account to share your thoughts, reply to others, and engage with the community discussing the media landscape.
-                    </p>
-                    <Button onClick={onSignUpClick} className="gap-2">
-                      <UserPlus className="h-4 w-4" />
-                      Create Account to Comment
-                    </Button>
+                <div className="flex items-center justify-center gap-6 p-4 flex-1 overflow-y-auto">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <UserPlus className="h-5 w-5 text-primary" />
                   </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base font-semibold">Join the Conversation</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Create a free account to share your thoughts and engage with the community.
+                    </p>
+                  </div>
+                  <Button onClick={onSignUpClick} className="gap-2 shrink-0">
+                    <UserPlus className="h-4 w-4" />
+                    Create Account
+                  </Button>
                 </div>
               ) : (
                 <>
