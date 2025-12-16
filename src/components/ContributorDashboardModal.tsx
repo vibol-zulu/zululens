@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/table';
 import { useContributorMetrics, LeaderboardEntry } from '@/hooks/useContributorMetrics';
 import { useMySubmissions } from '@/hooks/useMySubmissions';
-import { Flame, Trophy, Target, TrendingUp, Medal, Clock, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { Flame, Trophy, Target, TrendingUp, Clock, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 
 interface ContributorDashboardModalProps {
   open: boolean;
@@ -63,11 +63,8 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
     });
   };
 
-  const getRankBadge = (rank: number) => {
-    if (rank === 1) return <Medal className="h-5 w-5 text-yellow-500" />;
-    if (rank === 2) return <Medal className="h-5 w-5 text-gray-400" />;
-    if (rank === 3) return <Medal className="h-5 w-5 text-amber-600" />;
-    return <span className="text-sm font-medium text-muted-foreground">#{rank}</span>;
+  const getRankDisplay = (rank: number) => {
+    return <span className="text-sm font-semibold">#{rank}</span>;
   };
 
   const loading = metricsLoading || submissionsLoading;
@@ -280,7 +277,7 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
                           >
                             <TableCell className="font-medium">
                               <div className="flex items-center justify-center">
-                                {getRankBadge(entry.rank)}
+                                {getRankDisplay(entry.rank)}
                               </div>
                             </TableCell>
                             <TableCell>
