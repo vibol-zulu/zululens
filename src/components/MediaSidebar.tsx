@@ -212,6 +212,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   // Determine header colors - corporate gets teal bg with peach text, independent gets peach bg with teal text
   const headerBgColor = category === 'corporate' ? COLORS.corporate : COLORS.independent;
   const headerTextColor = category === 'corporate' ? COLORS.independent : COLORS.corporate;
+  // Button text uses the same color as background (corporate = green, independent = peach)
+  const buttonTextColor = headerBgColor;
 
   if (isMobile) {
     return (
@@ -231,7 +233,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               onClick={() => onToggleAll(category)}
               disabled={sorted.length === 0}
               className="flex-1 text-[10px] px-1.5 py-0.5 rounded bg-background/80 hover:bg-background/95 transition-colors disabled:opacity-50"
-              style={{ color: headerTextColor }}
+              style={{ color: buttonTextColor }}
             >
               {allSelected && sorted.length > 0 ? 'Deselect' : 'Select All'}
             </button>
@@ -242,7 +244,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     onClick={handleAddClick}
                     className="px-1.5 py-0.5 rounded bg-background/80 hover:bg-background/95 transition-colors"
                   >
-                    <Plus className="h-3 w-3" style={{ color: headerTextColor }} />
+                    <Plus className="h-3 w-3" style={{ color: buttonTextColor }} />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -351,7 +353,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             onClick={() => onToggleAll(category)}
             disabled={sorted.length === 0}
             className="flex-1 text-xs px-2 py-1 rounded bg-background/80 hover:bg-background/95 transition-colors disabled:opacity-50"
-            style={{ color: headerTextColor }}
+            style={{ color: buttonTextColor }}
           >
             {allSelected && sorted.length > 0 ? 'Deselect All' : 'Select All'}
           </button>
@@ -362,7 +364,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   onClick={handleAddClick}
                   className="px-2 py-1 rounded bg-background/80 hover:bg-background/95 transition-colors"
                 >
-                  <Plus className="h-3.5 w-3.5" style={{ color: headerTextColor }} />
+                  <Plus className="h-3.5 w-3.5" style={{ color: buttonTextColor }} />
                 </button>
               </TooltipTrigger>
               <TooltipContent>
