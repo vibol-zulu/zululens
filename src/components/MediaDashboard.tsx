@@ -393,7 +393,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
 
         {/* Mobile/Tablet Sidebars */}
         {useStackedLayout && (
-          <div className="flex-1 flex w-full overflow-hidden z-10 bg-card dark:[background:var(--background-gradient)]">
+          <div className="flex-1 flex w-full overflow-hidden z-10 bg-card">
             <Sidebar 
               category="corporate" 
               brands={mergedData.brands.filter(b => b.category === 'corporate')}
