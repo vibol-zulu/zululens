@@ -22,8 +22,15 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
   onOpenChange,
   userName
 }) => {
-  const { submissions, stats, loading } = useMySubmissions();
+  const { submissions, stats, loading, refetch } = useMySubmissions();
   const progressPercent = (stats.progressToContributor / 20) * 100;
+
+  // Refetch when modal opens
+  React.useEffect(() => {
+    if (open) {
+      refetch();
+    }
+  }, [open, refetch]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
