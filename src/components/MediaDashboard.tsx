@@ -363,6 +363,10 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               onChannelAdded={refetchUserChannels}
               visitorName={visitorName}
               visitorEmail={visitorEmail}
+              onSignUpClick={() => {
+                setSignInDefaultTab('signup');
+                setShowSignIn(true);
+              }}
             />
             
             <Sidebar 
@@ -379,6 +383,10 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               onChannelAdded={refetchUserChannels}
               visitorName={visitorName}
               visitorEmail={visitorEmail}
+              onSignUpClick={() => {
+                setSignInDefaultTab('signup');
+                setShowSignIn(true);
+              }}
             />
           </>
         )}
@@ -406,7 +414,12 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
         defaultEmail={visitorEmail}
         country={country}
         customTitle={`No data for ${country} yet`}
-        customMessage={`We don't have media landscape data for ${country}. Help us build it! Share your knowledge of local media outlets and become a contributor.`}
+        customMessage={`We don't have media landscape data for ${country} yet. Create a free account to become a Member and help us build this dataset!`}
+        isAuthenticated={!!user}
+        onSignUpClick={() => {
+          setSignInDefaultTab('signup');
+          setShowSignIn(true);
+        }}
       />
       <AdminModal open={showAdmin} onClose={() => setShowAdmin(false)} />
       <SignInModal 
