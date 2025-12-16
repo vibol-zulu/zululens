@@ -23,17 +23,6 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
         </DialogHeader>
 
         <div className="space-y-5 py-2">
-          {/* How to Use */}
-          <section>
-            <h3 className="font-semibold text-sm mb-2 text-foreground">How to Use</h3>
-            <ul className="text-sm text-muted-foreground space-y-1.5">
-              <li>• Toggle between <strong>2000</strong> and <strong>2025</strong> to see how media has evolved</li>
-              <li>• Click on circles to explore individual media outlets</li>
-              <li>• Use sidebars to filter corporate and independent channels</li>
-              <li>• Switch between <strong>Microscope</strong> and <strong>Spectrum</strong> views</li>
-            </ul>
-          </section>
-
           {/* Mission */}
           <section>
             <h3 className="font-semibold text-sm mb-2 text-foreground">Our Mission</h3>
