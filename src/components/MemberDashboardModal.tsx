@@ -32,14 +32,29 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
     }
   }, [open, refetch]);
 
-  const getStatusIcon = (status: string) => {
+  const getStatusDisplay = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Clock className="w-4 h-4 text-amber-500" />;
+        return (
+          <span className="flex items-center gap-1 text-xs text-amber-500">
+            <Clock className="w-3.5 h-3.5" />
+            Pending
+          </span>
+        );
       case 'approved':
-        return <CheckCircle className="w-4 h-4 text-emerald-500" />;
+        return (
+          <span className="flex items-center gap-1 text-xs text-emerald-500">
+            <CheckCircle className="w-3.5 h-3.5" />
+            Approved
+          </span>
+        );
       case 'rejected':
-        return <XCircle className="w-4 h-4 text-rose-500" />;
+        return (
+          <span className="flex items-center gap-1 text-xs text-rose-500">
+            <XCircle className="w-3.5 h-3.5" />
+            Rejected
+          </span>
+        );
       default:
         return null;
     }
@@ -125,7 +140,7 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
                       key={submission.id} 
                       className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors"
                     >
-                      {getStatusIcon(submission.status)}
+                      {getStatusDisplay(submission.status)}
                       <div className="flex-1 min-w-0">
                         <div className="font-medium text-sm truncate">{submission.name}</div>
                         <div className="text-xs text-muted-foreground">
