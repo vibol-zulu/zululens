@@ -70,8 +70,11 @@ const SignUpGate: React.FC<SignUpGateProps> = ({
           </div>
 
           {/* Headline */}
-          <h1 className="text-3xl md:text-4xl text-white leading-tight mb-6 lg:text-4xl font-medium font-sans">Explore how media has
-transformed over 25 years</h1>
+          <h1 className="text-3xl md:text-4xl text-white leading-tight mb-6 lg:text-4xl font-medium font-sans">Zulu Digital
+Microscope:
+US media 2000 - 2025    
+
+ </h1>
 
           {/* Description */}
           <p className="text-white/70 text-base leading-relaxed mb-8 max-w-lg md:text-sm">Sign up to our newsletter to unlock the interactive infographic.  We respect your privacy. No spam, only interesting ideas.</p>
