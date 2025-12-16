@@ -34,6 +34,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -49,7 +56,8 @@ import {
   FileText,
   Trash2,
   Flag,
-  Pencil
+  Pencil,
+  ChevronDown
 } from 'lucide-react';
 
 interface ChannelEntry {
@@ -151,6 +159,195 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
     myTotal: 0,
     myApproved: 0
   });
+
+  // Selection state for bulk actions
+  const [selectedPending, setSelectedPending] = useState<Set<string>>(new Set());
+  const [selectedComments, setSelectedComments] = useState<Set<string>>(new Set());
+  const [selectedNews, setSelectedNews] = useState<Set<string>>(new Set());
+  const [bulkActionLoading, setBulkActionLoading] = useState(false);
+
+  const toggleSelectPending = (id: string) => {
+    setSelectedPending(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAllPending = () => {
+    if (selectedPending.size === pendingChannels.length) {
+      setSelectedPending(new Set());
+    } else {
+      setSelectedPending(new Set(pendingChannels.map(c => c.id)));
+    }
+  };
+
+  const toggleSelectComment = (id: string) => {
+    setSelectedComments(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAllComments = () => {
+    if (selectedComments.size === comments.length) {
+      setSelectedComments(new Set());
+    } else {
+      setSelectedComments(new Set(comments.map(c => c.id)));
+    }
+  };
+
+  const toggleSelectNews = (id: string) => {
+    setSelectedNews(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAllNews = () => {
+    if (selectedNews.size === news.length) {
+      setSelectedNews(new Set());
+    } else {
+      setSelectedNews(new Set(news.map(n => n.id)));
+    }
+  };
+
+  const handleBulkApprovePending = async () => {
+    if (selectedPending.size === 0 || !user) return;
+    setBulkActionLoading(true);
+    try {
+      const channelsToApprove = pendingChannels.filter(c => selectedPending.has(c.id));
+      
+      const { error } = await supabase
+        .from('user_channels')
+        .update({
+          status: 'approved',
+          approved_by: user.id,
+          approved_at: new Date().toISOString()
+        })
+        .in('id', Array.from(selectedPending));
+
+      if (error) throw error;
+
+      // Send notifications to authors
+      const notifications = channelsToApprove
+        .filter(c => c.author_id)
+        .map(c => ({
+          title: 'Submission Approved!',
+          message: `Your channel suggestion "${c.name}" has been approved and is now live in the visualization.`,
+          type: 'submission_review',
+          target_role: 'member',
+          target_user_id: c.author_id,
+          channel_id: c.id,
+          created_by: user.id
+        }));
+
+      if (notifications.length > 0) {
+        await supabase.from('notifications').insert(notifications);
+      }
+
+      toast({ title: `${selectedPending.size} channels approved` });
+      setSelectedPending(new Set());
+      fetchPendingChannels();
+    } catch (error) {
+      console.error('Bulk approve error:', error);
+      toast({ title: 'Failed to approve channels', variant: 'destructive' });
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkRejectPending = async () => {
+    if (selectedPending.size === 0 || !user) return;
+    setBulkActionLoading(true);
+    try {
+      const channelsToReject = pendingChannels.filter(c => selectedPending.has(c.id));
+      
+      const { error } = await supabase
+        .from('user_channels')
+        .update({
+          status: 'rejected'
+        })
+        .in('id', Array.from(selectedPending));
+
+      if (error) throw error;
+
+      // Send notifications to authors
+      const notifications = channelsToReject
+        .filter(c => c.author_id)
+        .map(c => ({
+          title: 'Submission Rejected',
+          message: `Your channel suggestion "${c.name}" was not approved. Please review our guidelines and try again.`,
+          type: 'submission_review',
+          target_role: 'member',
+          target_user_id: c.author_id,
+          channel_id: c.id,
+          created_by: user.id
+        }));
+
+      if (notifications.length > 0) {
+        await supabase.from('notifications').insert(notifications);
+      }
+
+      toast({ title: `${selectedPending.size} channels rejected` });
+      setSelectedPending(new Set());
+      fetchPendingChannels();
+    } catch (error) {
+      console.error('Bulk reject error:', error);
+      toast({ title: 'Failed to reject channels', variant: 'destructive' });
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkDeleteComments = async () => {
+    if (selectedComments.size === 0) return;
+    setBulkActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from('comments')
+        .delete()
+        .in('id', Array.from(selectedComments));
+
+      if (error) throw error;
+
+      toast({ title: `${selectedComments.size} comments deleted` });
+      setSelectedComments(new Set());
+      fetchComments();
+    } catch (error) {
+      console.error('Bulk delete comments error:', error);
+      toast({ title: 'Failed to delete comments', variant: 'destructive' });
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkDeleteNews = async () => {
+    if (selectedNews.size === 0) return;
+    setBulkActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from('news_updates')
+        .delete()
+        .in('id', Array.from(selectedNews));
+
+      if (error) throw error;
+
+      toast({ title: `${selectedNews.size} news items deleted` });
+      setSelectedNews(new Set());
+      fetchNews();
+    } catch (error) {
+      console.error('Bulk delete news error:', error);
+      toast({ title: 'Failed to delete news', variant: 'destructive' });
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
 
   const fetchPendingChannels = useCallback(async () => {
     if (!user) return;
@@ -610,7 +807,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
 
             {/* Pending Suggestions Tab */}
             <TabsContent value="suggestions" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
-              <div className="border-b p-4 flex items-center gap-2 shrink-0">
+              <div className="border-b p-4 flex items-center gap-2 shrink-0 flex-wrap">
                 <Select value={selectedCountry} onValueChange={setSelectedCountry}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Filter by country" />
@@ -622,6 +819,27 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                     ))}
                   </SelectContent>
                 </Select>
+                
+                {selectedPending.size > 0 && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" disabled={bulkActionLoading}>
+                        Bulk Actions ({selectedPending.size})
+                        <ChevronDown className="h-4 w-4 ml-1" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={handleBulkApprovePending}>
+                        <Check className="h-4 w-4 mr-2 text-green-600" />
+                        Approve Selected
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleBulkRejectPending}>
+                        <XCircle className="h-4 w-4 mr-2 text-destructive" />
+                        Reject Selected
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
 
               <div className="flex-1 overflow-auto p-4">
@@ -635,9 +853,15 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                   </div>
                 ) : (
                   <div className="rounded-md border overflow-x-auto">
-                    <Table className="min-w-[800px]">
+                    <Table className="min-w-[900px]">
                       <TableHeader>
                         <TableRow>
+                          <TableHead className="w-[40px]">
+                            <Checkbox
+                              checked={selectedPending.size === pendingChannels.length && pendingChannels.length > 0}
+                              onCheckedChange={toggleSelectAllPending}
+                            />
+                          </TableHead>
                           <TableHead>Channel</TableHead>
                           <TableHead>Category</TableHead>
                           <TableHead>Country</TableHead>
@@ -651,6 +875,12 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                       <TableBody>
                         {pendingChannels.map((channel) => (
                           <TableRow key={channel.id}>
+                            <TableCell>
+                              <Checkbox
+                                checked={selectedPending.has(channel.id)}
+                                onCheckedChange={() => toggleSelectPending(channel.id)}
+                              />
+                            </TableCell>
                             <TableCell className="font-medium">{channel.name}</TableCell>
                             <TableCell className="capitalize">{channel.category}</TableCell>
                             <TableCell>{channel.country}</TableCell>
@@ -819,7 +1049,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
 
             {/* Comments Tab */}
             <TabsContent value="comments" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
-              <div className="border-b p-4 flex items-center gap-2 shrink-0">
+              <div className="border-b p-4 flex items-center gap-2 shrink-0 flex-wrap">
                 <Select value={commentsCountry} onValueChange={setCommentsCountry}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Filter by country" />
@@ -831,6 +1061,23 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                     ))}
                   </SelectContent>
                 </Select>
+                
+                {selectedComments.size > 0 && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" disabled={bulkActionLoading}>
+                        Bulk Actions ({selectedComments.size})
+                        <ChevronDown className="h-4 w-4 ml-1" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={handleBulkDeleteComments}>
+                        <Trash2 className="h-4 w-4 mr-2 text-destructive" />
+                        Delete Selected
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
 
               <div className="flex-1 overflow-auto p-4">
@@ -844,9 +1091,15 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                   </div>
                 ) : (
                   <div className="rounded-md border overflow-x-auto">
-                    <Table className="min-w-[600px]">
+                    <Table className="min-w-[700px]">
                       <TableHeader>
                         <TableRow>
+                          <TableHead className="w-[40px]">
+                            <Checkbox
+                              checked={selectedComments.size === comments.length && comments.length > 0}
+                              onCheckedChange={toggleSelectAllComments}
+                            />
+                          </TableHead>
                           <TableHead>User</TableHead>
                           <TableHead>Comment</TableHead>
                           <TableHead>Country</TableHead>
@@ -858,6 +1111,12 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                       <TableBody>
                         {comments.map((comment) => (
                           <TableRow key={comment.id}>
+                            <TableCell>
+                              <Checkbox
+                                checked={selectedComments.has(comment.id)}
+                                onCheckedChange={() => toggleSelectComment(comment.id)}
+                              />
+                            </TableCell>
                             <TableCell>
                               <div className="flex flex-col">
                                 <span className="text-sm font-medium">{comment.user_name || 'Unknown'}</span>
@@ -907,6 +1166,25 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
 
             {/* News Tab */}
             <TabsContent value="news" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
+              <div className="border-b p-4 flex items-center gap-2 shrink-0 flex-wrap">
+                {selectedNews.size > 0 && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" disabled={bulkActionLoading}>
+                        Bulk Actions ({selectedNews.size})
+                        <ChevronDown className="h-4 w-4 ml-1" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={handleBulkDeleteNews}>
+                        <Trash2 className="h-4 w-4 mr-2 text-destructive" />
+                        Delete Selected
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </div>
+
               <div className="flex-1 overflow-auto p-4">
                 {newsLoading ? (
                   <div className="flex items-center justify-center py-12">
@@ -918,9 +1196,15 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                   </div>
                 ) : (
                   <div className="rounded-md border overflow-x-auto">
-                    <Table className="min-w-[500px]">
+                    <Table className="min-w-[600px]">
                       <TableHeader>
                         <TableRow>
+                          <TableHead className="w-[40px]">
+                            <Checkbox
+                              checked={selectedNews.size === news.length && news.length > 0}
+                              onCheckedChange={toggleSelectAllNews}
+                            />
+                          </TableHead>
                           <TableHead>Title</TableHead>
                           <TableHead>Category</TableHead>
                           <TableHead>Status</TableHead>
@@ -931,6 +1215,12 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                       <TableBody>
                         {news.map((item) => (
                           <TableRow key={item.id}>
+                            <TableCell>
+                              <Checkbox
+                                checked={selectedNews.has(item.id)}
+                                onCheckedChange={() => toggleSelectNews(item.id)}
+                              />
+                            </TableCell>
                             <TableCell className="font-medium">{item.title}</TableCell>
                             <TableCell>
                               <Badge variant="outline">{item.category}</Badge>
