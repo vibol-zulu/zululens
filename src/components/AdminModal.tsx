@@ -725,7 +725,13 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   };
 
   // User management functions
-  const updateUserRole = async (userId: string, newRole: 'admin' | 'contributor' | null) => {
+  const updateUserRole = async (userId: string, newRole: 'admin' | 'contributor' | 'moderator' | null) => {
+    const roleDisplayNames: Record<string, string> = {
+      admin: 'Admin',
+      moderator: 'Moderator', 
+      contributor: 'Contributor',
+    };
+    
     try {
       // First, delete existing role
       await supabase.from('user_roles').delete().eq('user_id', userId);
@@ -739,7 +745,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
         if (error) throw error;
       }
 
-      toast({ title: `User role updated to ${newRole || 'none'}` });
+      toast({ title: `User role updated to ${newRole ? roleDisplayNames[newRole] : 'Member'}` });
       fetchUsers();
     } catch (error) {
       console.error('Error updating role:', error);
@@ -1050,14 +1056,15 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                                 <TableCell>
                                   <Select 
                                     value={u.role || 'none'} 
-                                    onValueChange={(v) => updateUserRole(u.id, v === 'none' ? null : v as 'admin' | 'contributor')}
+                                    onValueChange={(v) => updateUserRole(u.id, v === 'none' ? null : v as 'admin' | 'contributor' | 'moderator')}
                                   >
-                                    <SelectTrigger className="w-[120px] h-8">
+                                    <SelectTrigger className="w-[130px] h-8">
                                       <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                      <SelectItem value="none">No role</SelectItem>
+                                      <SelectItem value="none">Member</SelectItem>
                                       <SelectItem value="contributor">Contributor</SelectItem>
+                                      <SelectItem value="moderator">Moderator</SelectItem>
                                       <SelectItem value="admin">Admin</SelectItem>
                                     </SelectContent>
                                   </Select>
