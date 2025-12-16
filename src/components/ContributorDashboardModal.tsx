@@ -34,14 +34,15 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
   userName
 }) => {
   const { metrics, leaderboard, userRank, loading: metricsLoading, fetchLeaderboard } = useContributorMetrics();
-  const { submissions, stats, loading: submissionsLoading } = useMySubmissions();
+  const { submissions, stats, loading: submissionsLoading, refetch: refetchSubmissions } = useMySubmissions();
   const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
     if (open) {
       fetchLeaderboard();
+      refetchSubmissions();
     }
-  }, [open, fetchLeaderboard]);
+  }, [open, fetchLeaderboard, refetchSubmissions]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
