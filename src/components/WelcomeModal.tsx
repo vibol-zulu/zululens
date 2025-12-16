@@ -27,9 +27,8 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
           <section>
             <h3 className="font-semibold text-sm mb-2 text-foreground">Our Mission</h3>
             <p className="text-sm text-muted-foreground">
-              We're building a community-driven visualization of the global media landscape. 
-              Together, we collect, verify, and present data on how media ownership and audiences 
-              have shifted over time.
+              We’re building a community-driven map of the global media landscape.
+Together, we collect, verify, and visualize data to understand how media ownership and audiences have shifted over time.
             </p>
           </section>
 
@@ -62,7 +61,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
                 <Shield className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
                 <div>
                   <p className="text-sm font-medium">Moderator</p>
-                  <p className="text-xs text-muted-foreground">Help review and approve contributions.</p>
+                  <p className="text-xs text-muted-foreground">Help maintain quality and integrity by reviewing, verifying, and approving contributions from the community.</p>
                 </div>
               </div>
             </div>
