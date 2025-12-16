@@ -853,7 +853,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                   </div>
                 ) : (
                   <div className="rounded-md border overflow-x-auto">
-                    <Table className="min-w-[900px]">
+                    <Table className="min-w-[900px] text-xs">
                       <TableHeader>
                         <TableRow>
                           <TableHead className="w-[40px]">
@@ -941,7 +941,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                   </div>
                 ) : (
                   <div className="rounded-md border overflow-x-auto">
-                    <Table className="min-w-[600px]">
+                    <Table className="min-w-[600px] text-xs">
                       <TableHeader>
                         <TableRow>
                           <TableHead>Channel</TableHead>
@@ -1001,7 +1001,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                   </div>
                 ) : (
                   <div className="rounded-md border overflow-x-auto">
-                    <Table className="min-w-[700px]">
+                    <Table className="min-w-[700px] text-xs">
                       <TableHeader>
                         <TableRow>
                           <TableHead>Channel</TableHead>
@@ -1091,7 +1091,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                   </div>
                 ) : (
                   <div className="rounded-md border overflow-x-auto">
-                    <Table className="min-w-[700px]">
+                    <Table className="min-w-[700px] text-xs">
                       <TableHeader>
                         <TableRow>
                           <TableHead className="w-[40px]">
@@ -1196,7 +1196,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                   </div>
                 ) : (
                   <div className="rounded-md border overflow-x-auto">
-                    <Table className="min-w-[600px]">
+                    <Table className="min-w-[600px] text-xs">
                       <TableHeader>
                         <TableRow>
                           <TableHead className="w-[40px]">

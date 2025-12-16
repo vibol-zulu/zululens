@@ -240,7 +240,7 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
                     </div>
                   ) : (
                     <div className="rounded-md border overflow-x-auto">
-                      <Table className="min-w-[500px]">
+                      <Table className="min-w-[500px] text-xs">
                         <TableHeader>
                           <TableRow>
                             <TableHead>Channel Name</TableHead>
@@ -278,7 +278,7 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
                     </div>
                   ) : (
                     <div className="rounded-md border overflow-x-auto">
-                      <Table className="min-w-[500px]">
+                      <Table className="min-w-[500px] text-xs">
                         <TableHeader>
                           <TableRow>
                             <TableHead className="w-[60px]">Rank</TableHead>
