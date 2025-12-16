@@ -90,7 +90,7 @@ const Index = () => {
     return (
       <>
         <Helmet>
-          <title>Media Dashboard | Zulu Digital Microscope</title>
+          <title>Zulu Digital Microscope</title>
           <meta name="description" content="Interactive visualization of US media landscape comparing corporate and independent media outlets from 2000 to 2025." />
         </Helmet>
         <MediaDashboard 
@@ -112,7 +112,7 @@ const Index = () => {
     return (
       <>
         <Helmet>
-          <title>Media Dashboard | Zulu Digital Microscope</title>
+          <title>Zulu Digital Microscope</title>
           <meta name="description" content="Interactive visualization of US media landscape comparing corporate and independent media outlets from 2000 to 2025." />
         </Helmet>
         <MediaDashboard 
