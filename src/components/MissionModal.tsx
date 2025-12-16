@@ -68,7 +68,11 @@ const MissionModal: React.FC<MissionModalProps> = ({
               <div className="border rounded-lg p-4 bg-muted/30">
                 <h4 className="font-medium mb-1">Member</h4>
                 <p className="text-sm text-muted-foreground">
-                  Create an account to suggest channels, join discussions, and engage with the community. Get 20 suggestions approved to become a Contributor!
+                  Suggest new channels, join discussions, and help improve the data.
+Earn Contributor status by getting 20 suggestions approved.
+
+
+
                 </p>
               </div>
 
