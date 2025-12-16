@@ -285,94 +285,96 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
 
       {/* Expanded Content */}
       {isExpanded && (
-        <div className="max-h-[50vh] overflow-hidden flex flex-col">
-          {!isAuthenticated ? (
-            /* Sign-up gate for Tier 1 users */
-            <div className="p-6 pt-8 pb-16 text-center flex items-start justify-center flex-1">
-              <div className="max-w-md mx-auto">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <UserPlus className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">Join the Conversation</h3>
-                <p className="text-muted-foreground mb-4">
-                  Create a free account to share your thoughts, reply to others, and engage with the community discussing the media landscape.
-                </p>
-                <Button onClick={onSignUpClick} className="gap-2">
-                  <UserPlus className="h-4 w-4" />
-                  Create Account to Comment
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <>
-              {/* Comments List */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                {loading ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    Loading comments...
+        <div className="max-h-[50vh] overflow-hidden flex justify-center">
+          <div className={`flex flex-col w-full ${isMobile ? '' : 'max-w-[calc(100vw-512px)]'}`}>
+            {!isAuthenticated ? (
+              /* Sign-up gate for Tier 1 users */
+              <div className="p-6 pt-8 pb-16 text-center flex items-start justify-center flex-1">
+                <div className="max-w-md mx-auto">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                    <UserPlus className="h-6 w-6 text-primary" />
                   </div>
-                ) : comments.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No comments yet. Be the first to share your thoughts!
-                  </div>
-                ) : (
-                  comments.map(comment => (
-                    <CommentItem
-                      key={comment.id}
-                      comment={comment}
-                      onReply={setReplyingTo}
-                      onEdit={handleEdit}
-                      onDelete={handleDelete}
-                      currentUserId={user.id}
-                      isAdmin={isAdmin}
-                      isModerator={isModerator}
-                    />
-                  ))
-                )}
-              </div>
-
-              {/* New Comment Input */}
-              <div className="border-t p-4 bg-background">
-                {replyingTo && (
-                  <div className="flex items-center gap-2 mb-2 text-sm text-muted-foreground">
-                    <Reply className="h-3 w-3" />
-                    <span>Replying to comment</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-5 w-5 p-0"
-                      onClick={() => setReplyingTo(null)}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                )}
-                <div className="flex gap-2">
-                  <Textarea
-                    placeholder="Write a comment..."
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    className="min-h-[60px] flex-1"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                        handleSubmit();
-                      }
-                    }}
-                  />
-                  <Button
-                    onClick={handleSubmit}
-                    disabled={!newComment.trim()}
-                    className="self-end"
-                  >
-                    <Send className="h-4 w-4" />
+                  <h3 className="text-lg font-semibold mb-2">Join the Conversation</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Create a free account to share your thoughts, reply to others, and engage with the community discussing the media landscape.
+                  </p>
+                  <Button onClick={onSignUpClick} className="gap-2">
+                    <UserPlus className="h-4 w-4" />
+                    Create Account to Comment
                   </Button>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Press Cmd/Ctrl + Enter to send
-                </p>
               </div>
-            </>
-          )}
+            ) : (
+              <>
+                {/* Comments List */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                  {loading ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      Loading comments...
+                    </div>
+                  ) : comments.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No comments yet. Be the first to share your thoughts!
+                    </div>
+                  ) : (
+                    comments.map(comment => (
+                      <CommentItem
+                        key={comment.id}
+                        comment={comment}
+                        onReply={setReplyingTo}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                        currentUserId={user.id}
+                        isAdmin={isAdmin}
+                        isModerator={isModerator}
+                      />
+                    ))
+                  )}
+                </div>
+
+                {/* New Comment Input */}
+                <div className="border-t p-4 bg-background">
+                  {replyingTo && (
+                    <div className="flex items-center gap-2 mb-2 text-sm text-muted-foreground">
+                      <Reply className="h-3 w-3" />
+                      <span>Replying to comment</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-5 w-5 p-0"
+                        onClick={() => setReplyingTo(null)}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <Textarea
+                      placeholder="Write a comment..."
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      className="min-h-[60px] flex-1"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                          handleSubmit();
+                        }
+                      }}
+                    />
+                    <Button
+                      onClick={handleSubmit}
+                      disabled={!newComment.trim()}
+                      className="self-end"
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Press Cmd/Ctrl + Enter to send
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       )}
     </div>
