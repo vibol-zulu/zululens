@@ -74,7 +74,7 @@ const MissionModal: React.FC<MissionModalProps> = ({
               <div className="border rounded-lg p-4 bg-muted/30">
                 <h4 className="font-medium mb-1">Member</h4>
                 <p className="text-sm text-muted-foreground">
-                  Create an account to join discussions, leave comments, and engage with the community. Apply to become a contributor.
+                  Create an account to suggest channels, join discussions, and engage with the community. Get 20 suggestions approved to become a Contributor!
                 </p>
               </div>
 
@@ -82,7 +82,7 @@ const MissionModal: React.FC<MissionModalProps> = ({
               <div className="border rounded-lg p-4 bg-muted/30">
                 <h4 className="font-medium mb-1">Contributor</h4>
                 <p className="text-sm text-muted-foreground">
-                  Approved contributors can add new media channels to the visualization, helping expand our dataset.
+                  Promoted after 20 approved suggestions. Contributors can add new media channels directly. Consistent contributors may be invited to become Moderators!
                 </p>
               </div>
 
