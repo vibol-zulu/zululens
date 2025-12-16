@@ -472,8 +472,8 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
           <DialogContent className="max-w-md">
             <div className="space-y-4">
               <h3 className="font-semibold">Edit Submission</h3>
-              <div className="space-y-3">
-                <div>
+              <div className="grid grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto pr-2">
+                <div className="col-span-2">
                   <Label>Channel Name</Label>
                   <Input
                     value={editFormData.name}
@@ -484,6 +484,7 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
                   <Label>Audience (Millions)</Label>
                   <Input
                     type="number"
+                    step="0.1"
                     value={editFormData.value_millions}
                     onChange={(e) => setEditFormData({ ...editFormData, value_millions: parseFloat(e.target.value) || 0 })}
                   />
@@ -503,10 +504,40 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
                   <Input
                     value={editFormData.platform}
                     onChange={(e) => setEditFormData({ ...editFormData, platform: e.target.value })}
+                    placeholder="e.g., TV, Digital, Print"
+                  />
+                </div>
+                <div>
+                  <Label>Content Type</Label>
+                  <Input
+                    value={editFormData.content_type}
+                    onChange={(e) => setEditFormData({ ...editFormData, content_type: e.target.value })}
+                    placeholder="e.g., News, Entertainment"
+                  />
+                </div>
+                <div>
+                  <Label>Political Lean</Label>
+                  <Select value={editFormData.political_lean} onValueChange={(v) => setEditFormData({ ...editFormData, political_lean: v })}>
+                    <SelectTrigger><SelectValue placeholder="Select lean" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="left">Left</SelectItem>
+                      <SelectItem value="center-left">Center-Left</SelectItem>
+                      <SelectItem value="center">Center</SelectItem>
+                      <SelectItem value="center-right">Center-Right</SelectItem>
+                      <SelectItem value="right">Right</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Start Date</Label>
+                  <Input
+                    value={editFormData.start_date}
+                    onChange={(e) => setEditFormData({ ...editFormData, start_date: e.target.value })}
+                    placeholder="e.g., 1980, 2010"
                   />
                 </div>
               </div>
-              <div className="flex justify-end gap-2">
+              <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={() => setShowEditDialog(false)}>Cancel</Button>
                 <Button onClick={saveEdit}>Save</Button>
               </div>
