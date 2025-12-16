@@ -79,7 +79,7 @@ const MissionModal: React.FC<MissionModalProps> = ({
               <div className="border rounded-lg p-4 bg-muted/30">
                 <h4 className="font-medium mb-1">Contributor</h4>
                 <p className="text-sm text-muted-foreground">
-                  Consistent contributors may be invited to become Moderators!
+                  Consistent contributors will be invited to become Moderators!
                 </p>
               </div>
 
