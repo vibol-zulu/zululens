@@ -139,19 +139,7 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
 
       if (error) throw error;
 
-      // If member submission (pending), create notification for admins/moderators
-      if (!canAutoApprove && channelData) {
-        await supabase
-          .from('notifications')
-          .insert({
-            title: 'New Channel Suggestion',
-            message: `A new ${category} channel "${formData.name.trim()}" has been suggested for ${country} (${year}) and needs review.`,
-            type: 'channel_suggestion',
-            target_role: 'moderator',
-            channel_id: channelData.id,
-            created_by: user?.id
-          });
-      }
+      // Pending submissions don't create notifications - moderators/admins see red dot on Dashboard instead
 
       if (canAutoApprove) {
         toast({
