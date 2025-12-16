@@ -1097,15 +1097,18 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
       if (error) throw error;
 
       // Send notification to the author
-      if (authorId) {
-        await supabase.from('notifications').insert({
+      if (authorId && user?.id) {
+        const { error: notifError } = await supabase.from('notifications').insert({
           title: `Submission ${status === 'approved' ? 'Approved' : 'Rejected'}`,
           message: `Your channel submission has been ${status}.`,
           type: 'submission_review',
           target_user_id: authorId,
           target_role: 'member',
-          created_by: user?.id
+          created_by: user.id
         });
+        if (notifError) {
+          console.error('Failed to send notification:', notifError);
+        }
       }
       
       toast({ title: `Submission ${status}` });
@@ -1297,7 +1300,10 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
         }));
 
       if (notifications.length > 0) {
-        await supabase.from('notifications').insert(notifications);
+        const { error: notifError } = await supabase.from('notifications').insert(notifications);
+        if (notifError) {
+          console.error('Failed to send bulk notifications:', notifError);
+        }
       }
 
       toast({ title: `${selectedSubmissions.size} submissions approved` });
@@ -1337,7 +1343,10 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
         }));
 
       if (notifications.length > 0) {
-        await supabase.from('notifications').insert(notifications);
+        const { error: notifError } = await supabase.from('notifications').insert(notifications);
+        if (notifError) {
+          console.error('Failed to send bulk rejection notifications:', notifError);
+        }
       }
 
       toast({ title: `${selectedSubmissions.size} submissions rejected` });
