@@ -17,6 +17,7 @@ import {
 import { useContributorMetrics, LeaderboardEntry } from '@/hooks/useContributorMetrics';
 import { useMySubmissions } from '@/hooks/useMySubmissions';
 import { Flame, Trophy, Target, TrendingUp, Clock, CheckCircle, XCircle, Loader2, BarChart3, FileText, Users } from 'lucide-react';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface ContributorDashboardModalProps {
   open: boolean;
@@ -75,6 +76,7 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
               <h2 className="font-semibold text-lg">{userName}'s Dashboard</h2>
               <Badge variant="outline">Contributor</Badge>
             </div>
+            <ThemeToggle />
           </div>
 
           {loading ? (

@@ -16,6 +16,7 @@ import {
 import { useMySubmissions } from '@/hooks/useMySubmissions';
 import { Clock, CheckCircle, XCircle, TrendingUp, Sparkles, FileText, BarChart3 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface MemberDashboardModalProps {
   open: boolean;
@@ -70,6 +71,7 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
               <h2 className="font-semibold text-lg">{userName}'s Dashboard</h2>
               <Badge className="bg-primary/10 text-primary border-0">Member</Badge>
             </div>
+            <ThemeToggle />
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
