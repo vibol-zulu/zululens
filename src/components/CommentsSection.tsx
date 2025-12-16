@@ -9,14 +9,6 @@ import { toast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 
-interface NewsItem {
-  id: string;
-  title: string;
-  content: string;
-  category: string;
-  created_at: string;
-}
-
 interface CommentsSectionProps {
   country: string;
   onSignUpClick?: () => void;
@@ -156,7 +148,6 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [previewIndex, setPreviewIndex] = useState(0);
-  const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
   
   const isMobile = useIsMobile();
   const { user, isAdmin } = useAuth();
@@ -164,23 +155,6 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
 
   // Check if user has moderator role (similar to admin check in useAuth)
   const [isModerator, setIsModerator] = useState(false);
-  
-  // Fetch news items
-  useEffect(() => {
-    const fetchNews = async () => {
-      const { data, error } = await supabase
-        .from('news_updates')
-        .select('id, title, content, category, created_at')
-        .eq('is_published', true)
-        .order('created_at', { ascending: false })
-        .limit(10);
-      
-      if (!error && data) {
-        setNewsItems(data);
-      }
-    };
-    fetchNews();
-  }, []);
   
   useEffect(() => {
     const checkModerator = async () => {
@@ -311,10 +285,10 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
 
       {/* Expanded Content */}
       {isExpanded && (
-        <div className={`overflow-hidden px-4 ${isMobile ? 'h-[50vh]' : 'h-[25vh]'}`}>
-          <div className={`flex h-full w-full min-h-0 ${isMobile ? 'flex-col overflow-y-auto' : ''}`}>
-            {/* Left: Comments Interface */}
-            <div className={`flex flex-col ${isMobile ? 'w-full shrink-0' : 'h-full flex-1 border-r border-border'}`}>
+        <div className="overflow-hidden px-4 h-[25vh]">
+          <div className="flex h-full w-full min-h-0">
+            {/* Comments Interface */}
+            <div className="flex flex-col h-full w-full">
               {!isAuthenticated ? (
                 /* Sign-up gate for Tier 1 users */
                 <div className="flex items-center justify-center p-4 flex-1 overflow-y-auto">
@@ -335,7 +309,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
               ) : (
                 <>
                   {/* Comments List */}
-                  <div className={`flex-1 overflow-y-auto p-4 space-y-3 ${isMobile ? 'max-h-[25vh]' : ''}`}>
+                  <div className="flex-1 overflow-y-auto p-4 space-y-3">
                     {loading ? (
                       <div className="text-center py-8 text-muted-foreground">
                         Loading comments...
@@ -402,60 +376,6 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
                   </div>
                 </>
               )}
-            </div>
-
-            {/* News & Updates - Below comments on mobile, side by side on desktop */}
-            <div className={`flex flex-col min-h-0 overflow-hidden ${isMobile ? 'w-full border-t border-border shrink-0' : 'flex-1 h-full'}`}>
-              <div className="p-4 border-b border-border shrink-0">
-                <h3 className="font-semibold text-sm flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                  News & Updates
-                </h3>
-              </div>
-              <div className={`flex-1 overflow-y-auto p-4 space-y-4 min-h-0 ${isMobile ? 'max-h-[20vh]' : ''}`}>
-                {newsItems.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground text-sm">
-                    No news updates yet.
-                  </div>
-                ) : (
-                  newsItems.map((item) => {
-                    const getCategoryStyle = (category: string) => {
-                      switch (category) {
-                        case 'feature': return 'text-primary';
-                        case 'update': return 'text-corporate';
-                        case 'community': return 'text-independent';
-                        case 'milestone': return 'text-muted-foreground';
-                        case 'coming-soon': return 'text-primary';
-                        default: return 'text-muted-foreground';
-                      }
-                    };
-                    
-                    const getCategoryLabel = (category: string) => {
-                      switch (category) {
-                        case 'feature': return 'NEW FEATURE';
-                        case 'update': return 'DATA UPDATE';
-                        case 'community': return 'COMMUNITY';
-                        case 'milestone': return 'MILESTONE';
-                        case 'coming-soon': return 'COMING SOON';
-                        default: return category.toUpperCase();
-                      }
-                    };
-                    
-                    return (
-                      <div key={item.id} className="bg-muted/30 rounded-lg p-3 border border-border/50">
-                        <span className={`text-xs font-medium ${getCategoryStyle(item.category)}`}>
-                          {getCategoryLabel(item.category)}
-                        </span>
-                        <h4 className="font-medium text-sm mt-1">{item.title}</h4>
-                        <p className="text-xs text-muted-foreground mt-1">{item.content}</p>
-                        <span className="text-xs text-muted-foreground mt-2 block">
-                          {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
-                        </span>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
             </div>
           </div>
         </div>

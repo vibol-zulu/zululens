@@ -15,6 +15,7 @@ import MemberDashboardModal from '@/components/MemberDashboardModal';
 import ContributorDashboardModal from '@/components/ContributorDashboardModal';
 import ModeratorDashboardModal from '@/components/ModeratorDashboardModal';
 import CommentsSection from '@/components/CommentsSection';
+import NewsModal from '@/components/NewsModal';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -68,6 +69,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   const [showMemberDashboard, setShowMemberDashboard] = useState(false);
   const [showContributorDashboard, setShowContributorDashboard] = useState(false);
   const [showModeratorDashboard, setShowModeratorDashboard] = useState(false);
+  const [showNews, setShowNews] = useState(false);
   const [signInDefaultTab, setSignInDefaultTab] = useState<'signin' | 'signup'>('signin');
 
   // Auth state for contributor access
@@ -250,6 +252,11 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               <DropdownMenuItem onClick={() => setShowMission(true)}>
                 Mission
               </DropdownMenuItem>
+              {isMobile && (
+                <DropdownMenuItem onClick={() => setShowNews(true)}>
+                  News & Updates
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={() => setShowInsights(true)}>
                 Insights
               </DropdownMenuItem>
@@ -441,6 +448,10 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
         open={showModeratorDashboard}
         onOpenChange={setShowModeratorDashboard}
         userName={user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Moderator'}
+      />
+      <NewsModal
+        open={showNews}
+        onOpenChange={setShowNews}
       />
       
       {/* Comments Section - visible for all users */}
