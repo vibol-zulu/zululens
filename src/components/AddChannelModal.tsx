@@ -114,8 +114,8 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      // Admins and moderators can auto-approve, members submit as pending
-      const canAutoApprove = isAdmin || isModerator;
+      // Only admins can auto-approve, all other users (including moderators) submit as pending
+      const canAutoApprove = isAdmin;
       
       const { data: channelData, error } = await supabase
         .from('user_channels')
