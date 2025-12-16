@@ -161,7 +161,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [showAddModal, setShowAddModal] = useState(false);
   const [showContributorModal, setShowContributorModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const { isContributor } = useAuth();
+  const { user, isContributor } = useAuth();
   
   // Filter brands by search query
   const filteredBrands = useMemo(() => {
@@ -176,9 +176,11 @@ const Sidebar: React.FC<SidebarProps> = ({
   const sorted = [...filteredBrands].sort((a, b) => b.valueMillions - a.valueMillions);
 
   const handleAddClick = () => {
-    if (isContributor) {
+    // Tier 2+ (any authenticated user) can suggest channels
+    if (user) {
       setShowAddModal(true);
     } else {
+      // Unauthenticated users see contributor modal
       setShowContributorModal(true);
     }
   };
