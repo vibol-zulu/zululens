@@ -380,14 +380,14 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
 
             {/* Right: News & Updates */}
             {!isMobile && (
-              <div className="flex-1 flex flex-col h-full">
-                <div className="p-4 border-b border-border">
+              <div className="flex-1 flex flex-col h-full min-h-0 overflow-hidden">
+                <div className="p-4 border-b border-border shrink-0">
                   <h3 className="font-semibold text-sm flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                     News & Updates
                   </h3>
                 </div>
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
                   {/* Placeholder news items */}
                   <div className="bg-muted/30 rounded-lg p-3 border border-border/50">
                     <span className="text-xs text-primary font-medium">NEW FEATURE</span>
