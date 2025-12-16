@@ -42,6 +42,7 @@ interface SidebarProps {
   onChannelAdded: () => void;
   visitorName?: string;
   visitorEmail?: string;
+  onSignUpClick?: () => void;
 }
 
 const SidebarToggle: React.FC<{ side: 'left' | 'right'; isOpen: boolean; onClick: () => void }> = ({ side, isOpen, onClick }) => (
@@ -156,7 +157,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   year,
   onChannelAdded,
   visitorName = '',
-  visitorEmail = ''
+  visitorEmail = '',
+  onSignUpClick
 }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showContributorModal, setShowContributorModal] = useState(false);
@@ -320,7 +322,9 @@ const Sidebar: React.FC<SidebarProps> = ({
           defaultEmail={visitorEmail}
           country={country}
           customTitle="Want to add a channel?"
-          customMessage="Become a contributor to add channels and help build the media landscape dataset."
+          customMessage="Create a free account to become a Member and start suggesting channels for the media landscape dataset."
+          isAuthenticated={!!user}
+          onSignUpClick={onSignUpClick}
         />
       </div>
     );
@@ -441,7 +445,9 @@ const Sidebar: React.FC<SidebarProps> = ({
         defaultEmail={visitorEmail}
         country={country}
         customTitle="Want to add a channel?"
-        customMessage="Become a contributor to add channels and help build the media landscape dataset."
+        customMessage="Create a free account to become a Member and start suggesting channels for the media landscape dataset."
+        isAuthenticated={!!user}
+        onSignUpClick={onSignUpClick}
       />
     </div>
   );

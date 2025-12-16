@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { UserPlus } from 'lucide-react';
 
 interface ContributorModalProps {
   open: boolean;
@@ -21,6 +22,8 @@ interface ContributorModalProps {
   country: string;
   customTitle?: string;
   customMessage?: string;
+  isAuthenticated?: boolean;
+  onSignUpClick?: () => void;
 }
 
 const ContributorModal: React.FC<ContributorModalProps> = ({
@@ -30,7 +33,9 @@ const ContributorModal: React.FC<ContributorModalProps> = ({
   defaultEmail,
   country,
   customTitle,
-  customMessage
+  customMessage,
+  isAuthenticated = false,
+  onSignUpClick
 }) => {
   const [name, setName] = useState(defaultName);
   const [email, setEmail] = useState(defaultEmail);
@@ -92,6 +97,44 @@ const ContributorModal: React.FC<ContributorModalProps> = ({
     }
   }, [open, defaultName, defaultEmail]);
 
+  // Tier 1 (unauthenticated) view - encourage account creation
+  if (!isAuthenticated) {
+    return (
+      <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">
+              {customTitle || 'Join as a Member'}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="py-6 text-center">
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+              <UserPlus className="h-6 w-6 text-primary" />
+            </div>
+            <p className="text-muted-foreground mb-6">
+              {customMessage || `Create a free account to become a Member and start contributing to the ${country} media landscape data.`}
+            </p>
+            <Button onClick={() => {
+              onClose();
+              onSignUpClick?.();
+            }} className="gap-2">
+              <UserPlus className="h-4 w-4" />
+              Create Account
+            </Button>
+          </div>
+          
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={onClose}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // Authenticated user view - contributor request form
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="sm:max-w-md">
