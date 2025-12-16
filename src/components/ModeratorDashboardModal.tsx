@@ -124,6 +124,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
         .from('user_channels')
         .select('*')
         .eq('status', 'pending')
+        .not('author_id', 'is', null) // Only show user-submitted channels
         .order('created_at', { ascending: false });
       
       if (selectedCountry !== 'all') {
