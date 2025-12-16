@@ -264,6 +264,11 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   const [showCreateUserDialog, setShowCreateUserDialog] = useState(false);
   const [newUserData, setNewUserData] = useState({ email: '', password: '', fullName: '', role: 'member' as 'member' | 'admin' | 'contributor' | 'moderator' });
 
+  // Selection state for bulk actions
+  const [selectedSubmissions, setSelectedSubmissions] = useState<Set<string>>(new Set());
+  const [selectedComments, setSelectedComments] = useState<Set<string>>(new Set());
+  const [bulkActionLoading, setBulkActionLoading] = useState(false);
+
   const isAuthenticated = user && isAdmin;
 
   const handleSignIn = async () => {
@@ -1117,6 +1122,170 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
     }
   };
 
+  // Bulk action toggle functions
+  const toggleSelectSubmission = (id: string) => {
+    setSelectedSubmissions(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAllSubmissions = () => {
+    if (selectedSubmissions.size === submissions.length) {
+      setSelectedSubmissions(new Set());
+    } else {
+      setSelectedSubmissions(new Set(submissions.map(s => s.id)));
+    }
+  };
+
+  const toggleSelectComment = (id: string) => {
+    setSelectedComments(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAllComments = () => {
+    if (selectedComments.size === comments.length) {
+      setSelectedComments(new Set());
+    } else {
+      setSelectedComments(new Set(comments.map(c => c.id)));
+    }
+  };
+
+  // Bulk action handlers
+  const handleBulkApproveSubmissions = async () => {
+    if (selectedSubmissions.size === 0 || !user) return;
+    setBulkActionLoading(true);
+    try {
+      const subsToApprove = submissions.filter(s => selectedSubmissions.has(s.id) && s.status === 'pending');
+      
+      const { error } = await supabase
+        .from('user_channels')
+        .update({
+          status: 'approved',
+          approved_by: user.id,
+          approved_at: new Date().toISOString()
+        })
+        .in('id', Array.from(selectedSubmissions));
+
+      if (error) throw error;
+
+      // Send notifications to authors
+      const notifications = subsToApprove
+        .filter(s => s.author_id)
+        .map(s => ({
+          title: 'Submission Approved!',
+          message: `Your channel submission "${s.name}" has been approved.`,
+          type: 'submission_review',
+          target_role: 'member',
+          target_user_id: s.author_id,
+          created_by: user.id
+        }));
+
+      if (notifications.length > 0) {
+        await supabase.from('notifications').insert(notifications);
+      }
+
+      toast({ title: `${selectedSubmissions.size} submissions approved` });
+      setSelectedSubmissions(new Set());
+      fetchSubmissions();
+    } catch (error) {
+      console.error('Bulk approve error:', error);
+      toast({ title: 'Failed to approve submissions', variant: 'destructive' });
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkRejectSubmissions = async () => {
+    if (selectedSubmissions.size === 0 || !user) return;
+    setBulkActionLoading(true);
+    try {
+      const subsToReject = submissions.filter(s => selectedSubmissions.has(s.id) && s.status === 'pending');
+      
+      const { error } = await supabase
+        .from('user_channels')
+        .update({ status: 'rejected' })
+        .in('id', Array.from(selectedSubmissions));
+
+      if (error) throw error;
+
+      // Send notifications to authors
+      const notifications = subsToReject
+        .filter(s => s.author_id)
+        .map(s => ({
+          title: 'Submission Rejected',
+          message: `Your channel submission "${s.name}" was not approved.`,
+          type: 'submission_review',
+          target_role: 'member',
+          target_user_id: s.author_id,
+          created_by: user.id
+        }));
+
+      if (notifications.length > 0) {
+        await supabase.from('notifications').insert(notifications);
+      }
+
+      toast({ title: `${selectedSubmissions.size} submissions rejected` });
+      setSelectedSubmissions(new Set());
+      fetchSubmissions();
+    } catch (error) {
+      console.error('Bulk reject error:', error);
+      toast({ title: 'Failed to reject submissions', variant: 'destructive' });
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkDeleteSubmissions = async () => {
+    if (selectedSubmissions.size === 0) return;
+    setBulkActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from('user_channels')
+        .delete()
+        .in('id', Array.from(selectedSubmissions));
+
+      if (error) throw error;
+
+      toast({ title: `${selectedSubmissions.size} submissions deleted` });
+      setSelectedSubmissions(new Set());
+      fetchSubmissions();
+    } catch (error) {
+      console.error('Bulk delete submissions error:', error);
+      toast({ title: 'Failed to delete submissions', variant: 'destructive' });
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkDeleteComments = async () => {
+    if (selectedComments.size === 0) return;
+    setBulkActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from('comments')
+        .delete()
+        .in('id', Array.from(selectedComments));
+
+      if (error) throw error;
+
+      toast({ title: `${selectedComments.size} comments deleted` });
+      setSelectedComments(new Set());
+      fetchComments();
+    } catch (error) {
+      console.error('Bulk delete comments error:', error);
+      toast({ title: 'Failed to delete comments', variant: 'destructive' });
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
   const pendingSubmissionsCount = submissions.filter(s => s.status === 'pending').length;
 
   // Close modal if user is not admin
@@ -1385,13 +1554,44 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                   <span className="text-sm text-muted-foreground">
                     {pendingSubmissionsCount} pending submission{pendingSubmissionsCount !== 1 ? 's' : ''}
                   </span>
+                  
+                  {selectedSubmissions.size > 0 && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" disabled={bulkActionLoading} className="ml-auto">
+                          Bulk Actions ({selectedSubmissions.size})
+                          <ChevronDown className="h-4 w-4 ml-1" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem onClick={handleBulkApproveSubmissions}>
+                          <Check className="h-4 w-4 mr-2 text-green-600" />
+                          Approve Selected
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleBulkRejectSubmissions}>
+                          <XCircle className="h-4 w-4 mr-2 text-destructive" />
+                          Reject Selected
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleBulkDeleteSubmissions}>
+                          <Trash2 className="h-4 w-4 mr-2 text-destructive" />
+                          Delete Selected
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
                 </div>
 
                 <div className="flex-1 overflow-auto p-4">
                   <div className="rounded-md border overflow-x-auto">
-                    <Table className="min-w-[800px]">
+                    <Table className="min-w-[900px]">
                         <TableHeader>
                           <TableRow>
+                            <TableHead className="w-[40px]">
+                              <Checkbox
+                                checked={selectedSubmissions.size === submissions.length && submissions.length > 0}
+                                onCheckedChange={toggleSelectAllSubmissions}
+                              />
+                            </TableHead>
                             <TableHead>Channel</TableHead>
                             <TableHead>Category</TableHead>
                             <TableHead>Country</TableHead>
@@ -1405,19 +1605,25 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                         <TableBody>
                           {submissionsLoading ? (
                             <TableRow>
-                              <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                              <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                                 Loading...
                               </TableCell>
                             </TableRow>
                           ) : submissions.length === 0 ? (
                             <TableRow>
-                              <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                              <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                                 No submissions found
                               </TableCell>
                             </TableRow>
                           ) : (
                             submissions.map(sub => (
                               <TableRow key={sub.id}>
+                                <TableCell>
+                                  <Checkbox
+                                    checked={selectedSubmissions.has(sub.id)}
+                                    onCheckedChange={() => toggleSelectSubmission(sub.id)}
+                                  />
+                                </TableCell>
                                 <TableCell className="font-medium">{sub.name}</TableCell>
                                 <TableCell className="capitalize">{sub.category}</TableCell>
                                 <TableCell>{sub.country}</TableCell>
@@ -1495,13 +1701,36 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                     </SelectContent>
                   </Select>
                   <span className="text-sm text-muted-foreground ml-2">{comments.length} comments</span>
+                  
+                  {selectedComments.size > 0 && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" disabled={bulkActionLoading} className="ml-auto">
+                          Bulk Actions ({selectedComments.size})
+                          <ChevronDown className="h-4 w-4 ml-1" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem onClick={handleBulkDeleteComments}>
+                          <Trash2 className="h-4 w-4 mr-2 text-destructive" />
+                          Delete Selected
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
                 </div>
 
                 <div className="flex-1 overflow-auto p-4">
                   <div className="rounded-md border overflow-x-auto">
-                    <Table className="min-w-[600px]">
+                    <Table className="min-w-[700px]">
                       <TableHeader>
                         <TableRow>
+                          <TableHead className="w-[40px]">
+                            <Checkbox
+                              checked={selectedComments.size === comments.length && comments.length > 0}
+                              onCheckedChange={toggleSelectAllComments}
+                            />
+                          </TableHead>
                           <TableHead>User</TableHead>
                           <TableHead className="w-[40%]">Content</TableHead>
                           <TableHead>Reply To</TableHead>
@@ -1512,19 +1741,25 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                       <TableBody>
                         {commentsLoading ? (
                           <TableRow>
-                            <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                               Loading...
                             </TableCell>
                           </TableRow>
                         ) : comments.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                               No comments found for {commentsCountry}
                             </TableCell>
                           </TableRow>
                         ) : (
                           comments.map(comment => (
                             <TableRow key={comment.id}>
+                              <TableCell>
+                                <Checkbox
+                                  checked={selectedComments.has(comment.id)}
+                                  onCheckedChange={() => toggleSelectComment(comment.id)}
+                                />
+                              </TableCell>
                               <TableCell>
                                 <div className="flex flex-col">
                                   <span className="font-medium text-sm">{comment.user_name || 'Unknown'}</span>
