@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { YearData, ViewMode } from '@/types/media';
 import { COUNTRIES } from '@/data/mediaData';
 import MediaCanvas from '@/components/MediaCanvas';
@@ -36,6 +36,7 @@ import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
 import { COLORS } from '@/types/media';
 import { useUserChannels } from '@/hooks/useUserChannels';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 interface MediaDashboardProps {
   visitorName: string;
@@ -73,9 +74,36 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   const [showNews, setShowNews] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [signInDefaultTab, setSignInDefaultTab] = useState<'signin' | 'signup'>('signin');
+  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
 
   // Auth state for contributor access
   const { user, isContributor, isModerator, isAdmin, signOut } = useAuth();
+  
+  // Fetch unread notifications count
+  const fetchUnreadCount = useCallback(async () => {
+    if (!user || !isAdmin) {
+      setUnreadNotificationsCount(0);
+      return;
+    }
+    
+    try {
+      const { count, error } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_read', false);
+      
+      if (!error && count !== null) {
+        setUnreadNotificationsCount(count);
+      }
+    } catch (err) {
+      console.error('Error fetching unread notifications:', err);
+    }
+  }, [user, isAdmin]);
+
+  // Fetch unread count on mount and when notifications modal closes
+  useEffect(() => {
+    fetchUnreadCount();
+  }, [fetchUnreadCount, showNotifications]);
   
   // Check if user is a Tier 2 member (authenticated but not contributor/moderator/admin)
   const isMember = user && !isContributor && !isModerator && !isAdmin;
@@ -227,8 +255,11 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="relative">
                 <Menu className="h-5 w-5" />
+                {unreadNotificationsCount > 0 && (
+                  <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-destructive" />
+                )}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44">
@@ -265,8 +296,11 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                 </DropdownMenuItem>
               )}
               {user && (
-                <DropdownMenuItem onClick={() => setShowNotifications(true)}>
-                  Notifications
+                <DropdownMenuItem onClick={() => setShowNotifications(true)} className="flex items-center justify-between">
+                  <span>Notifications</span>
+                  {unreadNotificationsCount > 0 && (
+                    <span className="h-2 w-2 rounded-full bg-destructive" />
+                  )}
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem onClick={() => setShowMission(true)}>
