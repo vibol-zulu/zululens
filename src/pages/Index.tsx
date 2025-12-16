@@ -6,6 +6,7 @@ import { INITIAL_DATA, STORAGE_KEY } from '@/data/mediaData';
 import { YearData } from '@/types/media';
 import { Helmet } from 'react-helmet';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -14,15 +15,30 @@ const Index = () => {
   const [showWelcome, setShowWelcome] = useState(false);
   const [isOAuthCallback, setIsOAuthCallback] = useState(false);
 
-  // Detect OAuth callback (tokens in URL hash)
+  // Detect OAuth callback (PKCE code in query OR tokens in URL hash)
   useEffect(() => {
+    const url = new URL(window.location.href);
+    const hasCode = url.searchParams.has('code');
     const hash = window.location.hash;
-    if (hash && (hash.includes('access_token') || hash.includes('refresh_token'))) {
+    const hasTokensInHash = Boolean(hash) && (hash.includes('access_token') || hash.includes('refresh_token'));
+
+    if (hasCode || hasTokensInHash) {
       setIsOAuthCallback(true);
+    }
+
+    // If we got a PKCE code, exchange it for a session so auth is established before showing the gate.
+    if (hasCode) {
+      supabase.auth.exchangeCodeForSession(window.location.href)
+        .catch((e) => console.error('OAuth code exchange failed:', e))
+        .finally(() => {
+          // Clean up URL query/hash regardless; auth listener will update `user`.
+          window.history.replaceState(null, '', window.location.pathname);
+          setIsOAuthCallback(false);
+        });
     }
   }, []);
 
-  // Clear OAuth callback state once user is loaded
+  // Clear OAuth callback state once user is loaded (hash-token flow)
   useEffect(() => {
     if (user && isOAuthCallback) {
       setIsOAuthCallback(false);
