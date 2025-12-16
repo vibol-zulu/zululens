@@ -1545,7 +1545,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
           <DialogContent className="max-w-lg">
             <div className="space-y-4">
               <h3 className="font-semibold">Edit Submission</h3>
-              <div className="grid grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto pr-2">
+              <div className="grid grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto p-1">
                 <div className="col-span-2">
                   <Label>Channel Name</Label>
                   <Input
