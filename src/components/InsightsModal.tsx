@@ -16,14 +16,14 @@ interface InsightsModalProps {
 const InsightsModal: React.FC<InsightsModalProps> = ({ open, onClose }) => {
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] p-0">
-        <DialogHeader className="p-6 pb-0">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden">
+        <DialogHeader className="pr-8">
           <DialogTitle className="text-2xl text-primary">
             Zulu Digital Microscope: Networked media is taking over in the USA
           </DialogTitle>
         </DialogHeader>
         
-        <ScrollArea className="max-h-[70vh] px-6 pb-6">
+        <ScrollArea className="max-h-[70vh]">
           <div className="space-y-4 text-sm text-foreground leading-relaxed">
             <p>One of the most surprising bits of research we put together during <a href="https://www.zulu.group/zephyr/issue-02" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80">The Age of Wisdom series</a> revealed a surprising and encouraging trend in the US media landscape: analysis of US Media from 2000 to 2025 reveals a pivotal transition from a handful of corporate media to a multitude of independent, networked, media sources - in terms of both epistemic dynamism and sheer audience size. We believe this is good news for human information network health, and thus for truth.</p>
             
@@ -80,7 +80,7 @@ const InsightsModal: React.FC<InsightsModalProps> = ({ open, onClose }) => {
           </div>
         </ScrollArea>
         
-        <div className="p-6 pt-0 flex justify-center">
+        <div className="flex justify-center pt-2">
           <Button onClick={onClose}>Close Insights</Button>
         </div>
       </DialogContent>
