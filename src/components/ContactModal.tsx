@@ -8,6 +8,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ContactModalProps {
   open: boolean;
@@ -28,35 +29,25 @@ const ContactModal: React.FC<ContactModalProps> = ({ open, onClose }) => {
     setError('');
 
     try {
-      const response = await fetch("https://formsubmit.co/ajax/vibol@zulu.group", {
-        method: "POST",
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          _subject: `Contact Form: ${name}`,
-          name,
-          email,
-          message,
-          _template: "table"
-        })
+      const { data, error: fnError } = await supabase.functions.invoke('send-contact-email', {
+        body: { name, email, message }
       });
 
-      if (response.ok) {
-        setSubmitted(true);
-        setTimeout(() => {
-          onClose();
-          setSubmitted(false);
-          setName('');
-          setEmail('');
-          setMessage('');
-        }, 3000);
-      } else {
-        setError('Something went wrong. Please try again.');
+      if (fnError) {
+        throw fnError;
       }
-    } catch (err) {
-      setError('Failed to send message. Please check your connection.');
+
+      setSubmitted(true);
+      setTimeout(() => {
+        onClose();
+        setSubmitted(false);
+        setName('');
+        setEmail('');
+        setMessage('');
+      }, 3000);
+    } catch (err: any) {
+      console.error('Contact form error:', err);
+      setError('Failed to send message. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
