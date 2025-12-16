@@ -16,7 +16,6 @@ import ContributorDashboardModal from '@/components/ContributorDashboardModal';
 import ModeratorDashboardModal from '@/components/ModeratorDashboardModal';
 import CommentsSection from '@/components/CommentsSection';
 import NewsModal from '@/components/NewsModal';
-import NotificationsModal from '@/components/NotificationsModal';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import {
@@ -73,7 +72,6 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   const [showContributorDashboard, setShowContributorDashboard] = useState(false);
   const [showModeratorDashboard, setShowModeratorDashboard] = useState(false);
   const [showNews, setShowNews] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
   const [signInDefaultTab, setSignInDefaultTab] = useState<'signin' | 'signup'>('signin');
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
   const [pendingSubmissionsCount, setPendingSubmissionsCount] = useState(0);
@@ -123,10 +121,10 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
     }
   }, [user, isModerator, isAdmin]);
 
-  // Fetch unread count on mount and when notifications modal closes
+  // Fetch unread count on mount and when dashboards close
   useEffect(() => {
     fetchUnreadCount();
-  }, [fetchUnreadCount, showNotifications]);
+  }, [fetchUnreadCount, showMemberDashboard, showContributorDashboard, showModeratorDashboard, showAdmin]);
 
   // Fetch pending submissions count
   useEffect(() => {
@@ -332,14 +330,6 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                   )}
                 </DropdownMenuItem>
               )}
-              {user && (
-                <DropdownMenuItem onClick={() => setShowNotifications(true)} className="flex items-center justify-between">
-                  <span>Notifications</span>
-                  {unreadNotificationsCount > 0 && (
-                    <span className="h-2 w-2 rounded-full bg-destructive" />
-                  )}
-                </DropdownMenuItem>
-              )}
               <DropdownMenuItem onClick={() => setShowMission(true)}>
                 Mission
               </DropdownMenuItem>
@@ -538,10 +528,6 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
       <NewsModal
         open={showNews}
         onOpenChange={setShowNews}
-      />
-      <NotificationsModal
-        open={showNotifications}
-        onOpenChange={setShowNotifications}
       />
       
       {/* Comments Section - visible for all users */}

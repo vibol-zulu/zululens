@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Database, MoreVertical, MessageCircle, BarChart3, Trophy, Flame, TrendingUp, Newspaper, ChevronDown } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Database, MoreVertical, MessageCircle, BarChart3, Trophy, Flame, TrendingUp, Newspaper, ChevronDown, Bell } from 'lucide-react';
+import NotificationsTab from '@/components/NotificationsTab';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
@@ -1488,6 +1489,10 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                         <Newspaper className="h-4 w-4" />
                         News
                       </TabsTrigger>
+                      <TabsTrigger value="notifications" className="gap-2">
+                        <Bell className="h-4 w-4" />
+                        Notifications
+                      </TabsTrigger>
                     </>
                   )}
                 </TabsList>
@@ -2411,6 +2416,13 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                       </TableBody>
                     </Table>
                   </div>
+                </div>
+              </TabsContent>
+
+              {/* Notifications Tab */}
+              <TabsContent value="notifications" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
+                <div className="flex-1 overflow-auto p-4">
+                  <NotificationsTab isActive={activeTab === 'notifications'} />
                 </div>
               </TabsContent>
             </Tabs>
