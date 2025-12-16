@@ -207,10 +207,6 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               <Badge variant={getUserBadge().variant} className="text-[10px] px-1.5 py-0 h-4">
                 {getUserBadge().label}
               </Badge>
-              <span 
-                className="w-1.5 h-1.5 rounded-full bg-green-500"
-                title="Signed in"
-              />
             </span>
           )}
           
