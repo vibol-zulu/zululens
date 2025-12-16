@@ -201,7 +201,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   return (
     <div className="flex flex-col h-screen overflow-hidden">
       {/* Header */}
-      <header className="h-14 border-b bg-card flex items-center px-2 sm:px-4 justify-between shrink-0 z-20">
+      <header className="h-14 border-b bg-card dark:[background:var(--background-gradient)] flex items-center px-2 sm:px-4 justify-between shrink-0 z-20">
         <div className="flex items-center gap-1 sm:gap-3">
           {/* Dark Mode Toggle */}
           <ThemeToggle />
@@ -393,7 +393,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
 
         {/* Mobile/Tablet Sidebars */}
         {useStackedLayout && (
-          <div className="flex-1 flex w-full overflow-hidden z-10 bg-card">
+          <div className="flex-1 flex w-full overflow-hidden z-10 bg-card dark:[background:var(--background-gradient)]">
             <Sidebar 
               category="corporate" 
               brands={mergedData.brands.filter(b => b.category === 'corporate')}
