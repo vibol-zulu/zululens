@@ -232,6 +232,21 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44">
+              {user && isMember && (
+                <DropdownMenuItem onClick={() => setShowMemberDashboard(true)}>
+                  Dashboard
+                </DropdownMenuItem>
+              )}
+              {user && isContributor && !isAdmin && !isModerator && (
+                <DropdownMenuItem onClick={() => setShowContributorDashboard(true)}>
+                  Dashboard
+                </DropdownMenuItem>
+              )}
+              {user && isModerator && !isAdmin && (
+                <DropdownMenuItem onClick={() => setShowModeratorDashboard(true)}>
+                  Dashboard
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={() => setShowMission(true)}>
                 Mission
               </DropdownMenuItem>
@@ -250,21 +265,6 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                   setShowSignIn(true);
                 }}>
                   Sign In
-                </DropdownMenuItem>
-              )}
-              {user && isMember && (
-                <DropdownMenuItem onClick={() => setShowMemberDashboard(true)}>
-                  My Dashboard
-                </DropdownMenuItem>
-              )}
-              {user && isContributor && !isAdmin && !isModerator && (
-                <DropdownMenuItem onClick={() => setShowContributorDashboard(true)}>
-                  My Dashboard
-                </DropdownMenuItem>
-              )}
-              {user && isModerator && !isAdmin && (
-                <DropdownMenuItem onClick={() => setShowModeratorDashboard(true)}>
-                  Moderator Dashboard
                 </DropdownMenuItem>
               )}
               {user && isAdmin && (
