@@ -285,7 +285,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
 
       {/* Expanded Content */}
       {isExpanded && (
-        <div className="max-h-[50vh] overflow-hidden flex justify-center">
+        <div className="max-h-[25vh] overflow-hidden flex justify-center">
           <div className={`flex w-full ${isMobile ? 'flex-col' : 'max-w-[calc(100vw-512px)]'}`}>
             {/* Left: Comments Interface */}
             <div className={`flex flex-col ${isMobile ? 'w-full' : 'w-1/2 border-r border-border'}`}>
