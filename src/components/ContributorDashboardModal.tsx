@@ -3,8 +3,21 @@ import {
   Dialog,
   DialogContent,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table,
@@ -14,9 +27,18 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useContributorMetrics, LeaderboardEntry } from '@/hooks/useContributorMetrics';
-import { useMySubmissions } from '@/hooks/useMySubmissions';
-import { Flame, Trophy, Target, TrendingUp, Clock, CheckCircle, XCircle, Loader2, BarChart3, FileText, Users } from 'lucide-react';
+import { useMySubmissions, ChannelSubmission } from '@/hooks/useMySubmissions';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { Flame, Trophy, Target, TrendingUp, Clock, CheckCircle, XCircle, Loader2, BarChart3, FileText, Users, Pencil, Trash2 } from 'lucide-react';
 
 interface ContributorDashboardModalProps {
   open: boolean;
@@ -31,7 +53,25 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
 }) => {
   const { metrics, leaderboard, userRank, loading: metricsLoading, fetchLeaderboard } = useContributorMetrics();
   const { submissions, stats, loading: submissionsLoading, refetch: refetchSubmissions } = useMySubmissions();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('overview');
+
+  // Edit state
+  const [editingSubmission, setEditingSubmission] = useState<ChannelSubmission | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    name: '',
+    value_millions: 0,
+    category: '',
+    platform: '',
+    content_type: '',
+    political_lean: '',
+    start_date: ''
+  });
+
+  // Delete state
+  const [submissionToDelete, setSubmissionToDelete] = useState<ChannelSubmission | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -61,6 +101,78 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
 
   const getRankDisplay = (rank: number) => {
     return <span className="text-sm font-semibold">#{rank}</span>;
+  };
+
+  const handleEdit = (submission: ChannelSubmission) => {
+    setEditingSubmission(submission);
+    setEditFormData({
+      name: submission.name,
+      value_millions: submission.value_millions,
+      category: submission.category,
+      platform: submission.platform,
+      content_type: submission.content_type,
+      political_lean: submission.political_lean,
+      start_date: submission.start_date
+    });
+    setShowEditDialog(true);
+  };
+
+  const saveEdit = async () => {
+    if (!editingSubmission || !editFormData.name) {
+      toast({ title: 'Name is required', variant: 'destructive' });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('user_channels')
+        .update({
+          name: editFormData.name,
+          value_millions: editFormData.value_millions,
+          category: editFormData.category,
+          platform: editFormData.platform,
+          content_type: editFormData.content_type,
+          political_lean: editFormData.political_lean,
+          start_date: editFormData.start_date
+        })
+        .eq('id', editingSubmission.id);
+
+      if (error) throw error;
+
+      toast({ title: 'Submission updated' });
+      setShowEditDialog(false);
+      setEditingSubmission(null);
+      refetchSubmissions();
+    } catch (error) {
+      console.error('Error updating submission:', error);
+      toast({ title: 'Failed to update submission', variant: 'destructive' });
+    }
+  };
+
+  const handleDelete = (submission: ChannelSubmission) => {
+    setSubmissionToDelete(submission);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!submissionToDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from('user_channels')
+        .delete()
+        .eq('id', submissionToDelete.id);
+
+      if (error) throw error;
+
+      toast({ title: 'Submission removed' });
+      setShowDeleteDialog(false);
+      setSubmissionToDelete(null);
+      refetchSubmissions();
+    } catch (error) {
+      console.error('Error deleting submission:', error);
+      toast({ title: 'Failed to remove submission', variant: 'destructive' });
+    }
   };
 
   const loading = metricsLoading || submissionsLoading;
@@ -240,7 +352,7 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
                     </div>
                   ) : (
                     <div className="rounded-md border overflow-x-auto">
-                      <Table className="min-w-[500px] text-xs">
+                      <Table className="min-w-[600px] text-xs">
                         <TableHeader>
                           <TableRow>
                             <TableHead>Channel Name</TableHead>
@@ -248,6 +360,7 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
                             <TableHead>Year</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Submitted</TableHead>
+                            <TableHead className="w-[80px]">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -259,6 +372,28 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
                               <TableCell>{getStatusBadge(submission.status)}</TableCell>
                               <TableCell className="text-muted-foreground">
                                 {formatDate(submission.created_at)}
+                              </TableCell>
+                              <TableCell>
+                                {submission.status === 'pending' && (
+                                  <div className="flex items-center gap-1">
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-7 w-7 p-0"
+                                      onClick={() => handleEdit(submission)}
+                                    >
+                                      <Pencil className="h-3 w-3" />
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                                      onClick={() => handleDelete(submission)}
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                )}
                               </TableCell>
                             </TableRow>
                           ))}
@@ -331,6 +466,71 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
             </Tabs>
           )}
         </div>
+
+        {/* Edit Dialog */}
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent className="max-w-md">
+            <div className="space-y-4">
+              <h3 className="font-semibold">Edit Submission</h3>
+              <div className="space-y-3">
+                <div>
+                  <Label>Channel Name</Label>
+                  <Input
+                    value={editFormData.name}
+                    onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label>Audience (Millions)</Label>
+                  <Input
+                    type="number"
+                    value={editFormData.value_millions}
+                    onChange={(e) => setEditFormData({ ...editFormData, value_millions: parseFloat(e.target.value) || 0 })}
+                  />
+                </div>
+                <div>
+                  <Label>Category</Label>
+                  <Select value={editFormData.category} onValueChange={(v) => setEditFormData({ ...editFormData, category: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="corporate">Corporate</SelectItem>
+                      <SelectItem value="independent">Independent</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Platform</Label>
+                  <Input
+                    value={editFormData.platform}
+                    onChange={(e) => setEditFormData({ ...editFormData, platform: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setShowEditDialog(false)}>Cancel</Button>
+                <Button onClick={saveEdit}>Save</Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Dialog */}
+        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Remove Submission</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to remove "{submissionToDelete?.name}"? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmDelete} className="bg-destructive hover:bg-destructive/90">
+                Remove
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </DialogContent>
     </Dialog>
   );
