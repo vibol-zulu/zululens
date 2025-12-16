@@ -1,13 +1,10 @@
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { registerTier1Visitor, useAnalytics } from '@/hooks/useAnalytics';
-
 interface SignUpGateProps {
   onJoin: (name: string, email: string) => void;
 }
-
 const MAILCHIMP_ACTION = "https://group.us14.list-manage.com/subscribe/post?u=8cebbb69cb233fee8e96a59fe&amp;id=de54a87f37";
-
 const SignUpGate: React.FC<SignUpGateProps> = ({
   onJoin
 }) => {
@@ -15,8 +12,11 @@ const SignUpGate: React.FC<SignUpGateProps> = ({
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
-  const { setVisitorId, initSession, trackEvent } = useAnalytics();
-
+  const {
+    setVisitorId,
+    initSession,
+    trackEvent
+  } = useAnalytics();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -35,9 +35,13 @@ const SignUpGate: React.FC<SignUpGateProps> = ({
     if (visitorId) {
       setVisitorId(visitorId);
       await initSession();
-      trackEvent({ event_type: 'page_view', event_data: { page: 'dashboard' } });
+      trackEvent({
+        event_type: 'page_view',
+        event_data: {
+          page: 'dashboard'
+        }
+      });
     }
-
     setTimeout(() => {
       onJoin(name, email);
     }, 500);
@@ -100,10 +104,10 @@ transformed over 25 years</h1>
 
       {/* Footer */}
       <footer className="p-6 md:p-8 flex-col flex items-start justify-between px-[12px] py-[12px]">
-        <div className="text-white/50 text-[10px] font-mono uppercase leading-relaxed max-w-xs">ZULU DIGITAL MICROSCOPE: US MEDIA 2000-2025 
+        <div className="text-white/50 text-[10px] font-mono uppercase leading-relaxed max-w-xs">​ 
         <br />
-          ​Powered by Zulu Group<br />
-          ​
+          ​<br />
+          ​​Powered by Zulu Group
         </div>
         
       </footer>
