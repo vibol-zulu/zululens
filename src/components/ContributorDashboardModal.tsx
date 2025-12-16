@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -94,152 +94,127 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
               <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="overview" className="flex-1 overflow-auto space-y-4 mt-4">
-              {/* Streak & Score Cards */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1">
-                      <Flame className="h-4 w-4 text-orange-500" />
-                      Current Streak
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{metrics?.current_streak || 0} days</div>
-                  </CardContent>
-                </Card>
+            <TabsContent value="overview" className="flex-1 overflow-auto space-y-5 mt-4">
+              {/* Stats Row */}
+              <div className="grid grid-cols-4 gap-3">
+                <div className="bg-muted/50 rounded-lg p-4 text-center">
+                  <div className="flex items-center justify-center gap-1.5 mb-1">
+                    <Flame className="h-4 w-4 text-orange-500" />
+                    <span className="text-xs text-muted-foreground">Streak</span>
+                  </div>
+                  <div className="text-2xl font-bold">{metrics?.current_streak || 0}</div>
+                  <div className="text-[10px] text-muted-foreground">days</div>
+                </div>
 
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1">
-                      <Trophy className="h-4 w-4 text-yellow-500" />
-                      Longest Streak
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{metrics?.longest_streak || 0} days</div>
-                  </CardContent>
-                </Card>
+                <div className="bg-muted/50 rounded-lg p-4 text-center">
+                  <div className="flex items-center justify-center gap-1.5 mb-1">
+                    <Trophy className="h-4 w-4 text-yellow-500" />
+                    <span className="text-xs text-muted-foreground">Best</span>
+                  </div>
+                  <div className="text-2xl font-bold">{metrics?.longest_streak || 0}</div>
+                  <div className="text-[10px] text-muted-foreground">days</div>
+                </div>
 
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1">
-                      <TrendingUp className="h-4 w-4 text-green-500" />
-                      Engagement Score
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{metrics?.engagement_score || 0}</div>
-                  </CardContent>
-                </Card>
+                <div className="bg-muted/50 rounded-lg p-4 text-center">
+                  <div className="flex items-center justify-center gap-1.5 mb-1">
+                    <TrendingUp className="h-4 w-4 text-emerald-500" />
+                    <span className="text-xs text-muted-foreground">Score</span>
+                  </div>
+                  <div className="text-2xl font-bold">{metrics?.engagement_score || 0}</div>
+                  <div className="text-[10px] text-muted-foreground">points</div>
+                </div>
 
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1">
-                      <Target className="h-4 w-4 text-blue-500" />
-                      Your Rank
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold flex items-center gap-2">
-                      {userRank ? (
-                        <>
-                          {getRankBadge(userRank)}
-                          {userRank > 3 && <span>of {leaderboard.length}</span>}
-                        </>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                <div className="bg-muted/50 rounded-lg p-4 text-center">
+                  <div className="flex items-center justify-center gap-1.5 mb-1">
+                    <Target className="h-4 w-4 text-blue-500" />
+                    <span className="text-xs text-muted-foreground">Rank</span>
+                  </div>
+                  <div className="text-2xl font-bold">
+                    {userRank ? `#${userRank}` : '-'}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">
+                    {leaderboard.length > 0 ? `of ${leaderboard.length}` : ''}
+                  </div>
+                </div>
               </div>
 
               {/* Submission Stats */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Submission Statistics</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div>
-                      <div className="text-2xl font-bold text-green-600">{stats.approved}</div>
-                      <div className="text-sm text-muted-foreground">Approved</div>
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
-                      <div className="text-sm text-muted-foreground">Pending</div>
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-red-600">{stats.rejected}</div>
-                      <div className="text-sm text-muted-foreground">Rejected</div>
-                    </div>
+              <div className="border rounded-lg p-4">
+                <h3 className="text-sm font-medium mb-4">Submissions</h3>
+                <div className="grid grid-cols-3 gap-4 text-center mb-4">
+                  <div>
+                    <div className="text-2xl font-bold text-emerald-500">{stats.approved}</div>
+                    <div className="text-xs text-muted-foreground">Approved</div>
                   </div>
+                  <div className="border-x border-border/50">
+                    <div className="text-2xl font-bold text-amber-500">{stats.pending}</div>
+                    <div className="text-xs text-muted-foreground">Pending</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-rose-500">{stats.rejected}</div>
+                    <div className="text-xs text-muted-foreground">Rejected</div>
+                  </div>
+                </div>
 
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Progress to Moderator</span>
-                      <span className="text-muted-foreground">{stats.approved}/50 approved</span>
-                    </div>
-                    <Progress value={(stats.approved / 50) * 100} className="h-2" />
-                    <p className="text-xs text-muted-foreground">
-                      Get 50 suggestions approved to become eligible for Moderator promotion
-                    </p>
+                <div className="pt-4 border-t border-border/50">
+                  <div className="flex justify-between text-sm mb-2">
+                    <span className="text-muted-foreground">Progress to Moderator</span>
+                    <span className="font-medium">{stats.approved}/50</span>
                   </div>
-                </CardContent>
-              </Card>
+                  <Progress value={(stats.approved / 50) * 100} className="h-2" />
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {50 - stats.approved} more approved suggestions needed
+                  </p>
+                </div>
+              </div>
 
               {/* Activity Summary */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Activity Summary</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Target className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <div className="font-medium">{metrics?.total_suggestions || 0}</div>
-                        <div className="text-sm text-muted-foreground">Total Suggestions</div>
-                      </div>
+              <div className="border rounded-lg p-4">
+                <h3 className="text-sm font-medium mb-4">Activity</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Target className="h-4 w-4 text-primary" />
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <CheckCircle className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <div className="font-medium">{metrics?.approved_suggestions || 0}</div>
-                        <div className="text-sm text-muted-foreground">Approved</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Trophy className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <div className="font-medium">{metrics?.total_comments || 0}</div>
-                        <div className="text-sm text-muted-foreground">Comments</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Clock className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <div className="font-medium">
-                          {metrics?.last_activity_date 
-                            ? formatDate(metrics.last_activity_date)
-                            : 'No activity yet'
-                          }
-                        </div>
-                        <div className="text-sm text-muted-foreground">Last Active</div>
-                      </div>
+                    <div>
+                      <div className="font-semibold">{metrics?.total_suggestions || 0}</div>
+                      <div className="text-xs text-muted-foreground">Total Suggestions</div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                  <div className="flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
+                      <CheckCircle className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <div className="font-semibold">{metrics?.approved_suggestions || 0}</div>
+                      <div className="text-xs text-muted-foreground">Approved</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Trophy className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <div className="font-semibold">{metrics?.total_comments || 0}</div>
+                      <div className="text-xs text-muted-foreground">Comments</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Clock className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-sm">
+                        {metrics?.last_activity_date 
+                          ? formatDate(metrics.last_activity_date)
+                          : 'No activity'
+                        }
+                      </div>
+                      <div className="text-xs text-muted-foreground">Last Active</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </TabsContent>
 
             <TabsContent value="submissions" className="flex-1 overflow-hidden mt-4">
