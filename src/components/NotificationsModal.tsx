@@ -153,13 +153,16 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({
   };
 
   const clearAllNotifications = async () => {
-    if (!user) return;
+    if (!user || notifications.length === 0) return;
     
     try {
+      // Delete all notifications currently visible to the user
+      const notificationIds = notifications.map(n => n.id);
+      
       const { error } = await supabase
         .from('notifications')
         .delete()
-        .neq('id', '');
+        .in('id', notificationIds);
 
       if (error) throw error;
       
