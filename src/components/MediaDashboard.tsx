@@ -487,7 +487,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
       
       <InsightsModal open={showInsights} onClose={() => setShowInsights(false)} />
       <MethodologyModal open={showMethodology} onClose={() => setShowMethodology(false)} />
-      <ContactModal open={showContact} onClose={() => setShowContact(false)} />
+      <ContactModal open={showContact} onClose={() => setShowContact(false)} visitorName={visitorName} visitorEmail={visitorEmail} />
       <MissionModal 
         open={showMission} 
         onOpenChange={setShowMission}

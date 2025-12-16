@@ -14,9 +14,11 @@ import { useAuth } from '@/hooks/useAuth';
 interface ContactModalProps {
   open: boolean;
   onClose: () => void;
+  visitorName?: string;
+  visitorEmail?: string;
 }
 
-const ContactModal: React.FC<ContactModalProps> = ({ open, onClose }) => {
+const ContactModal: React.FC<ContactModalProps> = ({ open, onClose, visitorName, visitorEmail }) => {
   const { user } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -25,12 +27,17 @@ const ContactModal: React.FC<ContactModalProps> = ({ open, onClose }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  // Auto-fill name and email when user is logged in or modal opens
+  // Auto-fill name and email when modal opens
   useEffect(() => {
     if (open) {
       if (user) {
+        // Authenticated user - use their profile data
         setEmail(user.email || '');
         setName(user.user_metadata?.full_name || '');
+      } else if (visitorName || visitorEmail) {
+        // Tier 1 visitor - use sign-up gate data
+        setName(visitorName || '');
+        setEmail(visitorEmail || '');
       } else {
         setName('');
         setEmail('');
@@ -39,7 +46,7 @@ const ContactModal: React.FC<ContactModalProps> = ({ open, onClose }) => {
       setError('');
       setSubmitted(false);
     }
-  }, [user, open]);
+  }, [user, open, visitorName, visitorEmail]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
