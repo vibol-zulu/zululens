@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronUp, ChevronDown, MessageSquare, Send, Edit2, Trash2, Reply, X, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -7,6 +7,15 @@ import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+
+interface NewsItem {
+  id: string;
+  title: string;
+  content: string;
+  category: string;
+  created_at: string;
+}
 
 interface CommentsSectionProps {
   country: string;
@@ -147,6 +156,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [previewIndex, setPreviewIndex] = useState(0);
+  const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
   
   const isMobile = useIsMobile();
   const { user, isAdmin } = useAuth();
@@ -155,13 +165,29 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
   // Check if user has moderator role (similar to admin check in useAuth)
   const [isModerator, setIsModerator] = useState(false);
   
-  React.useEffect(() => {
+  // Fetch news items
+  useEffect(() => {
+    const fetchNews = async () => {
+      const { data, error } = await supabase
+        .from('news_updates')
+        .select('id, title, content, category, created_at')
+        .eq('is_published', true)
+        .order('created_at', { ascending: false })
+        .limit(10);
+      
+      if (!error && data) {
+        setNewsItems(data);
+      }
+    };
+    fetchNews();
+  }, []);
+  
+  useEffect(() => {
     const checkModerator = async () => {
       if (!user) {
         setIsModerator(false);
         return;
       }
-      const { supabase } = await import('@/integrations/supabase/client');
       const { data } = await supabase.rpc('has_role', { 
         _user_id: user.id, 
         _role: 'moderator' 
@@ -388,51 +414,48 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
                   </h3>
                 </div>
                 <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
-                  {/* Placeholder news items */}
-                  <div className="bg-muted/30 rounded-lg p-3 border border-border/50">
-                    <span className="text-xs text-primary font-medium">NEW FEATURE</span>
-                    <h4 className="font-medium text-sm mt-1">Contributor Leaderboard Launched</h4>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Track your engagement score and see where you rank among all contributors. Top performers are first in line for promotion!
-                    </p>
-                    <span className="text-xs text-muted-foreground mt-2 block">2 hours ago</span>
-                  </div>
-
-                  <div className="bg-muted/30 rounded-lg p-3 border border-border/50">
-                    <span className="text-xs text-corporate font-medium">DATA UPDATE</span>
-                    <h4 className="font-medium text-sm mt-1">Canada Dataset Now Available</h4>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Thanks to our contributor community, you can now explore the Canadian media landscape from 2000 to 2025.
-                    </p>
-                    <span className="text-xs text-muted-foreground mt-2 block">1 day ago</span>
-                  </div>
-
-                  <div className="bg-muted/30 rounded-lg p-3 border border-border/50">
-                    <span className="text-xs text-independent font-medium">COMMUNITY</span>
-                    <h4 className="font-medium text-sm mt-1">Welcome New Moderators</h4>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Three new moderators have joined to help review channel submissions and maintain discussion quality.
-                    </p>
-                    <span className="text-xs text-muted-foreground mt-2 block">3 days ago</span>
-                  </div>
-
-                  <div className="bg-muted/30 rounded-lg p-3 border border-border/50">
-                    <span className="text-xs text-muted-foreground font-medium">MILESTONE</span>
-                    <h4 className="font-medium text-sm mt-1">1,000 Channels Mapped</h4>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      The Zulu Digital Microscope has now catalogued over 1,000 media channels across multiple countries.
-                    </p>
-                    <span className="text-xs text-muted-foreground mt-2 block">1 week ago</span>
-                  </div>
-
-                  <div className="bg-muted/30 rounded-lg p-3 border border-border/50">
-                    <span className="text-xs text-primary font-medium">COMING SOON</span>
-                    <h4 className="font-medium text-sm mt-1">UK Media Landscape</h4>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      We're actively seeking contributors familiar with UK media. Help us map the British media ecosystem!
-                    </p>
-                    <span className="text-xs text-muted-foreground mt-2 block">2 weeks ago</span>
-                  </div>
+                  {newsItems.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground text-sm">
+                      No news updates yet.
+                    </div>
+                  ) : (
+                    newsItems.map((item) => {
+                      const getCategoryStyle = (category: string) => {
+                        switch (category) {
+                          case 'feature': return 'text-primary';
+                          case 'update': return 'text-corporate';
+                          case 'community': return 'text-independent';
+                          case 'milestone': return 'text-muted-foreground';
+                          case 'coming-soon': return 'text-primary';
+                          default: return 'text-muted-foreground';
+                        }
+                      };
+                      
+                      const getCategoryLabel = (category: string) => {
+                        switch (category) {
+                          case 'feature': return 'NEW FEATURE';
+                          case 'update': return 'DATA UPDATE';
+                          case 'community': return 'COMMUNITY';
+                          case 'milestone': return 'MILESTONE';
+                          case 'coming-soon': return 'COMING SOON';
+                          default: return category.toUpperCase();
+                        }
+                      };
+                      
+                      return (
+                        <div key={item.id} className="bg-muted/30 rounded-lg p-3 border border-border/50">
+                          <span className={`text-xs font-medium ${getCategoryStyle(item.category)}`}>
+                            {getCategoryLabel(item.category)}
+                          </span>
+                          <h4 className="font-medium text-sm mt-1">{item.title}</h4>
+                          <p className="text-xs text-muted-foreground mt-1">{item.content}</p>
+                          <span className="text-xs text-muted-foreground mt-2 block">
+                            {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
+                          </span>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
             )}

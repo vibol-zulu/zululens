@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Database, MoreVertical, MessageCircle, BarChart3, Trophy, Flame, TrendingUp } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Database, MoreVertical, MessageCircle, BarChart3, Trophy, Flame, TrendingUp, Newspaper } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -129,6 +129,16 @@ interface LeaderboardEntry {
   last_activity_date: string | null;
 }
 
+interface NewsItem {
+  id: string;
+  title: string;
+  content: string;
+  category: string;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 interface AdminModalProps {
   open: boolean;
   onClose: () => void;
@@ -226,6 +236,20 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   // Leaderboard state
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+
+  // News state
+  const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
+  const [newsLoading, setNewsLoading] = useState(false);
+  const [showNewsDialog, setShowNewsDialog] = useState(false);
+  const [editingNews, setEditingNews] = useState<NewsItem | null>(null);
+  const [newsToDelete, setNewsToDelete] = useState<NewsItem | null>(null);
+  const [showDeleteNewsDialog, setShowDeleteNewsDialog] = useState(false);
+  const [newsFormData, setNewsFormData] = useState({
+    title: '',
+    content: '',
+    category: 'update',
+    is_published: true
+  });
 
   // Create contributor state
   const [showCreateUserDialog, setShowCreateUserDialog] = useState(false);
@@ -664,6 +688,113 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
     }
   };
 
+  // Fetch news items
+  const fetchNews = async () => {
+    if (!isAdmin) return;
+    
+    setNewsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('news_updates')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setNewsItems(data || []);
+    } catch (error) {
+      console.error('Error fetching news:', error);
+      toast({ title: 'Failed to load news', variant: 'destructive' });
+    } finally {
+      setNewsLoading(false);
+    }
+  };
+
+  // Save news item
+  const saveNews = async () => {
+    if (!newsFormData.title || !newsFormData.content) {
+      toast({ title: 'Title and content are required', variant: 'destructive' });
+      return;
+    }
+
+    try {
+      if (editingNews) {
+        const { error } = await supabase
+          .from('news_updates')
+          .update({
+            title: newsFormData.title,
+            content: newsFormData.content,
+            category: newsFormData.category,
+            is_published: newsFormData.is_published
+          })
+          .eq('id', editingNews.id);
+
+        if (error) throw error;
+        toast({ title: 'News updated' });
+      } else {
+        const { error } = await supabase
+          .from('news_updates')
+          .insert({
+            title: newsFormData.title,
+            content: newsFormData.content,
+            category: newsFormData.category,
+            is_published: newsFormData.is_published,
+            created_by: user?.id
+          });
+
+        if (error) throw error;
+        toast({ title: 'News added' });
+      }
+
+      setShowNewsDialog(false);
+      setEditingNews(null);
+      setNewsFormData({ title: '', content: '', category: 'update', is_published: true });
+      fetchNews();
+    } catch (error) {
+      console.error('Error saving news:', error);
+      toast({ title: 'Failed to save news', variant: 'destructive' });
+    }
+  };
+
+  // Delete news item
+  const deleteNews = async () => {
+    if (!newsToDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from('news_updates')
+        .delete()
+        .eq('id', newsToDelete.id);
+
+      if (error) throw error;
+      toast({ title: 'News deleted' });
+      setShowDeleteNewsDialog(false);
+      setNewsToDelete(null);
+      fetchNews();
+    } catch (error) {
+      console.error('Error deleting news:', error);
+      toast({ title: 'Failed to delete news', variant: 'destructive' });
+    }
+  };
+
+  // Handle edit news
+  const handleEditNews = (item: NewsItem) => {
+    setEditingNews(item);
+    setNewsFormData({
+      title: item.title,
+      content: item.content,
+      category: item.category,
+      is_published: item.is_published
+    });
+    setShowNewsDialog(true);
+  };
+
+  // Handle add news
+  const handleAddNews = () => {
+    setEditingNews(null);
+    setNewsFormData({ title: '', content: '', category: 'update', is_published: true });
+    setShowNewsDialog(true);
+  };
+
   useEffect(() => {
     if (isAuthenticated && open) {
       fetchChannels();
@@ -685,6 +816,8 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
       fetchAnalytics();
     } else if (isAuthenticated && open && activeTab === 'leaderboard' && isAdmin) {
       fetchLeaderboard();
+    } else if (isAuthenticated && open && activeTab === 'news' && isAdmin) {
+      fetchNews();
     }
   }, [activeTab, isAuthenticated, open, isAdmin]);
 
@@ -995,6 +1128,10 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                       <TabsTrigger value="leaderboard" className="gap-2">
                         <Trophy className="h-4 w-4" />
                         Leaderboard
+                      </TabsTrigger>
+                      <TabsTrigger value="news" className="gap-2">
+                        <Newspaper className="h-4 w-4" />
+                        News
                       </TabsTrigger>
                     </>
                   )}
@@ -1675,9 +1812,175 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                   </div>
                 </div>
               </TabsContent>
+
+              {/* News Tab */}
+              <TabsContent value="news" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
+                <div className="border-b p-4 flex items-center justify-between">
+                  <h3 className="font-medium">News & Updates</h3>
+                  <Button onClick={handleAddNews} size="sm" className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Add News
+                  </Button>
+                </div>
+                <div className="flex-1 overflow-auto">
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Title</TableHead>
+                          <TableHead>Category</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Created</TableHead>
+                          <TableHead className="w-[100px]">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {newsLoading ? (
+                          <TableRow>
+                            <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                              Loading...
+                            </TableCell>
+                          </TableRow>
+                        ) : newsItems.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                              No news items yet. Add one to get started.
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          newsItems.map((item) => (
+                            <TableRow key={item.id}>
+                              <TableCell>
+                                <div className="max-w-[300px]">
+                                  <span className="font-medium">{item.title}</span>
+                                  <p className="text-xs text-muted-foreground truncate">{item.content}</p>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className="capitalize">{item.category}</Badge>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant={item.is_published ? 'default' : 'secondary'}>
+                                  {item.is_published ? 'Published' : 'Draft'}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-sm text-muted-foreground">
+                                {new Date(item.created_at).toLocaleDateString()}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-1">
+                                  <Button variant="ghost" size="sm" onClick={() => handleEditNews(item)}>
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="text-destructive hover:text-destructive"
+                                    onClick={() => { setNewsToDelete(item); setShowDeleteNewsDialog(true); }}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              </TabsContent>
             </Tabs>
           </div>
         )}
+
+        {/* News Dialog */}
+        <Dialog open={showNewsDialog} onOpenChange={(open) => {
+          if (!open) {
+            setShowNewsDialog(false);
+            setEditingNews(null);
+            setNewsFormData({ title: '', content: '', category: 'update', is_published: true });
+          }
+        }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{editingNews ? 'Edit News' : 'Add News'}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label>Title *</Label>
+                <Input
+                  value={newsFormData.title}
+                  onChange={(e) => setNewsFormData(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="News title"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Content *</Label>
+                <textarea
+                  className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  value={newsFormData.content}
+                  onChange={(e) => setNewsFormData(prev => ({ ...prev, content: e.target.value }))}
+                  placeholder="News content"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Category</Label>
+                <Select 
+                  value={newsFormData.category} 
+                  onValueChange={(v) => setNewsFormData(prev => ({ ...prev, category: v }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="feature">New Feature</SelectItem>
+                    <SelectItem value="update">Data Update</SelectItem>
+                    <SelectItem value="community">Community</SelectItem>
+                    <SelectItem value="milestone">Milestone</SelectItem>
+                    <SelectItem value="coming-soon">Coming Soon</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="is_published"
+                  checked={newsFormData.is_published}
+                  onChange={(e) => setNewsFormData(prev => ({ ...prev, is_published: e.target.checked }))}
+                  className="rounded border-input"
+                />
+                <Label htmlFor="is_published">Published</Label>
+              </div>
+              <div className="flex gap-3 pt-4">
+                <Button variant="outline" onClick={() => setShowNewsDialog(false)} className="flex-1">
+                  Cancel
+                </Button>
+                <Button onClick={saveNews} className="flex-1">
+                  Save
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete News Confirmation */}
+        <AlertDialog open={showDeleteNewsDialog} onOpenChange={setShowDeleteNewsDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete News</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete "{newsToDelete?.title}"? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={deleteNews} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {/* Edit/Add Channel Dialog */}
         <Dialog open={showEditDialog || showAddDialog} onOpenChange={(openState) => {
