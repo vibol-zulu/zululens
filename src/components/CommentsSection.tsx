@@ -323,14 +323,14 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-base font-semibold">Join the Conversation</h3>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground mb-3">
                       Create a free account to share your thoughts and engage with the community.
                     </p>
+                    <Button onClick={onSignUpClick} className="gap-2">
+                      <UserPlus className="h-4 w-4" />
+                      Create Account
+                    </Button>
                   </div>
-                  <Button onClick={onSignUpClick} className="gap-2 shrink-0">
-                    <UserPlus className="h-4 w-4" />
-                    Create Account
-                  </Button>
                 </div>
               ) : (
                 <>
