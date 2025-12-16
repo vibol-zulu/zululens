@@ -120,6 +120,19 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
   // My suggestions state
   const [myChannels, setMyChannels] = useState<ChannelEntry[]>([]);
   const [myChannelsLoading, setMyChannelsLoading] = useState(false);
+  const [editingMyChannel, setEditingMyChannel] = useState<ChannelEntry | null>(null);
+  const [showEditMyChannelDialog, setShowEditMyChannelDialog] = useState(false);
+  const [myChannelFormData, setMyChannelFormData] = useState({
+    name: '',
+    value_millions: 0,
+    category: '',
+    platform: '',
+    content_type: '',
+    political_lean: '',
+    start_date: ''
+  });
+  const [myChannelToDelete, setMyChannelToDelete] = useState<ChannelEntry | null>(null);
+  const [showDeleteMyChannelDialog, setShowDeleteMyChannelDialog] = useState(false);
 
   // All channels state
   const [allChannels, setAllChannels] = useState<ChannelEntry[]>([]);
@@ -762,6 +775,75 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
     }
   };
 
+  // Edit/Delete my channel handlers
+  const handleEditMyChannel = (channel: ChannelEntry) => {
+    setEditingMyChannel(channel);
+    setMyChannelFormData({
+      name: channel.name,
+      value_millions: channel.value_millions,
+      category: channel.category,
+      platform: '',
+      content_type: '',
+      political_lean: '',
+      start_date: ''
+    });
+    setShowEditMyChannelDialog(true);
+  };
+
+  const saveMyChannelEdit = async () => {
+    if (!editingMyChannel || !myChannelFormData.name) {
+      toast({ title: 'Name is required', variant: 'destructive' });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('user_channels')
+        .update({
+          name: myChannelFormData.name,
+          value_millions: myChannelFormData.value_millions,
+          category: myChannelFormData.category
+        })
+        .eq('id', editingMyChannel.id);
+
+      if (error) throw error;
+
+      toast({ title: 'Submission updated' });
+      setShowEditMyChannelDialog(false);
+      setEditingMyChannel(null);
+      fetchMyChannels();
+    } catch (error) {
+      console.error('Error updating submission:', error);
+      toast({ title: 'Failed to update submission', variant: 'destructive' });
+    }
+  };
+
+  const handleDeleteMyChannel = (channel: ChannelEntry) => {
+    setMyChannelToDelete(channel);
+    setShowDeleteMyChannelDialog(true);
+  };
+
+  const confirmDeleteMyChannel = async () => {
+    if (!myChannelToDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from('user_channels')
+        .delete()
+        .eq('id', myChannelToDelete.id);
+
+      if (error) throw error;
+
+      toast({ title: 'Submission removed' });
+      setShowDeleteMyChannelDialog(false);
+      setMyChannelToDelete(null);
+      fetchMyChannels();
+    } catch (error) {
+      console.error('Error deleting submission:', error);
+      toast({ title: 'Failed to remove submission', variant: 'destructive' });
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-5xl max-h-[90vh] p-0 overflow-hidden">
@@ -941,7 +1023,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                   </div>
                 ) : (
                   <div className="rounded-md border overflow-x-auto">
-                    <Table className="min-w-[600px] text-xs">
+                    <Table className="min-w-[700px] text-xs">
                       <TableHeader>
                         <TableRow>
                           <TableHead>Channel</TableHead>
@@ -950,6 +1032,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                           <TableHead>Year</TableHead>
                           <TableHead>Status</TableHead>
                           <TableHead>Date</TableHead>
+                          <TableHead className="w-[80px]">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -964,6 +1047,28 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                             <TableCell>{getStatusBadge(channel.status)}</TableCell>
                             <TableCell className="text-muted-foreground">
                               {formatDate(channel.created_at)}
+                            </TableCell>
+                            <TableCell>
+                              {channel.status === 'pending' && (
+                                <div className="flex items-center gap-1">
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-7 w-7 p-0"
+                                    onClick={() => handleEditMyChannel(channel)}
+                                  >
+                                    <Pencil className="h-3 w-3" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                                    onClick={() => handleDeleteMyChannel(channel)}
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              )}
                             </TableCell>
                           </TableRow>
                         ))}
@@ -1423,6 +1528,63 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={confirmDeleteNews} className="bg-destructive hover:bg-destructive/90">
                 Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        {/* Edit My Channel Dialog */}
+        <Dialog open={showEditMyChannelDialog} onOpenChange={setShowEditMyChannelDialog}>
+          <DialogContent className="max-w-md">
+            <div className="space-y-4">
+              <h3 className="font-semibold">Edit Submission</h3>
+              <div className="space-y-3">
+                <div>
+                  <Label>Channel Name</Label>
+                  <Input
+                    value={myChannelFormData.name}
+                    onChange={(e) => setMyChannelFormData({ ...myChannelFormData, name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label>Audience (Millions)</Label>
+                  <Input
+                    type="number"
+                    value={myChannelFormData.value_millions}
+                    onChange={(e) => setMyChannelFormData({ ...myChannelFormData, value_millions: parseFloat(e.target.value) || 0 })}
+                  />
+                </div>
+                <div>
+                  <Label>Category</Label>
+                  <Select value={myChannelFormData.category} onValueChange={(v) => setMyChannelFormData({ ...myChannelFormData, category: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="corporate">Corporate</SelectItem>
+                      <SelectItem value="independent">Independent</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setShowEditMyChannelDialog(false)}>Cancel</Button>
+                <Button onClick={saveMyChannelEdit}>Save</Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete My Channel Dialog */}
+        <AlertDialog open={showDeleteMyChannelDialog} onOpenChange={setShowDeleteMyChannelDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Remove Submission</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to remove "{myChannelToDelete?.name}"? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmDeleteMyChannel} className="bg-destructive hover:bg-destructive/90">
+                Remove
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

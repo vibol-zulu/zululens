@@ -11,6 +11,12 @@ export interface ChannelSubmission {
   created_at: string;
   approved_at: string | null;
   approved_by: string | null;
+  category: string;
+  value_millions: number;
+  platform: string;
+  content_type: string;
+  political_lean: string;
+  start_date: string;
 }
 
 export interface SubmissionStats {
@@ -45,7 +51,7 @@ export function useMySubmissions() {
     try {
       const { data, error } = await supabase
         .from('user_channels')
-        .select('id, name, country, year, status, created_at, approved_at, approved_by')
+        .select('id, name, country, year, status, created_at, approved_at, approved_by, category, value_millions, platform, content_type, political_lean, start_date')
         .eq('author_id', user.id)
         .order('created_at', { ascending: false });
 
