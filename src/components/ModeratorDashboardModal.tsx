@@ -130,7 +130,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
   const [newsLoading, setNewsLoading] = useState(false);
 
   // Flag state
-  const [channelToFlag, setChannelToFlag] = useState<ChannelEntry | null>(null);
+  const [flagItem, setFlagItem] = useState<{ type: 'channel' | 'comment' | 'news'; id: string; name: string } | null>(null);
   const [showFlagDialog, setShowFlagDialog] = useState(false);
   const [flagReason, setFlagReason] = useState('');
   const [flagging, setFlagging] = useState(false);
@@ -404,24 +404,30 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
     }
   };
 
-  const handleFlagChannel = (channel: ChannelEntry) => {
-    setChannelToFlag(channel);
+  const handleFlagItem = (type: 'channel' | 'comment' | 'news', id: string, name: string) => {
+    setFlagItem({ type, id, name });
     setFlagReason('');
     setShowFlagDialog(true);
   };
 
-  const confirmFlagChannel = async () => {
-    if (!channelToFlag || !user || !flagReason.trim()) return;
+  const confirmFlagItem = async () => {
+    if (!flagItem || !user || !flagReason.trim()) return;
     
     setFlagging(true);
     try {
+      const typeLabels = {
+        channel: 'Channel',
+        comment: 'Comment', 
+        news: 'News Update'
+      };
+
       const { error } = await supabase
         .from('notifications')
         .insert({
-          type: 'channel_flag',
-          title: `Channel Flagged: ${channelToFlag.name}`,
+          type: `${flagItem.type}_flag`,
+          title: `${typeLabels[flagItem.type]} Flagged: ${flagItem.name}`,
           message: flagReason.trim(),
-          channel_id: channelToFlag.id,
+          channel_id: flagItem.type === 'channel' ? flagItem.id : null,
           created_by: user.id,
           target_role: 'admin'
         });
@@ -429,15 +435,15 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
       if (error) throw error;
 
       toast({ 
-        title: 'Channel flagged',
-        description: 'An admin has been notified about this channel.'
+        title: `${typeLabels[flagItem.type]} flagged`,
+        description: 'An admin has been notified.'
       });
       setShowFlagDialog(false);
-      setChannelToFlag(null);
+      setFlagItem(null);
       setFlagReason('');
     } catch (error) {
-      console.error('Error flagging channel:', error);
-      toast({ title: 'Failed to flag channel', variant: 'destructive' });
+      console.error('Error flagging item:', error);
+      toast({ title: 'Failed to flag item', variant: 'destructive' });
     } finally {
       setFlagging(false);
     }
@@ -565,7 +571,15 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                             {formatDate(channel.created_at)}
                           </TableCell>
                           <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-2">
+                            <div className="flex items-center justify-end gap-1">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleFlagItem('channel', channel.id, channel.name)}
+                                title="Flag for admin review"
+                              >
+                                <Flag className="h-4 w-4 text-orange-500" />
+                              </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -737,7 +751,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleFlagChannel(channel)}
+                                onClick={() => handleFlagItem('channel', channel.id, channel.name)}
                                 title="Flag this channel for admin review"
                               >
                                 <Flag className="h-4 w-4 text-orange-500" />
@@ -818,14 +832,24 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                             {formatDate(comment.created_at)}
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                              onClick={() => handleDeleteComment(comment)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            <div className="flex items-center justify-end gap-1">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleFlagItem('comment', comment.id, comment.content.slice(0, 30) + '...')}
+                                title="Flag for admin review"
+                              >
+                                <Flag className="h-4 w-4 text-orange-500" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                onClick={() => handleDeleteComment(comment)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -855,7 +879,17 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                       <CardHeader className="pb-2">
                         <div className="flex items-center justify-between">
                           <CardTitle className="text-lg">{item.title}</CardTitle>
-                          <Badge variant="outline">{item.category}</Badge>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline">{item.category}</Badge>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleFlagItem('news', item.id, item.title)}
+                              title="Flag for admin review"
+                            >
+                              <Flag className="h-4 w-4 text-orange-500" />
+                            </Button>
+                          </div>
                         </div>
                         <p className="text-sm text-muted-foreground">{formatDate(item.created_at)}</p>
                       </CardHeader>
@@ -936,37 +970,37 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
             <AlertDialogHeader>
               <AlertDialogTitle className="flex items-center gap-2">
                 <Flag className="h-5 w-5 text-orange-500" />
-                Flag Channel for Review
+                Flag {flagItem?.type === 'channel' ? 'Channel' : flagItem?.type === 'comment' ? 'Comment' : 'News Update'} for Review
               </AlertDialogTitle>
               <AlertDialogDescription>
-                Flag "{channelToFlag?.name}" for admin review. Please provide a reason.
+                Flag "{flagItem?.name}" for admin review. Please provide a reason.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <div className="py-4">
               <textarea
                 value={flagReason}
                 onChange={(e) => setFlagReason(e.target.value)}
-                placeholder="Describe why this channel should be reviewed..."
+                placeholder="Describe why this content should be reviewed..."
                 className="w-full min-h-[100px] p-3 rounded-md border border-input bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
             <AlertDialogFooter>
               <AlertDialogCancel onClick={() => {
                 setShowFlagDialog(false);
-                setChannelToFlag(null);
+                setFlagItem(null);
                 setFlagReason('');
               }}>
                 Cancel
               </AlertDialogCancel>
               <AlertDialogAction 
-                onClick={confirmFlagChannel}
+                onClick={confirmFlagItem}
                 disabled={!flagReason.trim() || flagging}
                 className="bg-orange-600 hover:bg-orange-700"
               >
                 {flagging ? (
                   <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Flagging...</>
                 ) : (
-                  'Flag Channel'
+                  'Flag Content'
                 )}
               </AlertDialogAction>
             </AlertDialogFooter>
