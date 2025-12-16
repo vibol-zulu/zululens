@@ -47,7 +47,7 @@ Together, we collect, verify, and visualize data to understand how media ownersh
                 <MessageSquare className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
                 <div>
                   <p className="text-sm font-medium">Member</p>
-                  <p className="text-xs text-muted-foreground">Create an account to suggest channels, join discussions, and earn Contributor status with 20 approved suggestions.</p>
+                  <p className="text-xs text-muted-foreground"> Add channel suggestions, join discussions, and earn Contributor status with 20 approved suggestions.</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-2.5 rounded-md bg-background border border-border/50">
