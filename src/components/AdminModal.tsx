@@ -267,6 +267,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   // Selection state for bulk actions
   const [selectedSubmissions, setSelectedSubmissions] = useState<Set<string>>(new Set());
   const [selectedComments, setSelectedComments] = useState<Set<string>>(new Set());
+  const [selectedNews, setSelectedNews] = useState<Set<string>>(new Set());
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
 
   const isAuthenticated = user && isAdmin;
@@ -1157,6 +1158,23 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
     }
   };
 
+  const toggleSelectNews = (id: string) => {
+    setSelectedNews(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAllNews = () => {
+    if (selectedNews.size === newsItems.length) {
+      setSelectedNews(new Set());
+    } else {
+      setSelectedNews(new Set(newsItems.map(n => n.id)));
+    }
+  };
+
   // Bulk action handlers
   const handleBulkApproveSubmissions = async () => {
     if (selectedSubmissions.size === 0 || !user) return;
@@ -1281,6 +1299,28 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
     } catch (error) {
       console.error('Bulk delete comments error:', error);
       toast({ title: 'Failed to delete comments', variant: 'destructive' });
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkDeleteNews = async () => {
+    if (selectedNews.size === 0) return;
+    setBulkActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from('news_updates')
+        .delete()
+        .in('id', Array.from(selectedNews));
+
+      if (error) throw error;
+
+      toast({ title: `${selectedNews.size} news items deleted` });
+      setSelectedNews(new Set());
+      fetchNews();
+    } catch (error) {
+      console.error('Bulk delete news error:', error);
+      toast({ title: 'Failed to delete news', variant: 'destructive' });
     } finally {
       setBulkActionLoading(false);
     }
@@ -1558,12 +1598,12 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                   {selectedSubmissions.size > 0 && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" disabled={bulkActionLoading} className="ml-auto">
+                        <Button variant="outline" size="sm" disabled={bulkActionLoading}>
                           Bulk Actions ({selectedSubmissions.size})
                           <ChevronDown className="h-4 w-4 ml-1" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent>
+                      <DropdownMenuContent align="start">
                         <DropdownMenuItem onClick={handleBulkApproveSubmissions}>
                           <Check className="h-4 w-4 mr-2 text-green-600" />
                           Approve Selected
@@ -1583,7 +1623,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
 
                 <div className="flex-1 overflow-auto p-4">
                   <div className="rounded-md border overflow-x-auto">
-                    <Table className="min-w-[900px]">
+                    <Table className="min-w-[800px]">
                         <TableHeader>
                           <TableRow>
                             <TableHead className="w-[40px]">
@@ -2123,18 +2163,40 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
 
               {/* News Tab */}
               <TabsContent value="news" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
-                <div className="border-b p-4 flex items-center justify-between">
-                  <h3 className="font-medium">News & Updates</h3>
-                  <Button onClick={handleAddNews} size="sm" className="gap-2">
+                <div className="border-b p-4 flex items-center gap-2 flex-wrap">
+                  {selectedNews.size > 0 && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" disabled={bulkActionLoading}>
+                          Bulk Actions ({selectedNews.size})
+                          <ChevronDown className="h-4 w-4 ml-1" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start">
+                        <DropdownMenuItem onClick={handleBulkDeleteNews}>
+                          <Trash2 className="h-4 w-4 mr-2 text-destructive" />
+                          Delete Selected
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                  <span className="text-sm text-muted-foreground">{newsItems.length} news items</span>
+                  <Button onClick={handleAddNews} size="sm" className="gap-2 ml-auto">
                     <Plus className="h-4 w-4" />
                     Add News
                   </Button>
                 </div>
-                <div className="flex-1 overflow-auto">
-                  <div className="overflow-x-auto">
-                    <Table>
+                <div className="flex-1 overflow-auto p-4">
+                  <div className="rounded-md border overflow-x-auto">
+                    <Table className="min-w-[600px]">
                       <TableHeader>
                         <TableRow>
+                          <TableHead className="w-[40px]">
+                            <Checkbox
+                              checked={selectedNews.size === newsItems.length && newsItems.length > 0}
+                              onCheckedChange={toggleSelectAllNews}
+                            />
+                          </TableHead>
                           <TableHead>Title</TableHead>
                           <TableHead>Category</TableHead>
                           <TableHead>Status</TableHead>
@@ -2145,19 +2207,25 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                       <TableBody>
                         {newsLoading ? (
                           <TableRow>
-                            <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                               Loading...
                             </TableCell>
                           </TableRow>
                         ) : newsItems.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                               No news items yet. Add one to get started.
                             </TableCell>
                           </TableRow>
                         ) : (
                           newsItems.map((item) => (
                             <TableRow key={item.id}>
+                              <TableCell>
+                                <Checkbox
+                                  checked={selectedNews.has(item.id)}
+                                  onCheckedChange={() => toggleSelectNews(item.id)}
+                                />
+                              </TableCell>
                               <TableCell>
                                 <div className="max-w-[300px]">
                                   <span className="font-medium">{item.title}</span>
