@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { YearData, ViewMode } from '@/types/media';
 import { COUNTRIES } from '@/data/mediaData';
 import MediaCanvas from '@/components/MediaCanvas';
+import { Badge } from '@/components/ui/badge';
 import Sidebar from '@/components/MediaSidebar';
 import InsightsModal from '@/components/InsightsModal';
 import MethodologyModal from '@/components/MethodologyModal';
@@ -66,10 +67,18 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   const [signInDefaultTab, setSignInDefaultTab] = useState<'signin' | 'signup'>('signin');
 
   // Auth state for contributor access
-  const { user, isContributor, isAdmin, signOut } = useAuth();
+  const { user, isContributor, isModerator, isAdmin, signOut } = useAuth();
   
-  // Check if user is a Tier 2 member (authenticated but not contributor/admin)
-  const isMember = user && !isContributor && !isAdmin;
+  // Check if user is a Tier 2 member (authenticated but not contributor/moderator/admin)
+  const isMember = user && !isContributor && !isModerator && !isAdmin;
+  
+  // Get user tier badge
+  const getUserBadge = () => {
+    if (isAdmin) return { label: 'Admin', variant: 'default' as const };
+    if (isModerator) return { label: 'Moderator', variant: 'secondary' as const };
+    if (isContributor) return { label: 'Contributor', variant: 'outline' as const };
+    return { label: 'Member', variant: 'outline' as const };
+  };
 
   // Fetch user-added channels and merge with static data
   const { getMergedData, refetch: refetchUserChannels } = useUserChannels(country, year);
@@ -185,10 +194,13 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
         {/* Right side menu */}
         <div className="flex items-center gap-1 sm:gap-3">
           {!isMobile && user && (
-            <span className="text-sm text-muted-foreground flex items-start gap-1">
+            <span className="text-sm text-muted-foreground flex items-center gap-1.5">
               Welcome, {user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'}
+              <Badge variant={getUserBadge().variant} className="text-[10px] px-1.5 py-0 h-4">
+                {getUserBadge().label}
+              </Badge>
               <span 
-                className="w-1 h-1 rounded-full mt-1 bg-green-500"
+                className="w-1.5 h-1.5 rounded-full bg-green-500"
                 title="Signed in"
               />
             </span>
@@ -241,7 +253,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                   My Dashboard
                 </DropdownMenuItem>
               )}
-              {user && isAdmin && (
+              {user && (isAdmin || isModerator) && (
                 <DropdownMenuItem onClick={() => setShowAdmin(true)}>
                   Admin
                 </DropdownMenuItem>
