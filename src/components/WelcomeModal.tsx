@@ -16,12 +16,10 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
   return <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl sm:text-2xl">
+          <DialogTitle className="text-xl sm:text-2xl flex items-center gap-2 flex-wrap">
             Welcome, {userName}!
+            <Badge variant="outline" className="text-xs">Visitor</Badge>
           </DialogTitle>
-          <DialogDescription className="text-base">
-            You're now a <Badge variant="outline" className="ml-1 text-xs">Visitor</Badge>
-          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-5 py-2">
