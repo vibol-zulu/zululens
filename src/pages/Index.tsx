@@ -1,15 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SignUpGate from '@/components/SignUpGate';
 import MediaDashboard from '@/components/MediaDashboard';
 import WelcomeModal from '@/components/WelcomeModal';
 import { INITIAL_DATA, STORAGE_KEY } from '@/data/mediaData';
 import { YearData } from '@/types/media';
 import { Helmet } from 'react-helmet';
+import { useAuth } from '@/hooks/useAuth';
 
 const Index = () => {
+  const { user, loading } = useAuth();
   const [view, setView] = useState<'gate' | 'dashboard'>('gate');
   const [visitor, setVisitor] = useState<{name: string, email: string} | null>(null);
   const [showWelcome, setShowWelcome] = useState(false);
+
+  // Bypass gate for authenticated users
+  useEffect(() => {
+    if (!loading && user) {
+      const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+      const userEmail = user.email || '';
+      setVisitor({ name: userName, email: userEmail });
+      setView('dashboard');
+    }
+  }, [user, loading]);
   
   const [data] = useState<Record<number, YearData>>(() => {
     try {
