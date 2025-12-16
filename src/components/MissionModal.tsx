@@ -2,25 +2,30 @@ import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Rocket } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+
 interface MissionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSignUpClick?: () => void;
   onContributorClick?: () => void;
 }
+
 const MissionModal: React.FC<MissionModalProps> = ({
   open,
   onOpenChange,
   onSignUpClick,
   onContributorClick
 }) => {
-  return <Dialog open={open} onOpenChange={onOpenChange}>
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold flex items-center gap-2">
-            <Rocket className="h-6 w-6" style={{
-            color: '#F8D4C8'
-          }} />
+            <Rocket className="h-6 w-6" style={{ color: '#F8D4C8' }} />
             Our Mission
           </DialogTitle>
         </DialogHeader>
@@ -69,10 +74,7 @@ const MissionModal: React.FC<MissionModalProps> = ({
                 <h4 className="font-medium mb-1">Member</h4>
                 <p className="text-sm text-muted-foreground">
                   Suggest new channels and join discussions. 
-Earn Contributor status by getting 20 suggestions approved.
-
-
-
+                  Earn Contributor status by getting 20 suggestions approved.
                 </p>
               </div>
 
@@ -94,28 +96,24 @@ Earn Contributor status by getting 20 suggestions approved.
             </div>
           </section>
 
-          {/* CTA */}
-          <section className="text-center pt-4 border-t space-y-4">
-            <p className="text-muted-foreground">
-              Ready to contribute? Sign up and apply to become a contributor today.
-            </p>
-            <div className="flex justify-center gap-3">
-              <Button variant="outline" onClick={() => {
-              onOpenChange(false);
-              onSignUpClick?.();
-            }}>
-                Sign Up
-              </Button>
+          {/* CTA - Only show for Tier 1 (unauthenticated) users */}
+          {!isAuthenticated && (
+            <section className="text-center pt-4 border-t space-y-4">
+              <p className="text-muted-foreground">
+                Ready to join our community?
+              </p>
               <Button onClick={() => {
-              onOpenChange(false);
-              onContributorClick?.();
-            }}>
-                Become a Contributor
+                onOpenChange(false);
+                onSignUpClick?.();
+              }}>
+                Create an account
               </Button>
-            </div>
-          </section>
+            </section>
+          )}
         </div>
       </DialogContent>
-    </Dialog>;
+    </Dialog>
+  );
 };
+
 export default MissionModal;
