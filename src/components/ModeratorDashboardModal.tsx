@@ -57,8 +57,10 @@ import {
   Trash2,
   Flag,
   Pencil,
-  ChevronDown
+  ChevronDown,
+  Bell
 } from 'lucide-react';
+import NotificationsTab from '@/components/NotificationsTab';
 
 interface ChannelEntry {
   id: string;
@@ -892,6 +894,10 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                   <Newspaper className="h-4 w-4" />
                   News
                 </TabsTrigger>
+                <TabsTrigger value="notifications" className="gap-2">
+                  <Bell className="h-4 w-4" />
+                  Notifications
+                </TabsTrigger>
               </TabsList>
             </div>
 
@@ -1380,6 +1386,13 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                     </Table>
                   </div>
                 )}
+              </div>
+            </TabsContent>
+
+            {/* Notifications Tab */}
+            <TabsContent value="notifications" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
+              <div className="flex-1 overflow-auto p-4">
+                <NotificationsTab isActive={activeTab === 'notifications'} />
               </div>
             </TabsContent>
           </Tabs>
