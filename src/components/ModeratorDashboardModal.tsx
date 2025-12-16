@@ -267,7 +267,10 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
         }));
 
       if (notifications.length > 0) {
-        await supabase.from('notifications').insert(notifications);
+        const { error: notifError } = await supabase.from('notifications').insert(notifications);
+        if (notifError) {
+          console.error('Failed to send bulk approval notifications:', notifError);
+        }
       }
 
       toast({ title: `${selectedPending.size} channels approved` });
@@ -310,7 +313,10 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
         }));
 
       if (notifications.length > 0) {
-        await supabase.from('notifications').insert(notifications);
+        const { error: notifError } = await supabase.from('notifications').insert(notifications);
+        if (notifError) {
+          console.error('Failed to send bulk rejection notifications:', notifError);
+        }
       }
 
       toast({ title: `${selectedPending.size} channels rejected` });
@@ -591,7 +597,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
       if (error) throw error;
 
       if (channelToReview.author_id) {
-        await supabase
+        const { error: notifError } = await supabase
           .from('notifications')
           .insert({
             title: reviewAction === 'approve' ? 'Submission Approved!' : 'Submission Rejected',
@@ -604,6 +610,9 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
             channel_id: channelToReview.id,
             created_by: user.id
           });
+        if (notifError) {
+          console.error('Failed to send review notification:', notifError);
+        }
       }
 
       toast({ 
