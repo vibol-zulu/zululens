@@ -1,24 +1,19 @@
 import React from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Eye, MessageSquare, PenLine, Shield } from 'lucide-react';
-
 interface WelcomeModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   userName: string;
 }
-
-const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onOpenChange, userName }) => {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+const WelcomeModal: React.FC<WelcomeModalProps> = ({
+  open,
+  onOpenChange,
+  userName
+}) => {
+  return <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl sm:text-2xl">
@@ -36,7 +31,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onOpenChange, userNam
             <ul className="text-sm text-muted-foreground space-y-1.5">
               <li>• Toggle between <strong>2000</strong> and <strong>2025</strong> to see how media has evolved</li>
               <li>• Click on circles to explore individual media outlets</li>
-              <li>• Use sidebars to filter corporate (teal) and independent (peach) channels</li>
+              <li>• Use sidebars to filter corporate and independent channels</li>
               <li>• Switch between <strong>Microscope</strong> and <strong>Spectrum</strong> views</li>
             </ul>
           </section>
@@ -91,8 +86,6 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onOpenChange, userNam
           Start Exploring
         </Button>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>;
 };
-
 export default WelcomeModal;
