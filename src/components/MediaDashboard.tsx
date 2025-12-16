@@ -13,6 +13,7 @@ import AdminModal from '@/components/AdminModal';
 import SignInModal from '@/components/SignInModal';
 import MemberDashboardModal from '@/components/MemberDashboardModal';
 import ContributorDashboardModal from '@/components/ContributorDashboardModal';
+import ModeratorDashboardModal from '@/components/ModeratorDashboardModal';
 import CommentsSection from '@/components/CommentsSection';
 import { Button } from '@/components/ui/button';
 import {
@@ -66,6 +67,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   const [showMission, setShowMission] = useState(false);
   const [showMemberDashboard, setShowMemberDashboard] = useState(false);
   const [showContributorDashboard, setShowContributorDashboard] = useState(false);
+  const [showModeratorDashboard, setShowModeratorDashboard] = useState(false);
   const [signInDefaultTab, setSignInDefaultTab] = useState<'signin' | 'signup'>('signin');
 
   // Auth state for contributor access
@@ -260,7 +262,12 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                   My Dashboard
                 </DropdownMenuItem>
               )}
-              {user && (isAdmin || isModerator) && (
+              {user && isModerator && !isAdmin && (
+                <DropdownMenuItem onClick={() => setShowModeratorDashboard(true)}>
+                  Moderator Dashboard
+                </DropdownMenuItem>
+              )}
+              {user && isAdmin && (
                 <DropdownMenuItem onClick={() => setShowAdmin(true)}>
                   Admin
                 </DropdownMenuItem>
@@ -416,6 +423,11 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
         open={showContributorDashboard}
         onOpenChange={setShowContributorDashboard}
         userName={user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Contributor'}
+      />
+      <ModeratorDashboardModal
+        open={showModeratorDashboard}
+        onOpenChange={setShowModeratorDashboard}
+        userName={user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Moderator'}
       />
       
       {/* Comments Section - visible for all users */}
