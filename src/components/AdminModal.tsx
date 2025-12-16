@@ -212,7 +212,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
 
   // Create contributor state
   const [showCreateUserDialog, setShowCreateUserDialog] = useState(false);
-  const [newUserData, setNewUserData] = useState({ email: '', password: '', fullName: '', role: 'contributor' as 'admin' | 'contributor' | 'moderator' });
+  const [newUserData, setNewUserData] = useState({ email: '', password: '', fullName: '', role: 'member' as 'member' | 'admin' | 'contributor' | 'moderator' });
 
   const isAuthenticated = user && isAdmin;
 
@@ -791,7 +791,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
           email: newUserData.email,
           password: newUserData.password,
           fullName: newUserData.fullName,
-          role: newUserData.role
+          ...(newUserData.role === 'member' ? {} : { role: newUserData.role })
         }
       });
 
@@ -799,7 +799,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
       
       toast({ title: 'User created successfully' });
       setShowCreateUserDialog(false);
-      setNewUserData({ email: '', password: '', fullName: '', role: 'contributor' as 'admin' | 'contributor' | 'moderator' });
+      setNewUserData({ email: '', password: '', fullName: '', role: 'member' as 'member' | 'admin' | 'contributor' | 'moderator' });
       fetchUsers();
     } catch (error) {
       console.error('Error creating user:', error);
@@ -1663,11 +1663,12 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
 
               <div className="space-y-2">
                 <Label>Role</Label>
-                <Select value={newUserData.role} onValueChange={(v) => setNewUserData(prev => ({ ...prev, role: v as 'admin' | 'contributor' | 'moderator' }))}>
+                <Select value={newUserData.role} onValueChange={(v) => setNewUserData(prev => ({ ...prev, role: v as 'member' | 'admin' | 'contributor' | 'moderator' }))}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="member">Member</SelectItem>
                     <SelectItem value="contributor">Contributor</SelectItem>
                     <SelectItem value="moderator">Moderator</SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>
