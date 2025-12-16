@@ -635,13 +635,15 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                   </div>
                 ) : (
                   <div className="rounded-md border overflow-x-auto">
-                    <Table className="min-w-[700px]">
+                    <Table className="min-w-[800px]">
                       <TableHeader>
                         <TableRow>
                           <TableHead>Channel</TableHead>
                           <TableHead>Category</TableHead>
                           <TableHead>Country</TableHead>
+                          <TableHead>Year</TableHead>
                           <TableHead>Author</TableHead>
+                          <TableHead>Status</TableHead>
                           <TableHead>Date</TableHead>
                           <TableHead className="w-[140px]">Actions</TableHead>
                         </TableRow>
@@ -650,21 +652,20 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                         {pendingChannels.map((channel) => (
                           <TableRow key={channel.id}>
                             <TableCell className="font-medium">{channel.name}</TableCell>
-                            <TableCell>
-                              <Badge variant="outline">{channel.category}</Badge>
-                            </TableCell>
+                            <TableCell className="capitalize">{channel.category}</TableCell>
                             <TableCell>{channel.country}</TableCell>
-                            <TableCell>
-                              <div className="flex flex-col">
-                                <span className="text-sm">{channel.author_name || 'Unknown'}</span>
-                                <span className="text-xs text-muted-foreground">{channel.author_email}</span>
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-muted-foreground">
-                              {formatDate(channel.created_at)}
+                            <TableCell>{channel.year}</TableCell>
+                            <TableCell className="text-sm">
+                              {channel.author_name || channel.author_email?.split('@')[0] || 'Unknown'}
                             </TableCell>
                             <TableCell>
-                              <div className="flex items-center gap-1">
+                              <Badge variant="secondary">pending</Badge>
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {new Date(channel.created_at).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-1">
                                 <Button
                                   variant="ghost"
                                   size="icon"
@@ -680,9 +681,8 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                                   <XCircle className="h-4 w-4 text-destructive" />
                                 </Button>
                                 <Button
-                                  size="sm"
                                   variant="ghost"
-                                  className="h-8 w-8 p-0"
+                                  size="icon"
                                   onClick={() => handleFlagItem('channel', channel.id, channel.name)}
                                 >
                                   <Flag className="h-4 w-4" />
