@@ -217,36 +217,33 @@ const Sidebar: React.FC<SidebarProps> = ({
     return (
       <div className="w-1/2 border-r last:border-r-0 border-border bg-card overflow-hidden flex flex-col min-w-0">
         <div 
-          className="p-3 border-b border-border shrink-0"
+          className="px-2 py-2 border-b border-border/30 shrink-0"
           style={{ backgroundColor: headerBgColor }}
         >
           <h3 
-            className="font-semibold capitalize text-sm text-center mb-2"
+            className="font-semibold capitalize text-xs text-center mb-1.5"
             style={{ color: headerTextColor }}
           >
             {category}
           </h3>
-          <div className="flex gap-1 mb-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
+          <div className="flex gap-1 mb-1.5">
+            <button 
               onClick={() => onToggleAll(category)}
               disabled={sorted.length === 0}
-              className="flex-1 text-xs px-1 bg-background/90 hover:bg-background"
+              className="flex-1 text-[10px] px-1.5 py-0.5 rounded bg-background/80 hover:bg-background/95 transition-colors disabled:opacity-50"
+              style={{ color: headerTextColor }}
             >
               {allSelected && sorted.length > 0 ? 'Deselect' : 'Select All'}
-            </Button>
+            </button>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <button 
                     onClick={handleAddClick}
-                    className="px-2 shrink-0 bg-background/90 hover:bg-background"
+                    className="px-1.5 py-0.5 rounded bg-background/80 hover:bg-background/95 transition-colors"
                   >
-                    <Plus className="h-3 w-3" />
-                  </Button>
+                    <Plus className="h-3 w-3" style={{ color: headerTextColor }} />
+                  </button>
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>Add a new channel</p>
@@ -255,12 +252,12 @@ const Sidebar: React.FC<SidebarProps> = ({
             </TooltipProvider>
           </div>
           <div className="relative">
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-            <Input
+            <Search className="absolute left-1.5 top-1/2 -translate-y-1/2 h-2.5 w-2.5 text-muted-foreground" />
+            <input
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-7 h-7 text-xs focus-visible:ring-0 focus-visible:ring-offset-0 bg-background/90"
+              className="w-full pl-5 pr-2 py-0.5 text-[10px] rounded bg-background/80 border-0 focus:outline-none focus:bg-background/95 placeholder:text-muted-foreground/70"
             />
           </div>
         </div>
@@ -340,36 +337,33 @@ const Sidebar: React.FC<SidebarProps> = ({
       )}
     >
       <div 
-        className="p-4 border-b border-border/50"
+        className="px-3 py-3 border-b border-border/30"
         style={{ backgroundColor: headerBgColor }}
       >
         <h3 
-          className="font-semibold capitalize text-center mb-3"
+          className="font-semibold capitalize text-center text-sm mb-2"
           style={{ color: headerTextColor }}
         >
           {category}
         </h3>
-        <div className="flex gap-2 mb-3">
-          <Button 
-            variant="outline" 
-            size="sm" 
+        <div className="flex gap-1.5 mb-2">
+          <button 
             onClick={() => onToggleAll(category)}
             disabled={sorted.length === 0}
-            className="flex-1 bg-background/90 hover:bg-background"
+            className="flex-1 text-xs px-2 py-1 rounded bg-background/80 hover:bg-background/95 transition-colors disabled:opacity-50"
+            style={{ color: headerTextColor }}
           >
             {allSelected && sorted.length > 0 ? 'Deselect All' : 'Select All'}
-          </Button>
+          </button>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleAddClick}
-                className="px-3 bg-background/90 hover:bg-background"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
+                <button 
+                  onClick={handleAddClick}
+                  className="px-2 py-1 rounded bg-background/80 hover:bg-background/95 transition-colors"
+                >
+                  <Plus className="h-3.5 w-3.5" style={{ color: headerTextColor }} />
+                </button>
               </TooltipTrigger>
               <TooltipContent>
                 <p>Add a new channel</p>
@@ -378,12 +372,12 @@ const Sidebar: React.FC<SidebarProps> = ({
           </TooltipProvider>
         </div>
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+          <input
             placeholder="Search channels..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 focus-visible:ring-0 focus-visible:ring-offset-0 bg-background/90"
+            className="w-full pl-7 pr-3 py-1 text-xs rounded bg-background/80 border-0 focus:outline-none focus:bg-background/95 placeholder:text-muted-foreground/70"
           />
         </div>
       </div>
