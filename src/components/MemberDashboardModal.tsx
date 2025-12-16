@@ -147,7 +147,7 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
                   </div>
                 ) : (
                   <div className="rounded-md border overflow-x-auto">
-                    <Table className="min-w-[500px]">
+                    <Table className="min-w-[500px] text-xs">
                       <TableHeader>
                         <TableRow>
                           <TableHead>Channel Name</TableHead>
