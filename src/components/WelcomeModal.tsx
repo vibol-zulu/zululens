@@ -40,7 +40,7 @@ Together, we collect, verify, and visualize data to understand how media ownersh
                 <Eye className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
                 <div>
                   <p className="text-sm font-medium">Visitor (You)</p>
-                  <p className="text-xs text-muted-foreground">Explore the visualization freely</p>
+                  <p className="text-xs text-muted-foreground">Explore the visualization freely. Create an account and become a Member.      </p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-2.5 rounded-md bg-background border border-border/50">
