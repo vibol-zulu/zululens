@@ -288,7 +288,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="relative">
                 <Menu className="h-5 w-5" />
-                {unreadNotificationsCount > 0 && (
+                {(unreadNotificationsCount > 0 || pendingSubmissionsCount > 0) && (
                   <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-destructive" />
                 )}
               </Button>
