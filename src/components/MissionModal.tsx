@@ -88,7 +88,7 @@ Earn Contributor status by getting 20 suggestions approved.
               <div className="border rounded-lg p-4 bg-muted/30">
                 <h4 className="font-medium mb-1">Moderator</h4>
                 <p className="text-sm text-muted-foreground">
-                  Moderators review and approve channel submissions, ensuring data quality and accuracy. Active contributors with consistent, high-quality submissions may be invited to become moderators.
+                  Moderators review and approve channel submissions, ensuring data quality and accuracy.
                 </p>
               </div>
             </div>
