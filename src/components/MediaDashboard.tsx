@@ -137,12 +137,12 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
     setSelectedIds(new Set());
   };
 
-  // Show contributor modal after data loads if country has no data
+  // Show contributor modal after data loads if country has no data (only for Tier 1 visitors)
   useEffect(() => {
-    if (!countriesWithStaticData.includes(country) && mergedData.brands.length === 0 && !isContributor) {
+    if (!countriesWithStaticData.includes(country) && mergedData.brands.length === 0 && !isContributor && !isMember) {
       setShowContributor(true);
     }
-  }, [country, mergedData.brands.length, isContributor]);
+  }, [country, mergedData.brands.length, isContributor, isMember]);
 
   const toggleBrand = (id: string) => {
     const newSet = new Set(selectedIds);
