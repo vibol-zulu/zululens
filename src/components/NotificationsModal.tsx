@@ -18,7 +18,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { Bell, Flag, CheckCircle, Loader2, Trash2 } from 'lucide-react';
+import { Bell, CheckCircle, Loader2, Trash2 } from 'lucide-react';
 
 interface Notification {
   id: string;
@@ -195,7 +195,6 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-8"></TableHead>
-                    <TableHead>Type</TableHead>
                     <TableHead>Title</TableHead>
                     <TableHead>Message</TableHead>
                     <TableHead>From</TableHead>
@@ -210,21 +209,6 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({
                         {!notif.is_read && (
                           <div className="w-2 h-2 rounded-full bg-primary" />
                         )}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={
-                          notif.type === 'channel_flag' ? 'destructive' : 
-                          notif.type === 'submission_review' ? (notif.title.includes('Approved') ? 'default' : 'secondary') :
-                          'secondary'
-                        }>
-                          {notif.type === 'channel_flag' ? (
-                            <><Flag className="h-3 w-3 mr-1" /> Flag</>
-                          ) : notif.type === 'submission_review' ? (
-                            notif.title.includes('Approved') ? (
-                              <><CheckCircle className="h-3 w-3 mr-1" /> Approved</>
-                            ) : 'Rejected'
-                          ) : notif.type === 'channel_suggestion' ? 'New Suggestion' : notif.type}
-                        </Badge>
                       </TableCell>
                       <TableCell className="font-medium">{notif.title}</TableCell>
                       <TableCell className="max-w-[200px] truncate text-sm text-muted-foreground">
