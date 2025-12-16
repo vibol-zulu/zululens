@@ -71,14 +71,21 @@ interface UserProfile {
   role: 'admin' | 'contributor' | 'moderator' | null;
 }
 
-interface ContributorRequest {
+interface Submission {
   id: string;
   name: string;
-  email: string;
-  message: string;
+  category: string;
+  value_millions: number;
+  platform: string;
+  content_type: string;
+  political_lean: string;
   country: string;
+  year: number;
   status: string;
+  author_id: string | null;
   created_at: string;
+  author_email?: string;
+  author_name?: string;
 }
 
 interface AdminComment {
@@ -187,11 +194,12 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   const [userToDelete, setUserToDelete] = useState<UserProfile | null>(null);
   const [showDeleteUserDialog, setShowDeleteUserDialog] = useState(false);
 
-  // Requests state
-  const [requests, setRequests] = useState<ContributorRequest[]>([]);
-  const [requestsLoading, setRequestsLoading] = useState(false);
-  const [selectedRequest, setSelectedRequest] = useState<ContributorRequest | null>(null);
-  const [showRequestDialog, setShowRequestDialog] = useState(false);
+  // Submissions state
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [submissionsLoading, setSubmissionsLoading] = useState(false);
+  const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
+  const [showSubmissionDialog, setShowSubmissionDialog] = useState(false);
+  const [submissionsStatusFilter, setSubmissionsStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
 
   // Comments state
   const [comments, setComments] = useState<AdminComment[]>([]);
@@ -346,24 +354,52 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
     }
   };
 
-  // Fetch contributor requests
-  const fetchRequests = async () => {
+  // Fetch submissions (channel suggestions)
+  const fetchSubmissions = async () => {
     if (!isAdmin) return;
     
-    setRequestsLoading(true);
+    setSubmissionsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('contributor_requests')
+      let query = supabase
+        .from('user_channels')
         .select('*')
         .order('created_at', { ascending: false });
 
+      if (submissionsStatusFilter !== 'all') {
+        query = query.eq('status', submissionsStatusFilter);
+      }
+
+      const { data, error } = await query;
+
       if (error) throw error;
-      setRequests(data || []);
+
+      // Fetch author profiles
+      const authorIds = [...new Set((data || []).map(s => s.author_id).filter(Boolean))];
+      let profiles: { id: string; email: string; full_name: string | null }[] = [];
+      
+      if (authorIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, email, full_name')
+          .in('id', authorIds as string[]);
+        profiles = profilesData || [];
+      }
+
+      const submissionsWithAuthors: Submission[] = (data || []).map(sub => {
+        const profile = profiles.find(p => p.id === sub.author_id);
+        return {
+          ...sub,
+          author_email: profile?.email,
+          author_name: profile?.full_name || undefined
+        };
+      });
+
+      setSubmissions(submissionsWithAuthors);
     } catch (error) {
-      console.error('Error fetching requests:', error);
-      toast({ title: 'Failed to load requests', variant: 'destructive' });
+      console.error('Error fetching submissions:', error);
+      toast({ title: 'Failed to load submissions', variant: 'destructive' });
     } finally {
-      setRequestsLoading(false);
+      setSubmissionsLoading(false);
     }
   };
 
@@ -800,7 +836,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
       fetchChannels();
       if (isAdmin) {
         fetchUsers();
-        fetchRequests();
+        fetchSubmissions();
       }
     }
   }, [isAuthenticated, isAdmin, selectedCountry, selectedYear, selectedCategory, open]);
@@ -808,8 +844,8 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   useEffect(() => {
     if (isAuthenticated && open && activeTab === 'users' && isAdmin) {
       fetchUsers();
-    } else if (isAuthenticated && open && activeTab === 'requests' && isAdmin) {
-      fetchRequests();
+    } else if (isAuthenticated && open && activeTab === 'submissions' && isAdmin) {
+      fetchSubmissions();
     } else if (isAuthenticated && open && activeTab === 'comments' && isAdmin) {
       fetchComments();
     } else if (isAuthenticated && open && activeTab === 'analytics' && isAdmin) {
@@ -820,6 +856,13 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
       fetchNews();
     }
   }, [activeTab, isAuthenticated, open, isAdmin]);
+
+  // Refetch submissions when filter changes
+  useEffect(() => {
+    if (isAuthenticated && open && activeTab === 'submissions' && isAdmin) {
+      fetchSubmissions();
+    }
+  }, [submissionsStatusFilter]);
 
   useEffect(() => {
     if (isAuthenticated && open && activeTab === 'comments' && isAdmin) {
@@ -1020,48 +1063,60 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
     }
   };
 
-  // Request management functions
-  const updateRequestStatus = async (requestId: string, status: 'approved' | 'denied') => {
+  // Submission management functions
+  const updateSubmissionStatus = async (submissionId: string, status: 'approved' | 'rejected', authorId: string | null) => {
     try {
       const { error } = await supabase
-        .from('contributor_requests')
+        .from('user_channels')
         .update({ 
           status, 
-          reviewed_at: new Date().toISOString(),
-          reviewed_by: user?.id 
+          approved_at: status === 'approved' ? new Date().toISOString() : null,
+          approved_by: status === 'approved' ? user?.id : null
         })
-        .eq('id', requestId);
+        .eq('id', submissionId);
 
       if (error) throw error;
+
+      // Send notification to the author
+      if (authorId) {
+        await supabase.from('notifications').insert({
+          title: `Submission ${status === 'approved' ? 'Approved' : 'Rejected'}`,
+          message: `Your channel submission has been ${status}.`,
+          type: 'submission_review',
+          target_user_id: authorId,
+          target_role: 'member',
+          created_by: user?.id
+        });
+      }
       
-      toast({ title: `Request ${status}` });
-      setShowRequestDialog(false);
-      setSelectedRequest(null);
-      fetchRequests();
+      toast({ title: `Submission ${status}` });
+      setShowSubmissionDialog(false);
+      setSelectedSubmission(null);
+      fetchSubmissions();
     } catch (error) {
-      console.error('Error updating request:', error);
-      toast({ title: 'Failed to update request', variant: 'destructive' });
+      console.error('Error updating submission:', error);
+      toast({ title: 'Failed to update submission', variant: 'destructive' });
     }
   };
 
-  const deleteRequest = async (requestId: string) => {
+  const deleteSubmission = async (submissionId: string) => {
     try {
       const { error } = await supabase
-        .from('contributor_requests')
+        .from('user_channels')
         .delete()
-        .eq('id', requestId);
+        .eq('id', submissionId);
 
       if (error) throw error;
       
-      toast({ title: 'Request deleted' });
-      fetchRequests();
+      toast({ title: 'Submission deleted' });
+      fetchSubmissions();
     } catch (error) {
-      console.error('Error deleting request:', error);
-      toast({ title: 'Failed to delete request', variant: 'destructive' });
+      console.error('Error deleting submission:', error);
+      toast({ title: 'Failed to delete submission', variant: 'destructive' });
     }
   };
 
-  const pendingRequestsCount = requests.filter(r => r.status === 'pending').length;
+  const pendingSubmissionsCount = submissions.filter(s => s.status === 'pending').length;
 
   // Close modal if user is not admin
   useEffect(() => {
@@ -1108,12 +1163,12 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                         <Users className="h-4 w-4" />
                         Users
                       </TabsTrigger>
-                      <TabsTrigger value="requests" className="gap-2 relative">
+                      <TabsTrigger value="submissions" className="gap-2 relative">
                         <MessageSquare className="h-4 w-4" />
-                        Requests
-                        {pendingRequestsCount > 0 && (
+                        Submissions
+                        {pendingSubmissionsCount > 0 && (
                           <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
-                            {pendingRequestsCount}
+                            {pendingSubmissionsCount}
                           </Badge>
                         )}
                       </TabsTrigger>
@@ -1312,79 +1367,96 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                 </div>
               </TabsContent>
 
-              {/* Requests Tab */}
-              <TabsContent value="requests" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
-                <div className="border-b p-4">
+              {/* Submissions Tab */}
+              <TabsContent value="submissions" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
+                <div className="border-b p-4 flex items-center gap-2 flex-wrap">
+                  <Select value={submissionsStatusFilter} onValueChange={(v) => setSubmissionsStatusFilter(v as 'all' | 'pending' | 'approved' | 'rejected')}>
+                    <SelectTrigger className="w-[130px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="approved">Approved</SelectItem>
+                      <SelectItem value="rejected">Rejected</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <span className="text-sm text-muted-foreground">
-                    {pendingRequestsCount} pending request{pendingRequestsCount !== 1 ? 's' : ''}
+                    {pendingSubmissionsCount} pending submission{pendingSubmissionsCount !== 1 ? 's' : ''}
                   </span>
                 </div>
 
                 <div className="flex-1 overflow-auto p-4">
                   <div className="rounded-md border overflow-x-auto">
-                    <Table className="min-w-[600px]">
+                    <Table className="min-w-[800px]">
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Email</TableHead>
+                            <TableHead>Channel</TableHead>
+                            <TableHead>Category</TableHead>
                             <TableHead>Country</TableHead>
+                            <TableHead>Year</TableHead>
+                            <TableHead>Author</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Date</TableHead>
                             <TableHead className="w-[140px]">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {requestsLoading ? (
+                          {submissionsLoading ? (
                             <TableRow>
-                              <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                              <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                                 Loading...
                               </TableCell>
                             </TableRow>
-                          ) : requests.length === 0 ? (
+                          ) : submissions.length === 0 ? (
                             <TableRow>
-                              <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                                No requests yet
+                              <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                                No submissions found
                               </TableCell>
                             </TableRow>
                           ) : (
-                            requests.map(req => (
-                              <TableRow key={req.id}>
-                                <TableCell className="font-medium">{req.name}</TableCell>
-                                <TableCell>{req.email}</TableCell>
-                                <TableCell>{req.country}</TableCell>
+                            submissions.map(sub => (
+                              <TableRow key={sub.id}>
+                                <TableCell className="font-medium">{sub.name}</TableCell>
+                                <TableCell className="capitalize">{sub.category}</TableCell>
+                                <TableCell>{sub.country}</TableCell>
+                                <TableCell>{sub.year}</TableCell>
+                                <TableCell className="text-sm">
+                                  {sub.author_name || sub.author_email?.split('@')[0] || 'Unknown'}
+                                </TableCell>
                                 <TableCell>
                                   <Badge variant={
-                                    req.status === 'pending' ? 'secondary' : 
-                                    req.status === 'approved' ? 'default' : 'destructive'
+                                    sub.status === 'pending' ? 'secondary' : 
+                                    sub.status === 'approved' ? 'default' : 'destructive'
                                   }>
-                                    {req.status}
+                                    {sub.status}
                                   </Badge>
                                 </TableCell>
                                 <TableCell className="text-sm text-muted-foreground">
-                                  {new Date(req.created_at).toLocaleDateString()}
+                                  {new Date(sub.created_at).toLocaleDateString()}
                                 </TableCell>
                                 <TableCell>
                                   <div className="flex gap-1">
                                     <Button 
                                       variant="ghost" 
                                       size="icon"
-                                      onClick={() => { setSelectedRequest(req); setShowRequestDialog(true); }}
+                                      onClick={() => { setSelectedSubmission(sub); setShowSubmissionDialog(true); }}
                                     >
                                       <MessageSquare className="h-4 w-4" />
                                     </Button>
-                                    {req.status === 'pending' && (
+                                    {sub.status === 'pending' && (
                                       <>
                                         <Button 
                                           variant="ghost" 
                                           size="icon"
-                                          onClick={() => updateRequestStatus(req.id, 'approved')}
+                                          onClick={() => updateSubmissionStatus(sub.id, 'approved', sub.author_id)}
                                         >
                                           <Check className="h-4 w-4 text-green-600" />
                                         </Button>
                                         <Button 
                                           variant="ghost" 
                                           size="icon"
-                                          onClick={() => updateRequestStatus(req.id, 'denied')}
+                                          onClick={() => updateSubmissionStatus(sub.id, 'rejected', sub.author_id)}
                                         >
                                           <XCircle className="h-4 w-4 text-destructive" />
                                         </Button>
@@ -1393,7 +1465,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                                     <Button 
                                       variant="ghost" 
                                       size="icon"
-                                      onClick={() => deleteRequest(req.id)}
+                                      onClick={() => deleteSubmission(sub.id)}
                                     >
                                       <Trash2 className="h-4 w-4 text-destructive" />
                                     </Button>
@@ -2241,56 +2313,87 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
           </DialogContent>
         </Dialog>
 
-        {/* View Request Dialog */}
-        <Dialog open={showRequestDialog} onOpenChange={setShowRequestDialog}>
-          <DialogContent>
+        {/* View Submission Dialog */}
+        <Dialog open={showSubmissionDialog} onOpenChange={setShowSubmissionDialog}>
+          <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle>Contributor Request</DialogTitle>
+              <DialogTitle>Submission Details</DialogTitle>
             </DialogHeader>
             
-            {selectedRequest && (
+            {selectedSubmission && (
               <div className="space-y-4 mt-4">
-                <div>
-                  <Label className="text-muted-foreground">Name</Label>
-                  <p className="font-medium">{selectedRequest.name}</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-muted-foreground">Channel Name</Label>
+                    <p className="font-medium">{selectedSubmission.name}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Category</Label>
+                    <p className="font-medium capitalize">{selectedSubmission.category}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-muted-foreground">Country</Label>
+                    <p className="font-medium">{selectedSubmission.country}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Year</Label>
+                    <p className="font-medium">{selectedSubmission.year}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-muted-foreground">Platform</Label>
+                    <p className="font-medium">{selectedSubmission.platform}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Content Type</Label>
+                    <p className="font-medium">{selectedSubmission.content_type}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-muted-foreground">Audience (Millions)</Label>
+                    <p className="font-medium">{selectedSubmission.value_millions}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Political Lean</Label>
+                    <p className="font-medium">{selectedSubmission.political_lean}</p>
+                  </div>
                 </div>
 
                 <div>
-                  <Label className="text-muted-foreground">Email</Label>
-                  <p className="font-medium">{selectedRequest.email}</p>
-                </div>
-
-                <div>
-                  <Label className="text-muted-foreground">Country</Label>
-                  <p className="font-medium">{selectedRequest.country}</p>
-                </div>
-
-                <div>
-                  <Label className="text-muted-foreground">Message</Label>
-                  <p className="mt-1 p-3 bg-muted rounded-md text-sm">{selectedRequest.message}</p>
+                  <Label className="text-muted-foreground">Submitted By</Label>
+                  <p className="font-medium">
+                    {selectedSubmission.author_name || selectedSubmission.author_email || 'Unknown'}
+                  </p>
                 </div>
 
                 <div>
                   <Label className="text-muted-foreground">Status</Label>
                   <Badge variant={
-                    selectedRequest.status === 'pending' ? 'secondary' : 
-                    selectedRequest.status === 'approved' ? 'default' : 'destructive'
+                    selectedSubmission.status === 'pending' ? 'secondary' : 
+                    selectedSubmission.status === 'approved' ? 'default' : 'destructive'
                   } className="ml-2">
-                    {selectedRequest.status}
+                    {selectedSubmission.status}
                   </Badge>
                 </div>
 
-                {selectedRequest.status === 'pending' && (
+                {selectedSubmission.status === 'pending' && (
                   <div className="flex gap-3 pt-4">
                     <Button 
                       variant="outline" 
-                      onClick={() => updateRequestStatus(selectedRequest.id, 'denied')} 
+                      onClick={() => updateSubmissionStatus(selectedSubmission.id, 'rejected', selectedSubmission.author_id)} 
                       className="flex-1"
                     >
-                      Deny
+                      Reject
                     </Button>
                     <Button 
-                      onClick={() => updateRequestStatus(selectedRequest.id, 'approved')} 
+                      onClick={() => updateSubmissionStatus(selectedSubmission.id, 'approved', selectedSubmission.author_id)} 
                       className="flex-1"
                     >
                       Approve
