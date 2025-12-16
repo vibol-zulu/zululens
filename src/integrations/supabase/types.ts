@@ -180,6 +180,7 @@ export type Database = {
           read_at: string | null
           read_by: string | null
           target_role: string
+          target_user_id: string | null
           title: string
           type: string
         }
@@ -193,6 +194,7 @@ export type Database = {
           read_at?: string | null
           read_by?: string | null
           target_role?: string
+          target_user_id?: string | null
           title: string
           type?: string
         }
@@ -206,6 +208,7 @@ export type Database = {
           read_at?: string | null
           read_by?: string | null
           target_role?: string
+          target_user_id?: string | null
           title?: string
           type?: string
         }

@@ -29,6 +29,7 @@ interface Notification {
   channel_id: string | null;
   created_by: string;
   target_role: string;
+  target_user_id: string | null;
   is_read: boolean;
   created_at: string;
   creator_name?: string;
@@ -212,10 +213,18 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({
                         )}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={notif.type === 'channel_flag' ? 'destructive' : 'secondary'}>
+                        <Badge variant={
+                          notif.type === 'channel_flag' ? 'destructive' : 
+                          notif.type === 'submission_review' ? (notif.title.includes('Approved') ? 'default' : 'secondary') :
+                          'secondary'
+                        }>
                           {notif.type === 'channel_flag' ? (
                             <><Flag className="h-3 w-3 mr-1" /> Flag</>
-                          ) : notif.type}
+                          ) : notif.type === 'submission_review' ? (
+                            notif.title.includes('Approved') ? (
+                              <><CheckCircle className="h-3 w-3 mr-1" /> Approved</>
+                            ) : 'Rejected'
+                          ) : notif.type === 'channel_suggestion' ? 'New Suggestion' : notif.type}
                         </Badge>
                       </TableCell>
                       <TableCell className="font-medium">{notif.title}</TableCell>
