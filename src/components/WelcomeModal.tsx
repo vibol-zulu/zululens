@@ -20,7 +20,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
             Welcome, {userName}!
           </DialogTitle>
           <DialogDescription className="text-base">
-            You're now a <Badge variant="outline" className="ml-1 text-xs">Tier 1 Visitor</Badge>
+            You're now a <Badge variant="outline" className="ml-1 text-xs">Visitor</Badge>
           </DialogDescription>
         </DialogHeader>
 
