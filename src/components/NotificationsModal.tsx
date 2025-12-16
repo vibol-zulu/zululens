@@ -7,7 +7,6 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Table,
   TableBody,
@@ -180,7 +179,7 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({
           </DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 h-[400px]">
+        <div className="flex-1 overflow-y-auto max-h-[60vh]">
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -191,7 +190,7 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({
               <p>No notifications</p>
             </div>
           ) : (
-            <div className="rounded-md border">
+            <div className="rounded-md border overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -268,7 +267,7 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({
               </Table>
             </div>
           )}
-        </ScrollArea>
+        </div>
       </DialogContent>
     </Dialog>
   );
