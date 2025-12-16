@@ -143,12 +143,14 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
   });
 
   const fetchPendingChannels = useCallback(async () => {
+    if (!user) return;
     setSuggestionsLoading(true);
     try {
       let query = supabase
         .from('user_channels')
         .select('*')
         .eq('status', 'pending')
+        .neq('author_id', user.id) // Exclude own submissions - moderators can't approve their own
         .order('created_at', { ascending: false });
       
       if (selectedCountry !== 'all') {
@@ -186,8 +188,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
     } finally {
       setSuggestionsLoading(false);
     }
-  }, [selectedCountry, toast]);
-
+  }, [selectedCountry, toast, user]);
   const fetchMyChannels = useCallback(async () => {
     if (!user) return;
     setMyChannelsLoading(true);
