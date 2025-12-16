@@ -373,6 +373,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
               : `Your channel suggestion "${channelToReview.name}" was not approved. Please review our guidelines and try again.`,
             type: 'submission_review',
             target_role: 'member',
+            target_user_id: channelToReview.author_id,
             channel_id: channelToReview.id,
             created_by: user.id
           });
