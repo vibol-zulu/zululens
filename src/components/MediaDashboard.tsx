@@ -17,6 +17,7 @@ import ModeratorDashboardModal from '@/components/ModeratorDashboardModal';
 import CommentsSection from '@/components/CommentsSection';
 import NewsModal from '@/components/NewsModal';
 import NotificationsModal from '@/components/NotificationsModal';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -204,6 +205,9 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
       {/* Header */}
       <header className="h-14 border-b bg-card flex items-center px-2 sm:px-4 justify-between shrink-0 z-20">
         <div className="flex items-center gap-1 sm:gap-3">
+          {/* Dark Mode Toggle */}
+          <ThemeToggle />
+
           {/* Country Selector - Desktop only */}
           {!isMobile && (
             <Select value={country} onValueChange={handleCountryChange}>
