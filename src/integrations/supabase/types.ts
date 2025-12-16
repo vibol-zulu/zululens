@@ -477,6 +477,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      get_profile_display_name: { Args: { _user_id: string }; Returns: string }
+      get_profiles_by_ids: {
+        Args: { _user_ids: string[] }
+        Returns: {
+          full_name: string
+          id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

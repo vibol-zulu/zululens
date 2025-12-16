@@ -38,20 +38,17 @@ export function useComments(country: string) {
 
       if (error) throw error;
 
-      // Fetch user profiles for comments
+      // Fetch user display names using secure function (no email exposure)
       const userIds = [...new Set(data?.map(c => c.user_id) || [])];
       const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, email, full_name')
-        .in('id', userIds);
+        .rpc('get_profiles_by_ids', { _user_ids: userIds });
 
-      const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+      const profileMap = new Map(profiles?.map((p: { id: string; full_name: string }) => [p.id, p]) || []);
 
-      // Build comment tree with user info
+      // Build comment tree with user info (names only, no emails)
       const commentsWithUsers = (data || []).map(comment => ({
         ...comment,
-        user_email: profileMap.get(comment.user_id)?.email,
-        user_name: profileMap.get(comment.user_id)?.full_name
+        user_name: profileMap.get(comment.user_id)?.full_name || 'Anonymous'
       }));
 
       // Organize into tree structure
