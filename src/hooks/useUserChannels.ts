@@ -61,24 +61,20 @@ export const useUserChannels = (country: string, year: number) => {
     fetchUserChannels();
   }, [fetchUserChannels]);
 
-  // Get data for the current year
+  // Get data for the current year - always use database as source of truth
   const getMergedData = useCallback((): YearData => {
     const staticData = INITIAL_DATA[year];
     
-    // For United States, use ONLY static data (database was seeded with same data)
-    if (country === 'United States' && staticData) {
-      return staticData;
-    }
-    
-    // For non-US countries, use database channels only
+    // Use database channels as the source of truth for all countries
+    // This ensures deleted channels from admin panel are respected
     return {
-      totalAudienceMillions: 0,
-      usPopulationMillions: 0,
-      usPopulationSource: '',
-      totalRadiusPx: 0,
+      totalAudienceMillions: staticData?.totalAudienceMillions || 0,
+      usPopulationMillions: staticData?.usPopulationMillions || 0,
+      usPopulationSource: staticData?.usPopulationSource || '',
+      totalRadiusPx: staticData?.totalRadiusPx || 0,
       brands: userChannels
     };
-  }, [country, year, userChannels]);
+  }, [year, userChannels]);
 
   return {
     userChannels,
