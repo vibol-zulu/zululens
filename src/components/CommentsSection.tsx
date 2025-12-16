@@ -286,93 +286,155 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
       {/* Expanded Content */}
       {isExpanded && (
         <div className="max-h-[50vh] overflow-hidden flex justify-center">
-          <div className={`flex flex-col w-full ${isMobile ? '' : 'max-w-[calc(100vw-512px)]'}`}>
-            {!isAuthenticated ? (
-              /* Sign-up gate for Tier 1 users */
-              <div className="p-6 pt-8 pb-16 text-center flex items-start justify-center flex-1">
-                <div className="max-w-md mx-auto">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                    <UserPlus className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="text-lg font-semibold mb-2">Join the Conversation</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Create a free account to share your thoughts, reply to others, and engage with the community discussing the media landscape.
-                  </p>
-                  <Button onClick={onSignUpClick} className="gap-2">
-                    <UserPlus className="h-4 w-4" />
-                    Create Account to Comment
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <>
-                {/* Comments List */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                  {loading ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      Loading comments...
+          <div className={`flex w-full ${isMobile ? 'flex-col' : 'max-w-[calc(100vw-512px)]'}`}>
+            {/* Left: Comments Interface */}
+            <div className={`flex flex-col ${isMobile ? 'w-full' : 'w-1/2 border-r border-border'}`}>
+              {!isAuthenticated ? (
+                /* Sign-up gate for Tier 1 users */
+                <div className="p-6 pt-8 pb-16 text-center flex items-start justify-center flex-1 overflow-y-auto">
+                  <div className="max-w-md mx-auto">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                      <UserPlus className="h-6 w-6 text-primary" />
                     </div>
-                  ) : comments.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No comments yet. Be the first to share your thoughts!
-                    </div>
-                  ) : (
-                    comments.map(comment => (
-                      <CommentItem
-                        key={comment.id}
-                        comment={comment}
-                        onReply={setReplyingTo}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
-                        currentUserId={user.id}
-                        isAdmin={isAdmin}
-                        isModerator={isModerator}
-                      />
-                    ))
-                  )}
-                </div>
-
-                {/* New Comment Input */}
-                <div className="border-t p-4 bg-background">
-                  {replyingTo && (
-                    <div className="flex items-center gap-2 mb-2 text-sm text-muted-foreground">
-                      <Reply className="h-3 w-3" />
-                      <span>Replying to comment</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-5 w-5 p-0"
-                        onClick={() => setReplyingTo(null)}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  )}
-                  <div className="flex gap-2">
-                    <Textarea
-                      placeholder="Write a comment..."
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      className="min-h-[60px] flex-1"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                          handleSubmit();
-                        }
-                      }}
-                    />
-                    <Button
-                      onClick={handleSubmit}
-                      disabled={!newComment.trim()}
-                      className="self-end"
-                    >
-                      <Send className="h-4 w-4" />
+                    <h3 className="text-lg font-semibold mb-2">Join the Conversation</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Create a free account to share your thoughts, reply to others, and engage with the community discussing the media landscape.
+                    </p>
+                    <Button onClick={onSignUpClick} className="gap-2">
+                      <UserPlus className="h-4 w-4" />
+                      Create Account to Comment
                     </Button>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Press Cmd/Ctrl + Enter to send
-                  </p>
                 </div>
-              </>
+              ) : (
+                <>
+                  {/* Comments List */}
+                  <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                    {loading ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        Loading comments...
+                      </div>
+                    ) : comments.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        No comments yet. Be the first to share your thoughts!
+                      </div>
+                    ) : (
+                      comments.map(comment => (
+                        <CommentItem
+                          key={comment.id}
+                          comment={comment}
+                          onReply={setReplyingTo}
+                          onEdit={handleEdit}
+                          onDelete={handleDelete}
+                          currentUserId={user.id}
+                          isAdmin={isAdmin}
+                          isModerator={isModerator}
+                        />
+                      ))
+                    )}
+                  </div>
+
+                  {/* New Comment Input */}
+                  <div className="border-t p-4 bg-background">
+                    {replyingTo && (
+                      <div className="flex items-center gap-2 mb-2 text-sm text-muted-foreground">
+                        <Reply className="h-3 w-3" />
+                        <span>Replying to comment</span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-5 w-5 p-0"
+                          onClick={() => setReplyingTo(null)}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    )}
+                    <div className="flex gap-2">
+                      <Textarea
+                        placeholder="Write a comment..."
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        className="min-h-[60px] flex-1"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                            handleSubmit();
+                          }
+                        }}
+                      />
+                      <Button
+                        onClick={handleSubmit}
+                        disabled={!newComment.trim()}
+                        className="self-end"
+                      >
+                        <Send className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Press Cmd/Ctrl + Enter to send
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Right: News & Updates */}
+            {!isMobile && (
+              <div className="w-1/2 flex flex-col">
+                <div className="p-4 border-b border-border">
+                  <h3 className="font-semibold text-sm flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                    News & Updates
+                  </h3>
+                </div>
+                <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                  {/* Placeholder news items */}
+                  <div className="bg-muted/30 rounded-lg p-3 border border-border/50">
+                    <span className="text-xs text-primary font-medium">NEW FEATURE</span>
+                    <h4 className="font-medium text-sm mt-1">Contributor Leaderboard Launched</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Track your engagement score and see where you rank among all contributors. Top performers are first in line for promotion!
+                    </p>
+                    <span className="text-xs text-muted-foreground mt-2 block">2 hours ago</span>
+                  </div>
+
+                  <div className="bg-muted/30 rounded-lg p-3 border border-border/50">
+                    <span className="text-xs text-corporate font-medium">DATA UPDATE</span>
+                    <h4 className="font-medium text-sm mt-1">Canada Dataset Now Available</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Thanks to our contributor community, you can now explore the Canadian media landscape from 2000 to 2025.
+                    </p>
+                    <span className="text-xs text-muted-foreground mt-2 block">1 day ago</span>
+                  </div>
+
+                  <div className="bg-muted/30 rounded-lg p-3 border border-border/50">
+                    <span className="text-xs text-independent font-medium">COMMUNITY</span>
+                    <h4 className="font-medium text-sm mt-1">Welcome New Moderators</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Three new moderators have joined to help review channel submissions and maintain discussion quality.
+                    </p>
+                    <span className="text-xs text-muted-foreground mt-2 block">3 days ago</span>
+                  </div>
+
+                  <div className="bg-muted/30 rounded-lg p-3 border border-border/50">
+                    <span className="text-xs text-muted-foreground font-medium">MILESTONE</span>
+                    <h4 className="font-medium text-sm mt-1">1,000 Channels Mapped</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      The Zulu Digital Microscope has now catalogued over 1,000 media channels across multiple countries.
+                    </p>
+                    <span className="text-xs text-muted-foreground mt-2 block">1 week ago</span>
+                  </div>
+
+                  <div className="bg-muted/30 rounded-lg p-3 border border-border/50">
+                    <span className="text-xs text-primary font-medium">COMING SOON</span>
+                    <h4 className="font-medium text-sm mt-1">UK Media Landscape</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      We're actively seeking contributors familiar with UK media. Help us map the British media ecosystem!
+                    </p>
+                    <span className="text-xs text-muted-foreground mt-2 block">2 weeks ago</span>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         </div>
