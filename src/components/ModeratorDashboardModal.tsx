@@ -362,6 +362,22 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
 
       if (error) throw error;
 
+      // Notify the author about the review decision
+      if (channelToReview.author_id) {
+        await supabase
+          .from('notifications')
+          .insert({
+            title: reviewAction === 'approve' ? 'Submission Approved!' : 'Submission Rejected',
+            message: reviewAction === 'approve' 
+              ? `Your channel suggestion "${channelToReview.name}" has been approved and is now live in the visualization.`
+              : `Your channel suggestion "${channelToReview.name}" was not approved. Please review our guidelines and try again.`,
+            type: 'submission_review',
+            target_role: 'member',
+            channel_id: channelToReview.id,
+            created_by: user.id
+          });
+      }
+
       toast({ 
         title: `Channel ${reviewAction === 'approve' ? 'approved' : 'rejected'}`,
         description: `"${channelToReview.name}" has been ${newStatus}`
