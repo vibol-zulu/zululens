@@ -316,7 +316,7 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
 
         {/* Edit Dialog */}
         <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-lg">
             <div className="space-y-4">
               <h3 className="font-semibold">Edit Submission</h3>
               <div className="grid grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto pr-2">
