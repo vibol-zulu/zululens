@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMySubmissions } from '@/hooks/useMySubmissions';
-import { Clock, CheckCircle, XCircle, TrendingUp } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, TrendingUp, Sparkles } from 'lucide-react';
 
 interface MemberDashboardModalProps {
   open: boolean;
@@ -32,98 +32,108 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
     }
   }, [open, refetch]);
 
-  const getStatusBadge = (status: string) => {
+  const getStatusIcon = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Badge variant="outline" className="text-yellow-600 border-yellow-600"><Clock className="w-3 h-3 mr-1" />Pending</Badge>;
+        return <Clock className="w-4 h-4 text-amber-500" />;
       case 'approved':
-        return <Badge variant="outline" className="text-green-600 border-green-600"><CheckCircle className="w-3 h-3 mr-1" />Approved</Badge>;
+        return <CheckCircle className="w-4 h-4 text-emerald-500" />;
       case 'rejected':
-        return <Badge variant="outline" className="text-red-600 border-red-600"><XCircle className="w-3 h-3 mr-1" />Rejected</Badge>;
+        return <XCircle className="w-4 h-4 text-rose-500" />;
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return null;
     }
   };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
-      day: 'numeric',
-      year: 'numeric'
+      day: 'numeric'
     });
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[85vh] overflow-hidden flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            {userName}'s Dashboard
-            <Badge variant="outline" className="text-xs">Member</Badge>
+      <DialogContent className="max-w-md max-h-[80vh] overflow-hidden flex flex-col p-0">
+        {/* Header */}
+        <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/50">
+          <DialogTitle className="flex items-center gap-3 text-lg">
+            <span>{userName}'s Dashboard</span>
+            <Badge className="bg-primary/10 text-primary border-0 text-xs font-medium">
+              Member
+            </Badge>
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6 flex-1 overflow-hidden flex flex-col">
-          {/* Progress to Contributor */}
-          <div className="bg-muted/50 rounded-lg p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+        <div className="flex-1 overflow-hidden flex flex-col">
+          {/* Progress Section */}
+          <div className="px-6 py-5 border-b border-border/50">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2 text-sm font-medium">
                 <TrendingUp className="w-4 h-4 text-primary" />
-                <span className="font-medium text-sm">Progress to Contributor</span>
+                <span>Progress to Contributor</span>
               </div>
-              <span className="text-sm font-bold">{stats.approved}/20</span>
+              <span className="text-sm font-semibold text-primary">{stats.approved}/20</span>
             </div>
-            <Progress value={progressPercent} className="h-2" />
+            <Progress value={progressPercent} className="h-2 mb-2" />
             <p className="text-xs text-muted-foreground">
-              Get 20 channel suggestions approved to become a Contributor and unlock additional features.
+              {20 - stats.approved} more approved suggestions needed
             </p>
           </div>
 
-          {/* Stats Summary */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-yellow-50 dark:bg-yellow-950/30 rounded-lg p-3 text-center">
-              <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
-              <div className="text-xs text-muted-foreground">Pending</div>
-            </div>
-            <div className="bg-green-50 dark:bg-green-950/30 rounded-lg p-3 text-center">
-              <div className="text-2xl font-bold text-green-600">{stats.approved}</div>
-              <div className="text-xs text-muted-foreground">Approved</div>
-            </div>
-            <div className="bg-red-50 dark:bg-red-950/30 rounded-lg p-3 text-center">
-              <div className="text-2xl font-bold text-red-600">{stats.rejected}</div>
-              <div className="text-xs text-muted-foreground">Rejected</div>
+          {/* Stats Grid */}
+          <div className="px-6 py-4 border-b border-border/50">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-amber-500">{stats.pending}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">Pending</div>
+              </div>
+              <div className="text-center border-x border-border/50">
+                <div className="text-2xl font-bold text-emerald-500">{stats.approved}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">Approved</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-rose-500">{stats.rejected}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">Rejected</div>
+              </div>
             </div>
           </div>
 
           {/* Submissions List */}
-          <div className="flex-1 overflow-hidden flex flex-col">
-            <h3 className="font-medium text-sm mb-2">Your Submissions ({stats.total})</h3>
+          <div className="flex-1 overflow-hidden flex flex-col px-6 py-4">
+            <h3 className="text-sm font-medium text-muted-foreground mb-3">
+              Submissions ({stats.total})
+            </h3>
             
             {loading ? (
-              <div className="flex items-center justify-center py-8 text-muted-foreground">
+              <div className="flex items-center justify-center py-12 text-muted-foreground text-sm">
                 Loading...
               </div>
             ) : submissions.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-                <p className="text-sm">No submissions yet</p>
-                <p className="text-xs mt-1">Start suggesting channels to track your progress!</p>
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Sparkles className="w-8 h-8 text-muted-foreground/50 mb-3" />
+                <p className="text-sm text-muted-foreground">No submissions yet</p>
+                <p className="text-xs text-muted-foreground/70 mt-1">
+                  Start suggesting channels to track your progress
+                </p>
               </div>
             ) : (
-              <ScrollArea className="flex-1">
-                <div className="space-y-2 pr-4">
+              <ScrollArea className="flex-1 -mx-2">
+                <div className="space-y-1.5 px-2">
                   {submissions.map((submission) => (
                     <div 
                       key={submission.id} 
-                      className="flex items-center justify-between p-3 bg-card border rounded-lg"
+                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors"
                     >
+                      {getStatusIcon(submission.status)}
                       <div className="flex-1 min-w-0">
                         <div className="font-medium text-sm truncate">{submission.name}</div>
                         <div className="text-xs text-muted-foreground">
-                          {submission.country} • {submission.year} • {formatDate(submission.created_at)}
+                          {submission.country} · {submission.year}
                         </div>
                       </div>
-                      <div className="ml-3">
-                        {getStatusBadge(submission.status)}
+                      <div className="text-xs text-muted-foreground/70">
+                        {formatDate(submission.created_at)}
                       </div>
                     </div>
                   ))}
