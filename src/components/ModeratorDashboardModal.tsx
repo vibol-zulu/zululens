@@ -39,7 +39,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { COUNTRIES } from '@/data/mediaData';
 import { 
-  CheckCircle, 
+  Check,
   XCircle, 
   Clock, 
   Loader2,
@@ -666,20 +666,18 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                             <TableCell>
                               <div className="flex items-center gap-1">
                                 <Button
-                                  size="sm"
                                   variant="ghost"
-                                  className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
+                                  size="icon"
                                   onClick={() => handleReviewChannel(channel, 'approve')}
                                 >
-                                  <CheckCircle className="h-4 w-4" />
+                                  <Check className="h-4 w-4 text-green-600" />
                                 </Button>
                                 <Button
-                                  size="sm"
                                   variant="ghost"
-                                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  size="icon"
                                   onClick={() => handleReviewChannel(channel, 'reject')}
                                 >
-                                  <XCircle className="h-4 w-4" />
+                                  <XCircle className="h-4 w-4 text-destructive" />
                                 </Button>
                                 <Button
                                   size="sm"
