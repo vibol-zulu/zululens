@@ -189,16 +189,7 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
-        <DialogHeader className="flex flex-row items-center justify-between">
-          <DialogTitle className="flex items-center gap-2">
-            <Bell className="h-5 w-5" />
-            Notifications
-            {unreadCount > 0 && (
-              <Badge variant="destructive" className="ml-2">
-                {unreadCount} unread
-              </Badge>
-            )}
-          </DialogTitle>
+        <DialogHeader className="flex flex-row items-center gap-3">
           {notifications.length > 0 && (
             <Button 
               variant="outline" 
@@ -209,6 +200,15 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({
               Clear All
             </Button>
           )}
+          <DialogTitle className="flex items-center gap-2">
+            <Bell className="h-5 w-5" />
+            Notifications
+            {unreadCount > 0 && (
+              <Badge variant="destructive" className="ml-2">
+                {unreadCount} unread
+              </Badge>
+            )}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto max-h-[60vh]">
