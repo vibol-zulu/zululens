@@ -59,14 +59,14 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
                 <MessageSquare className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
                 <div>
                   <p className="text-sm font-medium">Member</p>
-                  <p className="text-xs text-muted-foreground">Create an account to join discussions</p>
+                  <p className="text-xs text-muted-foreground">Create an account to suggest channels and join discussions. Get 20 approved to become a Contributor!</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-2.5 rounded-md bg-background border border-border/50">
                 <PenLine className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
                 <div>
                   <p className="text-sm font-medium">Contributor</p>
-                  <p className="text-xs text-muted-foreground">Apply to add new channels to the dataset</p>
+                  <p className="text-xs text-muted-foreground">Promoted after 20 approved suggestions. Your contributions shape the dataset!</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-2.5 rounded-md bg-background border border-border/50">
