@@ -7,6 +7,7 @@ export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isContributor, setIsContributor] = useState(false);
+  const [isModerator, setIsModerator] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
@@ -23,6 +24,7 @@ export function useAuth() {
           }, 0);
         } else {
           setIsContributor(false);
+          setIsModerator(false);
           setIsAdmin(false);
         }
       }
@@ -52,6 +54,16 @@ export function useAuth() {
       
       if (!contribError) {
         setIsContributor(isContrib === true);
+      }
+
+      // Check moderator role
+      const { data: isMod, error: modError } = await supabase.rpc('has_role', { 
+        _user_id: userId, 
+        _role: 'moderator' 
+      });
+      
+      if (!modError) {
+        setIsModerator(isMod === true);
       }
 
       // Check admin role
@@ -84,6 +96,7 @@ export function useAuth() {
     const { error } = await supabase.auth.signOut();
     if (!error) {
       setIsContributor(false);
+      setIsModerator(false);
       setIsAdmin(false);
     }
     return { error };
@@ -94,6 +107,7 @@ export function useAuth() {
     session,
     loading,
     isContributor,
+    isModerator,
     isAdmin,
     signIn,
     signOut
