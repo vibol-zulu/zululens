@@ -55,7 +55,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
                 <PenLine className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
                 <div>
                   <p className="text-sm font-medium">Contributor</p>
-                  <p className="text-xs text-muted-foreground">Promoted after 20 approved suggestions. Your contributions shape the dataset!</p>
+                  <p className="text-xs text-muted-foreground">Promoted after 20 approved suggestions. Consistent contributors may be invited to become Moderators!</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-2.5 rounded-md bg-background border border-border/50">
