@@ -219,8 +219,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     return (
       <div className="w-1/2 border-r last:border-r-0 border-border bg-card overflow-hidden flex flex-col min-w-0">
         <div 
-          className="px-2 py-2 shrink-0 relative z-10 shadow-md"
-          style={{ backgroundColor: headerBgColor }}
+          className="px-2 py-2 shrink-0 relative z-10"
+          style={{ backgroundColor: headerBgColor, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
         >
           <h3 
             className="font-semibold capitalize text-xs text-center mb-1.5"
@@ -339,8 +339,8 @@ const Sidebar: React.FC<SidebarProps> = ({
       )}
     >
       <div 
-        className="px-3 py-3 relative z-10 shadow-md"
-        style={{ backgroundColor: headerBgColor }}
+        className="px-3 py-3 relative z-10"
+        style={{ backgroundColor: headerBgColor, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
       >
         <h3 
           className="font-semibold capitalize text-center text-sm mb-2"
