@@ -219,7 +219,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     return (
       <div className="w-1/2 border-r last:border-r-0 border-border bg-card overflow-hidden flex flex-col min-w-0">
         <div 
-          className="px-2 py-2 border-b border-border/30 shrink-0"
+          className="px-2 py-2 shrink-0 relative z-10 shadow-md"
           style={{ backgroundColor: headerBgColor }}
         >
           <h3 
@@ -265,7 +265,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
         
         <ScrollArea className="flex-1">
-          <div className="p-2">
+          <div className="px-2 pt-1 pb-2">
             {sorted.length === 0 && (
               <p className="text-center text-muted-foreground text-xs italic py-4">
                 No data available
@@ -339,7 +339,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       )}
     >
       <div 
-        className="px-3 py-3 border-b border-border/30"
+        className="px-3 py-3 relative z-10 shadow-md"
         style={{ backgroundColor: headerBgColor }}
       >
         <h3 
@@ -384,9 +384,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      <ScrollArea className="flex-1 p-4">
-
-        <div>
+      <ScrollArea className="flex-1">
+        <div className="px-4 pt-2 pb-4">
           {sorted.length === 0 && (
             <p className="text-center text-muted-foreground text-sm italic py-4">
               No data available
