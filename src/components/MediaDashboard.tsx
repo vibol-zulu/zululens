@@ -366,7 +366,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
       </header>
 
       {/* Main */}
-      <main className={`flex-1 relative overflow-hidden bg-background ${useStackedLayout ? 'flex flex-col' : ''}`}>
+      <main className={`flex-1 relative overflow-hidden bg-background dark:[background:var(--background-gradient)] ${useStackedLayout ? 'flex flex-col' : ''}`}>
         {/* Canvas Container */}
         <div 
           className={`${
