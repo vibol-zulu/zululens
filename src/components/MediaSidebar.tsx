@@ -221,52 +221,52 @@ const Sidebar: React.FC<SidebarProps> = ({
           style={{ backgroundColor: headerBgColor }}
         >
           <h3 
-            className="font-semibold capitalize text-sm text-center"
+            className="font-semibold capitalize text-sm text-center mb-2"
             style={{ color: headerTextColor }}
           >
             {category}
           </h3>
+          <div className="flex gap-1 mb-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => onToggleAll(category)}
+              disabled={sorted.length === 0}
+              className="flex-1 text-xs px-1 bg-background/90 hover:bg-background"
+            >
+              {allSelected && sorted.length > 0 ? 'Deselect' : 'Select All'}
+            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleAddClick}
+                    className="px-2 shrink-0 bg-background/90 hover:bg-background"
+                  >
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Add a new channel</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          <div className="relative">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+            <Input
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-7 h-7 text-xs focus-visible:ring-0 focus-visible:ring-offset-0 bg-background/90"
+            />
+          </div>
         </div>
         
         <ScrollArea className="flex-1">
           <div className="p-2">
-            <div className="flex gap-1 mb-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => onToggleAll(category)}
-                disabled={sorted.length === 0}
-                className="flex-1 text-xs px-1"
-              >
-                {allSelected && sorted.length > 0 ? 'Deselect' : 'Select All'}
-              </Button>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={handleAddClick}
-                      className="px-2 shrink-0"
-                    >
-                      <Plus className="h-3 w-3" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Add a new channel</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-            <div className="relative mb-2">
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-              <Input
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-7 h-7 text-xs focus-visible:ring-0 focus-visible:ring-offset-0"
-              />
-            </div>
             {sorted.length === 0 && (
               <p className="text-center text-muted-foreground text-xs italic py-4">
                 No data available
@@ -344,21 +344,18 @@ const Sidebar: React.FC<SidebarProps> = ({
         style={{ backgroundColor: headerBgColor }}
       >
         <h3 
-          className="font-semibold capitalize text-center"
+          className="font-semibold capitalize text-center mb-3"
           style={{ color: headerTextColor }}
         >
           {category}
         </h3>
-      </div>
-
-      <ScrollArea className="flex-1 p-4">
         <div className="flex gap-2 mb-3">
           <Button 
             variant="outline" 
             size="sm" 
             onClick={() => onToggleAll(category)}
             disabled={sorted.length === 0}
-            className="flex-1"
+            className="flex-1 bg-background/90 hover:bg-background"
           >
             {allSelected && sorted.length > 0 ? 'Deselect All' : 'Select All'}
           </Button>
@@ -369,7 +366,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 variant="outline" 
                 size="sm" 
                 onClick={handleAddClick}
-                className="px-3"
+                className="px-3 bg-background/90 hover:bg-background"
               >
                 <Plus className="h-4 w-4" />
               </Button>
@@ -380,15 +377,18 @@ const Sidebar: React.FC<SidebarProps> = ({
             </Tooltip>
           </TooltipProvider>
         </div>
-        <div className="relative mb-4">
+        <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search channels..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 focus-visible:ring-0 focus-visible:ring-offset-0"
+            className="pl-9 focus-visible:ring-0 focus-visible:ring-offset-0 bg-background/90"
           />
         </div>
+      </div>
+
+      <ScrollArea className="flex-1 p-4">
 
         <div>
           {sorted.length === 0 && (
