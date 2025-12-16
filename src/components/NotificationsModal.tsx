@@ -152,6 +152,25 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({
     }
   };
 
+  const clearAllNotifications = async () => {
+    if (!isAdmin) return;
+    
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .neq('id', '');
+
+      if (error) throw error;
+      
+      setNotifications([]);
+      toast({ title: 'All notifications cleared' });
+    } catch (error) {
+      console.error('Error clearing notifications:', error);
+      toast({ title: 'Failed to clear notifications', variant: 'destructive' });
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
@@ -167,7 +186,7 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
-        <DialogHeader>
+        <DialogHeader className="flex flex-row items-center justify-between">
           <DialogTitle className="flex items-center gap-2">
             <Bell className="h-5 w-5" />
             Notifications
@@ -177,6 +196,16 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({
               </Badge>
             )}
           </DialogTitle>
+          {isAdmin && notifications.length > 0 && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={clearAllNotifications}
+              className="text-destructive hover:text-destructive"
+            >
+              Clear All
+            </Button>
+          )}
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto max-h-[60vh]">

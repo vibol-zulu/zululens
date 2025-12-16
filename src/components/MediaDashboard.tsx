@@ -75,6 +75,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   const [showNotifications, setShowNotifications] = useState(false);
   const [signInDefaultTab, setSignInDefaultTab] = useState<'signin' | 'signup'>('signin');
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
+  const [pendingSubmissionsCount, setPendingSubmissionsCount] = useState(0);
 
   // Auth state for contributor access
   const { user, isContributor, isModerator, isAdmin, signOut } = useAuth();
@@ -100,10 +101,36 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
     }
   }, [user, isAdmin]);
 
+  // Fetch pending submissions count for moderators/admins
+  const fetchPendingSubmissionsCount = useCallback(async () => {
+    if (!user || (!isModerator && !isAdmin)) {
+      setPendingSubmissionsCount(0);
+      return;
+    }
+    
+    try {
+      const { count, error } = await supabase
+        .from('user_channels')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending');
+      
+      if (!error && count !== null) {
+        setPendingSubmissionsCount(count);
+      }
+    } catch (err) {
+      console.error('Error fetching pending submissions:', err);
+    }
+  }, [user, isModerator, isAdmin]);
+
   // Fetch unread count on mount and when notifications modal closes
   useEffect(() => {
     fetchUnreadCount();
   }, [fetchUnreadCount, showNotifications]);
+
+  // Fetch pending submissions count
+  useEffect(() => {
+    fetchPendingSubmissionsCount();
+  }, [fetchPendingSubmissionsCount, showAdmin, showModeratorDashboard]);
   
   // Check if user is a Tier 2 member (authenticated but not contributor/moderator/admin)
   const isMember = user && !isContributor && !isModerator && !isAdmin;
@@ -266,9 +293,12 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               {user && isAdmin && (
                 <DropdownMenuItem 
                   onClick={() => setShowAdmin(true)}
-                  className="bg-primary/10 text-primary font-medium"
+                  className="bg-primary/10 text-primary font-medium flex items-center justify-between"
                 >
-                  Admin
+                  <span>Admin</span>
+                  {pendingSubmissionsCount > 0 && (
+                    <span className="h-2 w-2 rounded-full bg-destructive" />
+                  )}
                 </DropdownMenuItem>
               )}
               {user && isMember && (
@@ -290,9 +320,12 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               {user && isModerator && !isAdmin && (
                 <DropdownMenuItem 
                   onClick={() => setShowModeratorDashboard(true)}
-                  className="bg-muted font-medium"
+                  className="bg-muted font-medium flex items-center justify-between"
                 >
-                  Dashboard
+                  <span>Dashboard</span>
+                  {pendingSubmissionsCount > 0 && (
+                    <span className="h-2 w-2 rounded-full bg-destructive" />
+                  )}
                 </DropdownMenuItem>
               )}
               {user && (
