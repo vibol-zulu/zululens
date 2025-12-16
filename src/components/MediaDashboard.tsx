@@ -234,18 +234,35 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44">
+              {user && isAdmin && (
+                <DropdownMenuItem 
+                  onClick={() => setShowAdmin(true)}
+                  className="bg-primary/10 text-primary font-medium"
+                >
+                  Admin
+                </DropdownMenuItem>
+              )}
               {user && isMember && (
-                <DropdownMenuItem onClick={() => setShowMemberDashboard(true)}>
+                <DropdownMenuItem 
+                  onClick={() => setShowMemberDashboard(true)}
+                  className="bg-muted font-medium"
+                >
                   Dashboard
                 </DropdownMenuItem>
               )}
               {user && isContributor && !isAdmin && !isModerator && (
-                <DropdownMenuItem onClick={() => setShowContributorDashboard(true)}>
+                <DropdownMenuItem 
+                  onClick={() => setShowContributorDashboard(true)}
+                  className="bg-muted font-medium"
+                >
                   Dashboard
                 </DropdownMenuItem>
               )}
               {user && isModerator && !isAdmin && (
-                <DropdownMenuItem onClick={() => setShowModeratorDashboard(true)}>
+                <DropdownMenuItem 
+                  onClick={() => setShowModeratorDashboard(true)}
+                  className="bg-muted font-medium"
+                >
                   Dashboard
                 </DropdownMenuItem>
               )}
@@ -272,11 +289,6 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                   setShowSignIn(true);
                 }}>
                   Sign In
-                </DropdownMenuItem>
-              )}
-              {user && isAdmin && (
-                <DropdownMenuItem onClick={() => setShowAdmin(true)}>
-                  Admin
                 </DropdownMenuItem>
               )}
               {user && (
