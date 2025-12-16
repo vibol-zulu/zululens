@@ -16,6 +16,7 @@ import ContributorDashboardModal from '@/components/ContributorDashboardModal';
 import ModeratorDashboardModal from '@/components/ModeratorDashboardModal';
 import CommentsSection from '@/components/CommentsSection';
 import NewsModal from '@/components/NewsModal';
+import NotificationsModal from '@/components/NotificationsModal';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -70,6 +71,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   const [showContributorDashboard, setShowContributorDashboard] = useState(false);
   const [showModeratorDashboard, setShowModeratorDashboard] = useState(false);
   const [showNews, setShowNews] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const [signInDefaultTab, setSignInDefaultTab] = useState<'signin' | 'signup'>('signin');
 
   // Auth state for contributor access
@@ -264,6 +266,11 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                   className="bg-muted font-medium"
                 >
                   Dashboard
+                </DropdownMenuItem>
+              )}
+              {user && (
+                <DropdownMenuItem onClick={() => setShowNotifications(true)}>
+                  Notifications
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem onClick={() => setShowMission(true)}>
@@ -464,6 +471,10 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
       <NewsModal
         open={showNews}
         onOpenChange={setShowNews}
+      />
+      <NotificationsModal
+        open={showNotifications}
+        onOpenChange={setShowNotifications}
       />
       
       {/* Comments Section - visible for all users */}

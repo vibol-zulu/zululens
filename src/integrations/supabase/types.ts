@@ -169,6 +169,56 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          channel_id: string | null
+          created_at: string
+          created_by: string
+          id: string
+          is_read: boolean
+          message: string
+          read_at: string | null
+          read_by: string | null
+          target_role: string
+          title: string
+          type: string
+        }
+        Insert: {
+          channel_id?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          is_read?: boolean
+          message: string
+          read_at?: string | null
+          read_by?: string | null
+          target_role?: string
+          title: string
+          type?: string
+        }
+        Update: {
+          channel_id?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          read_at?: string | null
+          read_by?: string | null
+          target_role?: string
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "user_channels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
