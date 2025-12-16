@@ -317,11 +317,11 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
             <div className={`flex flex-col h-full ${isMobile ? 'w-full' : 'flex-1 border-r border-border'}`}>
               {!isAuthenticated ? (
                 /* Sign-up gate for Tier 1 users */
-                <div className="flex items-center justify-center gap-6 p-4 flex-1 overflow-y-auto">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <UserPlus className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-center p-4 flex-1 overflow-y-auto">
+                  <div className="text-center">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                      <UserPlus className="h-5 w-5 text-primary" />
+                    </div>
                     <h3 className="text-base font-semibold">Join the Conversation</h3>
                     <p className="text-sm text-muted-foreground mb-3">
                       Create a free account to share your thoughts and engage with the community.
