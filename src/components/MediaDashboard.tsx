@@ -10,6 +10,7 @@ import MissionModal from '@/components/MissionModal';
 import ContributorModal from '@/components/ContributorModal';
 import AdminModal from '@/components/AdminModal';
 import SignInModal from '@/components/SignInModal';
+import MemberDashboardModal from '@/components/MemberDashboardModal';
 import CommentsSection from '@/components/CommentsSection';
 import { Button } from '@/components/ui/button';
 import {
@@ -61,10 +62,14 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   const [showAdmin, setShowAdmin] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
   const [showMission, setShowMission] = useState(false);
+  const [showMemberDashboard, setShowMemberDashboard] = useState(false);
   const [signInDefaultTab, setSignInDefaultTab] = useState<'signin' | 'signup'>('signin');
 
   // Auth state for contributor access
   const { user, isContributor, isAdmin, signOut } = useAuth();
+  
+  // Check if user is a Tier 2 member (authenticated but not contributor/admin)
+  const isMember = user && !isContributor && !isAdmin;
 
   // Fetch user-added channels and merge with static data
   const { getMergedData, refetch: refetchUserChannels } = useUserChannels(country, year);
@@ -231,6 +236,11 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                   Sign In
                 </DropdownMenuItem>
               )}
+              {user && isMember && (
+                <DropdownMenuItem onClick={() => setShowMemberDashboard(true)}>
+                  My Dashboard
+                </DropdownMenuItem>
+              )}
               {user && isAdmin && (
                 <DropdownMenuItem onClick={() => setShowAdmin(true)}>
                   Admin
@@ -377,6 +387,11 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
         open={showSignIn} 
         onClose={() => setShowSignIn(false)} 
         defaultTab={signInDefaultTab}
+      />
+      <MemberDashboardModal
+        open={showMemberDashboard}
+        onOpenChange={setShowMemberDashboard}
+        userName={user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Member'}
       />
       
       {/* Comments Section - visible for all users */}
