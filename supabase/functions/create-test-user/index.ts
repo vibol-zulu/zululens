@@ -11,10 +11,18 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { email, password, fullName, role } = await req.json()
-    
-    console.log('Creating test user:', email)
+    // SECURITY: Verify the requester is an authenticated admin
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      console.error('No authorization header provided')
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized: No authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
+    const token = authHeader.replace('Bearer ', '')
+    
     // Create admin client with service role
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -26,6 +34,37 @@ Deno.serve(async (req) => {
         }
       }
     )
+
+    // Verify the token and get the requesting user
+    const { data: { user: requestingUser }, error: authError } = await supabaseAdmin.auth.getUser(token)
+    
+    if (authError || !requestingUser) {
+      console.error('Invalid token or user not found:', authError?.message)
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized: Invalid token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Check if the requesting user is an admin
+    const { data: isAdmin, error: roleCheckError } = await supabaseAdmin.rpc('has_role', {
+      _user_id: requestingUser.id,
+      _role: 'admin'
+    })
+
+    if (roleCheckError || !isAdmin) {
+      console.error('User is not an admin:', requestingUser.id)
+      return new Response(
+        JSON.stringify({ success: false, error: 'Forbidden: Admin access required' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    console.log('Admin user verified:', requestingUser.id)
+
+    const { email, password, fullName, role } = await req.json()
+    
+    console.log('Creating test user:', email)
 
     // Create user
     const { data: userData, error: createError } = await supabaseAdmin.auth.admin.createUser({
