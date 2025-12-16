@@ -203,8 +203,8 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
       {/* Header */}
       <header className="h-14 border-b bg-card dark:[background:var(--background-gradient)] flex items-center px-2 sm:px-4 justify-between shrink-0 z-20">
         <div className="flex items-center gap-1 sm:gap-3">
-          {/* Dark Mode Toggle */}
-          <ThemeToggle />
+          {/* Dark Mode Toggle - Hidden for now */}
+          {/* <ThemeToggle /> */}
 
           {/* Country Selector - Desktop only */}
           {!isMobile && (
