@@ -238,7 +238,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
         className={`w-full px-4 hover:bg-muted/50 transition-colors ${
           isExpanded ? 'py-2' : 'py-4'
         } ${
-          isMobile && !isExpanded ? 'flex flex-col gap-1' : 'flex items-center justify-between'
+          isMobile && !isExpanded ? 'flex flex-col gap-3' : 'flex items-center justify-between'
         }`}
       >
         {/* Mobile: Preview on top when collapsed */}
@@ -264,7 +264,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
             
             {/* Desktop: Cycling preview inline when collapsed */}
             {!isMobile && !isExpanded && (
-              <div className="flex items-center gap-2 ml-2 text-sm text-muted-foreground overflow-hidden">
+              <div className="flex items-center gap-2 ml-6 text-sm text-muted-foreground overflow-hidden">
                 <span 
                   key={previewIndex}
                   className="truncate animate-fade-in"
