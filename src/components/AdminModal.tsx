@@ -265,6 +265,8 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   const [newUserData, setNewUserData] = useState({ email: '', password: '', fullName: '', role: 'member' as 'member' | 'admin' | 'contributor' | 'moderator' });
 
   // Selection state for bulk actions
+  const [selectedChannels, setSelectedChannels] = useState<Set<string>>(new Set());
+  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [selectedSubmissions, setSelectedSubmissions] = useState<Set<string>>(new Set());
   const [selectedComments, setSelectedComments] = useState<Set<string>>(new Set());
   const [selectedNews, setSelectedNews] = useState<Set<string>>(new Set());
@@ -1124,6 +1126,41 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   };
 
   // Bulk action toggle functions
+  const toggleSelectChannel = (id: string) => {
+    setSelectedChannels(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAllChannels = () => {
+    if (selectedChannels.size === channels.length) {
+      setSelectedChannels(new Set());
+    } else {
+      setSelectedChannels(new Set(channels.map(c => c.id)));
+    }
+  };
+
+  const toggleSelectUser = (id: string) => {
+    setSelectedUsers(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAllUsers = () => {
+    const selectableUsers = users.filter(u => u.id !== user?.id);
+    if (selectedUsers.size === selectableUsers.length) {
+      setSelectedUsers(new Set());
+    } else {
+      setSelectedUsers(new Set(selectableUsers.map(u => u.id)));
+    }
+  };
+
   const toggleSelectSubmission = (id: string) => {
     setSelectedSubmissions(prev => {
       const next = new Set(prev);
@@ -1176,6 +1213,50 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   };
 
   // Bulk action handlers
+  const handleBulkDeleteChannels = async () => {
+    if (selectedChannels.size === 0) return;
+    setBulkActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from('user_channels')
+        .delete()
+        .in('id', Array.from(selectedChannels));
+
+      if (error) throw error;
+
+      toast({ title: `${selectedChannels.size} channels deleted` });
+      setSelectedChannels(new Set());
+      fetchChannels();
+    } catch (error) {
+      console.error('Bulk delete channels error:', error);
+      toast({ title: 'Failed to delete channels', variant: 'destructive' });
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkDeleteUsers = async () => {
+    if (selectedUsers.size === 0) return;
+    setBulkActionLoading(true);
+    try {
+      // Delete users via edge function
+      for (const userId of selectedUsers) {
+        await supabase.functions.invoke('manage-users', {
+          body: { action: 'delete', userId }
+        });
+      }
+
+      toast({ title: `${selectedUsers.size} users deleted` });
+      setSelectedUsers(new Set());
+      fetchUsers();
+    } catch (error) {
+      console.error('Bulk delete users error:', error);
+      toast({ title: 'Failed to delete users', variant: 'destructive' });
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
   const handleBulkApproveSubmissions = async () => {
     if (selectedSubmissions.size === 0 || !user) return;
     setBulkActionLoading(true);
@@ -1406,6 +1487,22 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
               {/* Channels Tab */}
               <TabsContent value="channels" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
                 <div className="border-b p-4 flex items-center gap-2 flex-wrap">
+                  {selectedChannels.size > 0 && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" disabled={bulkActionLoading}>
+                          Bulk Actions ({selectedChannels.size})
+                          <ChevronDown className="h-4 w-4 ml-1" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start">
+                        <DropdownMenuItem onClick={handleBulkDeleteChannels}>
+                          <Trash2 className="h-4 w-4 mr-2 text-destructive" />
+                          Delete Selected
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
                   <Select value={selectedCountry} onValueChange={setSelectedCountry}>
                     <SelectTrigger className="w-[140px]">
                       <SelectValue />
@@ -1438,16 +1535,22 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                     </SelectContent>
                   </Select>
                   
-                  <Button size="sm" onClick={handleAdd}>
+                  <Button size="sm" onClick={handleAdd} className="ml-auto">
                     <Plus className="h-4 w-4 mr-1" /> Add
                   </Button>
                 </div>
 
                 <div className="flex-1 overflow-auto p-4">
                   <div className="rounded-md border overflow-x-auto">
-                    <Table className="min-w-[600px]">
+                    <Table className="min-w-[650px]">
                         <TableHeader>
                           <TableRow>
+                            <TableHead className="w-[40px]">
+                              <Checkbox
+                                checked={selectedChannels.size === channels.length && channels.length > 0}
+                                onCheckedChange={toggleSelectAllChannels}
+                              />
+                            </TableHead>
                             <TableHead>Name</TableHead>
                             <TableHead>Category</TableHead>
                             <TableHead className="whitespace-nowrap">Audience (M)</TableHead>
@@ -1459,19 +1562,25 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                         <TableBody>
                           {loading ? (
                             <TableRow>
-                              <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                              <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                                 Loading...
                               </TableCell>
                             </TableRow>
                           ) : channels.length === 0 ? (
                             <TableRow>
-                              <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                              <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                                 No channels found for {selectedCountry} ({selectedYear})
                               </TableCell>
                             </TableRow>
                           ) : (
                             channels.map(channel => (
                               <TableRow key={channel.id}>
+                                <TableCell>
+                                  <Checkbox
+                                    checked={selectedChannels.has(channel.id)}
+                                    onCheckedChange={() => toggleSelectChannel(channel.id)}
+                                  />
+                                </TableCell>
                                 <TableCell className="font-medium">{channel.name}</TableCell>
                                 <TableCell className="capitalize">{channel.category}</TableCell>
                                 <TableCell>{channel.value_millions}</TableCell>
@@ -1502,41 +1611,70 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
 
               {/* Users Tab */}
               <TabsContent value="users" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
-                <div className="border-b p-4 flex items-center justify-between">
+                <div className="border-b p-4 flex items-center gap-2 flex-wrap">
+                  {selectedUsers.size > 0 && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" disabled={bulkActionLoading}>
+                          Bulk Actions ({selectedUsers.size})
+                          <ChevronDown className="h-4 w-4 ml-1" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start">
+                        <DropdownMenuItem onClick={handleBulkDeleteUsers}>
+                          <Trash2 className="h-4 w-4 mr-2 text-destructive" />
+                          Delete Selected
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
                   <span className="text-sm text-muted-foreground">{users.length} users</span>
-                  <Button size="sm" onClick={() => setShowCreateUserDialog(true)}>
+                  <Button size="sm" onClick={() => setShowCreateUserDialog(true)} className="ml-auto">
                     <Plus className="h-4 w-4 mr-1" /> Create User
                   </Button>
                 </div>
 
                 <div className="flex-1 overflow-auto p-4">
                   <div className="rounded-md border overflow-x-auto">
-                    <Table className="min-w-[550px]">
+                    <Table className="min-w-[600px]">
                         <TableHeader>
                           <TableRow>
+                            <TableHead className="w-[40px]">
+                              <Checkbox
+                                checked={selectedUsers.size === users.filter(u => u.id !== user?.id).length && users.length > 1}
+                                onCheckedChange={toggleSelectAllUsers}
+                              />
+                            </TableHead>
                             <TableHead>Email</TableHead>
                             <TableHead>Name</TableHead>
                             <TableHead>Role</TableHead>
                             <TableHead>Created</TableHead>
-                            <TableHead className="w-[120px]">Actions</TableHead>
+                            <TableHead className="w-[80px]">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {usersLoading ? (
                             <TableRow>
-                              <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                              <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                                 Loading...
                               </TableCell>
                             </TableRow>
                           ) : users.length === 0 ? (
                             <TableRow>
-                              <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                              <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                                 No users found
                               </TableCell>
                             </TableRow>
                           ) : (
                             users.map(u => (
                               <TableRow key={u.id}>
+                                <TableCell>
+                                  <Checkbox
+                                    checked={selectedUsers.has(u.id)}
+                                    onCheckedChange={() => toggleSelectUser(u.id)}
+                                    disabled={u.id === user?.id}
+                                  />
+                                </TableCell>
                                 <TableCell className="font-medium">{u.email}</TableCell>
                                 <TableCell>{u.full_name || '-'}</TableCell>
                                 <TableCell>
@@ -1544,7 +1682,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                                     value={u.role || 'none'} 
                                     onValueChange={(v) => updateUserRole(u.id, v === 'none' ? null : v as 'admin' | 'contributor' | 'moderator')}
                                   >
-                                    <SelectTrigger className="w-[130px] h-8">
+                                    <SelectTrigger className="w-[120px] h-8">
                                       <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -1623,7 +1761,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
 
                 <div className="flex-1 overflow-auto p-4">
                   <div className="rounded-md border overflow-x-auto">
-                    <Table className="min-w-[800px]">
+                    <Table className="min-w-[700px]">
                         <TableHeader>
                           <TableRow>
                             <TableHead className="w-[40px]">
@@ -1639,7 +1777,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                             <TableHead>Author</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Date</TableHead>
-                            <TableHead className="w-[140px]">Actions</TableHead>
+                            <TableHead className="w-[100px]">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
