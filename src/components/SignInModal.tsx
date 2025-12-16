@@ -23,6 +23,7 @@ const SignInModal: React.FC<SignInModalProps> = ({ open, onClose, defaultTab = '
   const { user, signIn, loading: authLoading } = useAuth();
   
   const [isSignUp, setIsSignUp] = useState(defaultTab === 'signup');
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -34,6 +35,7 @@ const SignInModal: React.FC<SignInModalProps> = ({ open, onClose, defaultTab = '
   useEffect(() => {
     if (open) {
       setIsSignUp(defaultTab === 'signup');
+      setIsForgotPassword(false);
       setEmail('');
       setPassword('');
       setConfirmPassword('');
@@ -101,6 +103,37 @@ const SignInModal: React.FC<SignInModalProps> = ({ open, onClose, defaultTab = '
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email) {
+      toast({ title: 'Please enter your email', variant: 'destructive' });
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/`,
+      });
+      
+      if (error) {
+        toast({ title: error.message, variant: 'destructive' });
+      } else {
+        toast({ 
+          title: 'Check your email', 
+          description: 'We sent you a password reset link.' 
+        });
+        setIsForgotPassword(false);
+      }
+    } catch (error) {
+      console.error('Password reset error:', error);
+      toast({ title: 'Failed to send reset email', variant: 'destructive' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     try {
@@ -126,6 +159,50 @@ const SignInModal: React.FC<SignInModalProps> = ({ open, onClose, defaultTab = '
           <div className="p-6 flex items-center justify-center">
             <p className="text-muted-foreground">Loading...</p>
           </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // Forgot password view
+  if (isForgotPassword) {
+    return (
+      <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Reset Password</DialogTitle>
+          </DialogHeader>
+          
+          <p className="text-sm text-muted-foreground">
+            Enter your email and we'll send you a link to reset your password.
+          </p>
+          
+          <form onSubmit={handleForgotPassword} className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="reset-email">Email</Label>
+              <Input
+                id="reset-email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+              />
+            </div>
+
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Sending...' : 'Send Reset Link'}
+            </Button>
+          </form>
+
+          <p className="text-center text-sm text-muted-foreground">
+            <button 
+              type="button"
+              onClick={() => setIsForgotPassword(false)}
+              className="text-primary hover:underline font-medium"
+            >
+              Back to sign in
+            </button>
+          </p>
         </DialogContent>
       </Dialog>
     );
@@ -197,7 +274,18 @@ const SignInModal: React.FC<SignInModalProps> = ({ open, onClose, defaultTab = '
           </div>
           
           <div className="space-y-1.5">
-            <Label htmlFor="password">Password</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Password</Label>
+              {!isSignUp && (
+                <button
+                  type="button"
+                  onClick={() => setIsForgotPassword(true)}
+                  className="text-xs text-primary hover:underline"
+                >
+                  Forgot password?
+                </button>
+              )}
+            </div>
             <Input
               id="password"
               type="password"
