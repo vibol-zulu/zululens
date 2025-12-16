@@ -48,7 +48,8 @@ import {
   MessageSquare,
   Database,
   FileText,
-  Trash2
+  Trash2,
+  Flag
 } from 'lucide-react';
 
 interface ChannelEntry {
@@ -127,6 +128,12 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
   // News state
   const [news, setNews] = useState<NewsEntry[]>([]);
   const [newsLoading, setNewsLoading] = useState(false);
+
+  // Flag state
+  const [channelToFlag, setChannelToFlag] = useState<ChannelEntry | null>(null);
+  const [showFlagDialog, setShowFlagDialog] = useState(false);
+  const [flagReason, setFlagReason] = useState('');
+  const [flagging, setFlagging] = useState(false);
 
   // Stats
   const [stats, setStats] = useState({
@@ -394,6 +401,45 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
     } catch (error) {
       console.error('Error deleting comment:', error);
       toast({ title: 'Failed to delete comment', variant: 'destructive' });
+    }
+  };
+
+  const handleFlagChannel = (channel: ChannelEntry) => {
+    setChannelToFlag(channel);
+    setFlagReason('');
+    setShowFlagDialog(true);
+  };
+
+  const confirmFlagChannel = async () => {
+    if (!channelToFlag || !user || !flagReason.trim()) return;
+    
+    setFlagging(true);
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .insert({
+          type: 'channel_flag',
+          title: `Channel Flagged: ${channelToFlag.name}`,
+          message: flagReason.trim(),
+          channel_id: channelToFlag.id,
+          created_by: user.id,
+          target_role: 'admin'
+        });
+
+      if (error) throw error;
+
+      toast({ 
+        title: 'Channel flagged',
+        description: 'An admin has been notified about this channel.'
+      });
+      setShowFlagDialog(false);
+      setChannelToFlag(null);
+      setFlagReason('');
+    } catch (error) {
+      console.error('Error flagging channel:', error);
+      toast({ title: 'Failed to flag channel', variant: 'destructive' });
+    } finally {
+      setFlagging(false);
     }
   };
 
@@ -667,6 +713,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                         <TableHead>Audience (M)</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Author</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -684,6 +731,18 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                           <TableCell>{getStatusBadge(channel.status)}</TableCell>
                           <TableCell className="text-sm text-muted-foreground">
                             {channel.author_name || (channel.author_id ? 'Unknown' : 'System')}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {channel.status === 'approved' && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleFlagChannel(channel)}
+                                title="Flag this channel for admin review"
+                              >
+                                <Flag className="h-4 w-4 text-orange-500" />
+                              </Button>
+                            )}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -866,6 +925,49 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                 className="bg-red-600 hover:bg-red-700"
               >
                 Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Flag Channel Dialog */}
+        <AlertDialog open={showFlagDialog} onOpenChange={setShowFlagDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                <Flag className="h-5 w-5 text-orange-500" />
+                Flag Channel for Review
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                Flag "{channelToFlag?.name}" for admin review. Please provide a reason.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="py-4">
+              <textarea
+                value={flagReason}
+                onChange={(e) => setFlagReason(e.target.value)}
+                placeholder="Describe why this channel should be reviewed..."
+                className="w-full min-h-[100px] p-3 rounded-md border border-input bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => {
+                setShowFlagDialog(false);
+                setChannelToFlag(null);
+                setFlagReason('');
+              }}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={confirmFlagChannel}
+                disabled={!flagReason.trim() || flagging}
+                className="bg-orange-600 hover:bg-orange-700"
+              >
+                {flagging ? (
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Flagging...</>
+                ) : (
+                  'Flag Channel'
+                )}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
