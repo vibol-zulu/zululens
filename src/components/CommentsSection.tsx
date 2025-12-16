@@ -288,7 +288,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
         <div className="max-h-[25vh] overflow-hidden flex justify-center">
           <div className={`flex w-full ${isMobile ? 'flex-col' : 'max-w-[calc(100vw-512px)]'}`}>
             {/* Left: Comments Interface */}
-            <div className={`flex flex-col ${isMobile ? 'w-full' : 'w-1/2 border-r border-border'}`}>
+            <div className={`flex flex-col h-full ${isMobile ? 'w-full' : 'flex-1 border-r border-border'}`}>
               {!isAuthenticated ? (
                 /* Sign-up gate for Tier 1 users */
                 <div className="p-6 pt-8 pb-16 text-center flex items-start justify-center flex-1 overflow-y-auto">
@@ -380,7 +380,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
 
             {/* Right: News & Updates */}
             {!isMobile && (
-              <div className="w-1/2 flex flex-col">
+              <div className="flex-1 flex flex-col h-full">
                 <div className="p-4 border-b border-border">
                   <h3 className="font-semibold text-sm flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
