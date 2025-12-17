@@ -223,7 +223,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           style={{ backgroundColor: headerBgColor, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
         >
           <h3 
-            className="font-semibold capitalize text-sm text-center mb-2"
+            className="font-semibold capitalize text-base text-center mb-2"
             style={{ color: headerTextColor }}
           >
             {category}
@@ -347,7 +347,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         style={{ backgroundColor: headerBgColor, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
       >
         <h3 
-          className="font-semibold capitalize text-center text-sm mb-2"
+          className="font-semibold capitalize text-center text-lg mb-2"
           style={{ color: headerTextColor }}
         >
           {category}
