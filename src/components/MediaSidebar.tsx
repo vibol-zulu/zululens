@@ -217,7 +217,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   if (isMobile) {
     return (
-      <div className="w-1/2 border-r last:border-r-0 border-border overflow-hidden flex flex-col min-w-0" style={{ backgroundColor: '#fffffa' }}>
+      <div className="w-1/2 border-r last:border-r-0 border-border bg-card overflow-hidden flex flex-col min-w-0">
         <div 
           className="px-3 py-3 shrink-0 relative z-10"
           style={{ backgroundColor: headerBgColor, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
@@ -336,12 +336,11 @@ const Sidebar: React.FC<SidebarProps> = ({
   return (
     <div 
       className={cn(
-        "absolute top-0 bottom-0 z-10 w-[280px] backdrop-blur-sm",
+        "absolute top-0 bottom-0 z-10 w-[280px] bg-card backdrop-blur-sm",
         "flex flex-col border-border transition-transform duration-300",
         side === 'left' ? 'left-0 border-r' : 'right-0 border-l',
         !isOpen && (side === 'left' ? '-translate-x-[calc(100%-12px)]' : 'translate-x-[calc(100%-12px)]')
       )}
-      style={{ backgroundColor: '#fffffa' }}
     >
       <div 
         className="px-3 py-3 relative z-10"
