@@ -137,77 +137,96 @@ const SignInModal: React.FC<SignInModalProps> = ({ open, onClose, defaultTab = '
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     try {
-      // Safari/embedded contexts may require explicit storage access
-      try {
-        const doc = document as any;
-        if (typeof doc?.hasStorageAccess === 'function' && typeof doc?.requestStorageAccess === 'function') {
-          const hasAccess = await doc.hasStorageAccess();
-          if (!hasAccess) {
-            await doc.requestStorageAccess();
+      // Detect if we're in an iframe
+      const isInIframe = window.self !== window.top;
+
+      if (isInIframe) {
+        // Safari/embedded contexts may require explicit storage access
+        try {
+          const doc = document as any;
+          if (typeof doc?.hasStorageAccess === 'function' && typeof doc?.requestStorageAccess === 'function') {
+            const hasAccess = await doc.hasStorageAccess();
+            if (!hasAccess) {
+              await doc.requestStorageAccess();
+            }
           }
+        } catch {
+          // ignore
         }
-      } catch {
-        // ignore
-      }
 
-      // Use popup-based OAuth for iframe compatibility
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/oauth/callback`,
-          skipBrowserRedirect: true
-        }
-      });
-      
-      if (error) {
-        toast({ title: error.message, variant: 'destructive' });
-        setIsGoogleLoading(false);
-        return;
-      }
-      
-      if (data?.url) {
-        // Open OAuth in popup window
-        const width = 500;
-        const height = 600;
-        const left = window.screenX + (window.outerWidth - width) / 2;
-        const top = window.screenY + (window.outerHeight - height) / 2;
+        // Use popup-based OAuth for iframe compatibility
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: `${window.location.origin}/oauth/callback`,
+            skipBrowserRedirect: true
+          }
+        });
         
-        const popup = window.open(
-          data.url,
-          'google-oauth',
-          `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes,resizable=yes`
-        );
-
-        if (!popup) {
-          toast({
-            title: 'Popup blocked',
-            description: 'Please allow popups to sign in with Google.',
-            variant: 'destructive',
-          });
+        if (error) {
+          toast({ title: error.message, variant: 'destructive' });
           setIsGoogleLoading(false);
           return;
         }
         
-        // Index.tsx has a global listener that receives the popup callback via postMessage
-        // and completes the code exchange in the main window. Here we only wait.
-        const pollTimer = setInterval(async () => {
-          if (popup?.closed) {
-            clearInterval(pollTimer);
-            // Check if user is now authenticated
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-              onClose();
-              window.location.reload();
-            } else {
-              toast({
-                title: 'Sign in not completed',
-                description: 'If you finished Google sign-in, please try again (and allow popups).',
-                variant: 'destructive',
-              });
-            }
+        if (data?.url) {
+          // Open OAuth in popup window
+          const width = 500;
+          const height = 600;
+          const left = window.screenX + (window.outerWidth - width) / 2;
+          const top = window.screenY + (window.outerHeight - height) / 2;
+          
+          const popup = window.open(
+            data.url,
+            'google-oauth',
+            `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes,resizable=yes`
+          );
+
+          if (!popup) {
+            toast({
+              title: 'Popup blocked',
+              description: 'Please allow popups to sign in with Google.',
+              variant: 'destructive',
+            });
             setIsGoogleLoading(false);
+            return;
           }
-        }, 500);
+          
+          // Index.tsx has a global listener that receives the popup callback via postMessage
+          // and completes the code exchange in the main window. Here we only wait.
+          const pollTimer = setInterval(async () => {
+            if (popup?.closed) {
+              clearInterval(pollTimer);
+              // Check if user is now authenticated
+              const { data: { session } } = await supabase.auth.getSession();
+              if (session) {
+                onClose();
+                window.location.reload();
+              } else {
+                toast({
+                  title: 'Sign in not completed',
+                  description: 'If you finished Google sign-in, please try again (and allow popups).',
+                  variant: 'destructive',
+                });
+              }
+              setIsGoogleLoading(false);
+            }
+          }, 500);
+        }
+      } else {
+        // Not in iframe - use standard redirect flow (more reliable)
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: `${window.location.origin}/oauth/callback`
+          }
+        });
+        
+        if (error) {
+          toast({ title: error.message, variant: 'destructive' });
+          setIsGoogleLoading(false);
+        }
+        // Browser will redirect, no need to do anything else
       }
     } catch (error) {
       console.error('Google sign in error:', error);
