@@ -87,6 +87,8 @@ US media 2000 - 2025
 
           <iframe name="hiddenFrame" className="hidden" title="hiddenFrame" />
 
+          <p className="text-white/50 text-xs italic mb-4">Already subscribed? Enter your details to unlock.</p>
+
           <form action={MAILCHIMP_ACTION} method="POST" target="hiddenFrame" onSubmit={handleSubmit} className="space-y-4">
             <Input type="text" name="FNAME" value={name} onChange={e => setName(e.target.value)} placeholder="Full Name" className="h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus-visible:ring-white/30 focus-visible:ring-offset-0" />
             <Input type="email" name="EMAIL" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email Address" className="h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus-visible:ring-white/30 focus-visible:ring-offset-0" />
@@ -103,7 +105,6 @@ US media 2000 - 2025
           }} className="h-12 px-8 tracking-widest uppercase transition-all duration-300 rounded-md text-xs bg-white font-sans opacity-100 shadow-none">
               {submitted ? 'Unlocking...' : 'Unlock Infographic'}
             </button>
-            <p className="text-white/50 text-xs italic mt-3">Already subscribed? Enter your details to unlock.</p>
           </form>
         </div>
       </main>
