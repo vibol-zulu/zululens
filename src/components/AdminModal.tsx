@@ -3391,14 +3391,6 @@ Format your response as JSON with this structure:
                         </TableBody>
                       </Table>
                       
-                      <div className="p-4 border-t bg-background">
-                        <Button 
-                          onClick={applyEstimation}
-                          className="w-full"
-                        >
-                          Apply Estimation ({estimationResult.deduplicatedAudience?.toFixed(2) || '0.00'}M{estimationResult.politicalLean ? `, ${estimationResult.politicalLean}` : ''})
-                        </Button>
-                      </div>
                     </div>
                   )}
                 </div>
@@ -3413,10 +3405,10 @@ Format your response as JSON with this structure:
                       Reject
                     </Button>
                     <Button 
-                      onClick={() => updateSubmissionStatus(selectedSubmission.id, 'approved', selectedSubmission.author_id)} 
+                      onClick={estimationResult ? applyEstimation : () => updateSubmissionStatus(selectedSubmission.id, 'approved', selectedSubmission.author_id)} 
                       className="flex-1"
                     >
-                      Approve
+                      {estimationResult ? `Approve (${estimationResult.deduplicatedAudience?.toFixed(2) || '0'}M)` : 'Approve'}
                     </Button>
                   </div>
                 )}
