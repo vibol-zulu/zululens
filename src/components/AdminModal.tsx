@@ -181,6 +181,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   const [selectedCountry, setSelectedCountry] = useState('United States');
   const [selectedYear, setSelectedYear] = useState<number>(2025);
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'corporate' | 'independent'>('all');
+  const [channelSearch, setChannelSearch] = useState('');
   const [channels, setChannels] = useState<Channel[]>([]);
   const [loading, setLoading] = useState(false);
   
@@ -1973,6 +1974,13 @@ Format your response as JSON with this structure:
                     </SelectContent>
                   </Select>
                   
+                  <Input
+                    placeholder="Search channels..."
+                    value={channelSearch}
+                    onChange={(e) => setChannelSearch(e.target.value)}
+                    className="w-[180px]"
+                  />
+                  
                   <Button size="sm" onClick={handleAdd} className="ml-auto">
                     <Plus className="h-4 w-4 mr-1" /> Add
                   </Button>
@@ -2011,7 +2019,11 @@ Format your response as JSON with this structure:
                               </TableCell>
                             </TableRow>
                           ) : (
-                            channels.map(channel => (
+                            channels
+                              .filter(channel => 
+                                !channelSearch || channel.name.toLowerCase().includes(channelSearch.toLowerCase())
+                              )
+                              .map(channel => (
                               <TableRow key={channel.id}>
                                 <TableCell>
                                   <Checkbox
