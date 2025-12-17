@@ -12,14 +12,17 @@ const OAuthCallback = () => {
       // auto-detection consuming the code before we can send it to the opener.
       if (window.opener) {
         try {
+          // Use "*" here because the opener may be on a different allowed origin
+          // (e.g. custom domain vs lovable.app). The opener will validate origin.
           window.opener.postMessage(
             { type: "oauth-callback", url: window.location.href },
-            window.location.origin
+            "*"
           );
         } catch {
           // ignore
         }
-        window.close();
+        // Give the message a tick to flush before closing the popup.
+        setTimeout(() => window.close(), 150);
         return;
       }
 
