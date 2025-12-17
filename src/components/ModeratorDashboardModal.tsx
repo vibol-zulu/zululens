@@ -1538,7 +1538,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
             setReviewAction(null);
           }
         }}>
-          <DialogContent className="max-w-6xl max-h-[85vh] p-0 overflow-hidden">
+          <DialogContent className="max-w-6xl max-h-[85vh] p-0 flex flex-col overflow-hidden">
             <DialogHeader className="p-6 pb-4 border-b">
               <DialogTitle className="text-xl">
                 {reviewAction === 'approve' ? 'Approve' : 'Reject'} Channel Submission
