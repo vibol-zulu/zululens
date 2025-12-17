@@ -5,7 +5,14 @@ interface AppSettings {
   mailchimpUrl: string;
 }
 
-const DEFAULT_MAILCHIMP_URL = 'https://group.us12.list-manage.com/subscribe/post?u=8cebbb69cb233fee8e96a59fe&amp;id=de54a87f37&amp;f_id=005e9fe0f0';
+// Decode HTML entities in URLs (e.g., &amp; -> &)
+const decodeHtmlEntities = (str: string): string => {
+  const textarea = document.createElement('textarea');
+  textarea.innerHTML = str;
+  return textarea.value;
+};
+
+const DEFAULT_MAILCHIMP_URL = 'https://group.us12.list-manage.com/subscribe/post?u=8cebbb69cb233fee8e96a59fe&id=de54a87f37&f_id=005e9fe0f0';
 
 export const useAppSettings = () => {
   const [settings, setSettings] = useState<AppSettings>({
@@ -27,8 +34,9 @@ export const useAppSettings = () => {
           settingsMap[item.key] = item.value;
         });
 
+        const rawUrl = settingsMap['mailchimp_url'] || DEFAULT_MAILCHIMP_URL;
         setSettings({
-          mailchimpUrl: settingsMap['mailchimp_url'] || DEFAULT_MAILCHIMP_URL
+          mailchimpUrl: decodeHtmlEntities(rawUrl)
         });
       } catch (error) {
         console.error('Error fetching app settings:', error);
