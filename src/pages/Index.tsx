@@ -19,8 +19,25 @@ const Index = () => {
 
   // Receive OAuth callback URL from popup and exchange it in this window
   useEffect(() => {
+    const isAllowedOAuthOrigin = (origin: string) => {
+      if (origin === window.location.origin) return true;
+
+      // Allow known hosting origins (preview / production) + custom domain embeds.
+      try {
+        const { hostname } = new URL(origin);
+        return (
+          hostname.endsWith('.lovable.app') ||
+          hostname.endsWith('.lovableproject.com') ||
+          hostname.endsWith('.zulu.group')
+        );
+      } catch {
+        return false;
+      }
+    };
+
     const handler = (event: MessageEvent) => {
-      if (event.origin !== window.location.origin) return;
+      if (!isAllowedOAuthOrigin(event.origin)) return;
+
       const payload = event.data as any;
       if (payload?.type !== 'oauth-callback' || typeof payload.url !== 'string') return;
       if (isExchangingOAuthRef.current) return;
