@@ -82,7 +82,6 @@ const BrandItem: React.FC<BrandItemProps> = ({
 }) => {
   return (
     <div 
-      data-tour={isFirstItem ? "channel-item" : undefined}
       className={cn(
         "flex items-start gap-2 transition-opacity",
         isMobile ? "gap-2" : "gap-3",
@@ -94,8 +93,9 @@ const BrandItem: React.FC<BrandItemProps> = ({
         checked={isSelected} 
         onCheckedChange={() => onToggle(brand.id)}
         className="mt-1"
+        data-tour={isFirstItem ? "channel-item" : undefined}
       />
-      <label 
+      <label
         htmlFor={`cb-${brand.id}`}
         className={cn("cursor-pointer leading-tight flex-1", isMobile ? "text-xs" : "text-sm")}
       >
