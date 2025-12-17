@@ -138,7 +138,7 @@ export const TourHighlight: React.FC<{
       style={{ display: 'contents' }}
     >
       <div
-        className={isActive ? 'z-[9999] relative' : ''}
+        className={isActive ? 'z-[9999] relative animate-[tour-pulse_2s_ease-in-out_infinite]' : ''}
         style={isActive ? {
           outline: '3px solid #F8D4C8',
           outlineOffset: '2px',

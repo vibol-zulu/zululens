@@ -100,37 +100,48 @@ export default {
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
   		},
-  		keyframes: {
-  			'accordion-down': {
-  				from: {
-  					height: '0'
-  				},
-  				to: {
-  					height: 'var(--radix-accordion-content-height)'
-  				}
-  			},
-  			'accordion-up': {
-  				from: {
-  					height: 'var(--radix-accordion-content-height)'
-  				},
-  				to: {
-  					height: '0'
-  				}
-  			},
-  			'pulse-slow': {
-  				'0%, 100%': {
-  					opacity: '0.6'
-  				},
-  				'50%': {
-  					opacity: '0.8'
-  				}
-  			}
-  		},
-  		animation: {
-  			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out',
-  			'pulse-slow': 'pulse-slow 3s ease-in-out infinite'
-  		},
+		keyframes: {
+			'accordion-down': {
+				from: {
+					height: '0'
+				},
+				to: {
+					height: 'var(--radix-accordion-content-height)'
+				}
+			},
+			'accordion-up': {
+				from: {
+					height: 'var(--radix-accordion-content-height)'
+				},
+				to: {
+					height: '0'
+				}
+			},
+			'pulse-slow': {
+				'0%, 100%': {
+					opacity: '0.6'
+				},
+				'50%': {
+					opacity: '0.8'
+				}
+			},
+			'tour-pulse': {
+				'0%, 100%': {
+					outlineColor: '#F8D4C8',
+					outlineWidth: '3px'
+				},
+				'50%': {
+					outlineColor: '#FFB8A8',
+					outlineWidth: '4px'
+				}
+			}
+		},
+		animation: {
+			'accordion-down': 'accordion-down 0.2s ease-out',
+			'accordion-up': 'accordion-up 0.2s ease-out',
+			'pulse-slow': 'pulse-slow 3s ease-in-out infinite',
+			'tour-pulse': 'tour-pulse 2s ease-in-out infinite'
+		},
   		boxShadow: {
   			'2xs': 'var(--shadow-2xs)',
   			xs: 'var(--shadow-xs)',
