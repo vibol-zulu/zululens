@@ -32,22 +32,23 @@ interface ChannelSubmission {
   country: string;
 }
 
-const DEFAULT_SYSTEM_PROMPT = `You are an expert media analyst specializing in audience measurement, cross-platform reach estimation, and political media classification. Your task is to:
-1. Validate and cross-check user-submitted information about media channels
-2. Estimate monthly audience figures based on platform, content type, and market positioning
-3. Determine the political lean/bias of the channel based on your knowledge
+const DEFAULT_SYSTEM_PROMPT = `You are an expert media analyst specializing in audience measurement, cross-platform reach estimation, and political media classification. Use real-time web search to research the channel and provide accurate, current information.
+
+Your task is to:
+1. SEARCH for current information about this media channel - look up their actual subscriber counts, viewership data, and social media presence
+2. Validate and cross-check user-submitted information against real data
+3. Estimate monthly audience figures based on actual platform metrics you find
+4. Determine the political lean/bias based on verified content analysis and third-party assessments
 
 You have deep knowledge of:
 - Platform-specific audience benchmarks (YouTube, Twitter/X, TikTok, Facebook, Instagram, podcasts, cable TV, print/digital)
-- Cross-platform audience overlap patterns
-- Content type performance benchmarks (news, commentary, podcasts, etc.)
+- Cross-platform audience overlap patterns and deduplication methodologies
 - Political media landscape, bias indicators, and audience segmentation
-- Deduplication methodologies for cross-platform reach
 - Media ownership structures and corporate vs independent classification
 
-Use industry-standard audience measurement approaches and historical comparables to provide realistic estimates. Be critical in validating user inputs.`;
+IMPORTANT: Use your search capabilities to find REAL, CURRENT data about this channel. Include citations where possible.`;
 
-const DEFAULT_USER_PROMPT = `Analyze this media channel submission, validate the user's inputs, and estimate metrics:
+const DEFAULT_USER_PROMPT = `Research and analyze this media channel submission using real-time web search:
 
 **Channel Name:** {channel.name}
 **Main Platform:** {channel.platform}
@@ -55,27 +56,33 @@ const DEFAULT_USER_PROMPT = `Analyze this media channel submission, validate the
 **Category (user selected):** {channel.category}
 **Country:** {channel.country}
 
-Based on this information, provide:
+SEARCH for current information about "{channel.name}" including:
+- Current subscriber/follower counts across platforms
+- Recent viewership or audience data
+- Ownership structure (corporate parent or independent)
+- Political lean assessments from media bias organizations
 
-1. **Input Validation** - Cross-check the user's inputs:
-   - Is the **Category** (corporate vs independent) correctly classified? Consider ownership structure, funding sources, and corporate affiliations.
+Based on your research, provide:
+
+1. **Input Validation** - Cross-check the user's inputs against what you found:
+   - Is the **Category** (corporate vs independent) correctly classified? Research ownership structure.
    - Is the **Platform** selection accurate for this channel's primary presence?
    - Is the **Content Type** appropriate for what this channel produces?
    - Flag any discrepancies or corrections needed.
 
-2. **Political Lean Analysis** - Based on the channel's content, hosts, editorial stance, and audience:
+2. **Political Lean Analysis** - Based on your research of the channel's content, hosts, and third-party assessments:
    - Determine the political lean from: Far Left, Progressive/Left, Center-Left, Center, Center-Right, Right, Far Right, Libertarian, Independent, Non-partisan
-   - Provide brief justification for your assessment.
+   - Cite sources for your assessment where possible.
 
-3. **Estimated Cross-Platform Monthly Audience (in millions)** - The total unique audience reach across major platforms.
+3. **Estimated Cross-Platform Monthly Audience (in millions)** - Based on actual subscriber/follower data you found.
 
-4. **Estimated Deduplicated Monthly Audience (in millions)** - Adjusted to remove estimated audience overlap.
+4. **Estimated Deduplicated Monthly Audience (in millions)** - Adjusted for overlap using industry-standard 20-40% deduplication.
 
-5. **Reasoning** (2-4 sentences) - Explain your estimation methodology.
+5. **Reasoning** (2-4 sentences) - Cite the data sources you found.
 
-6. **Comparable Channels** - List 2-4 similar channels used as benchmarks.
+6. **Comparable Channels** - List 2-4 similar channels with similar audience size.
 
-7. **Suggested Start Date** - Estimate when this channel was founded (format: MM/YYYY or "Founded YYYY").
+7. **Suggested Start Date** - When this channel was founded based on your research.
 
 Format your response as JSON with this structure:
 {
@@ -84,13 +91,13 @@ Format your response as JSON with this structure:
     "suggestedCategory": "corporate" or "independent" or null,
     "platformCorrect": boolean,
     "contentTypeCorrect": boolean,
-    "validationNotes": "string explaining any issues found"
+    "validationNotes": "string explaining any issues found with citations"
   },
   "politicalLean": "string from the options above",
-  "politicalLeanJustification": "brief explanation",
+  "politicalLeanJustification": "brief explanation with sources",
   "crossPlatformAudience": number,
   "deduplicatedAudience": number,
-  "reasoning": "string",
+  "reasoning": "string with data sources",
   "comparableChannels": ["channel1", "channel2"],
   "suggestedStartDate": "string"
 }`;
@@ -123,9 +130,12 @@ serve(async (req) => {
       );
     }
 
+    // Try Perplexity first, fall back to Lovable AI
+    const PERPLEXITY_API_KEY = Deno.env.get('PERPLEXITY_API_KEY');
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      console.error('LOVABLE_API_KEY is not configured');
+    
+    if (!PERPLEXITY_API_KEY && !LOVABLE_API_KEY) {
+      console.error('No AI API keys configured');
       return new Response(
         JSON.stringify({ error: 'AI service not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -165,35 +175,70 @@ serve(async (req) => {
     // Replace placeholders in user prompt
     const userPrompt = replaceChannelPlaceholders(userPromptTemplate, channel);
 
-    console.log('Calling Lovable AI for channel:', channel.name);
+    let response;
+    let usingPerplexity = false;
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        temperature: 0.3,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('AI gateway error:', response.status, errorText);
+    // Try Perplexity first for real-time web search
+    if (PERPLEXITY_API_KEY) {
+      console.log('Calling Perplexity AI for channel:', channel.name);
+      usingPerplexity = true;
       
-      if (response.status === 429) {
+      response = await fetch('https://api.perplexity.ai/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${PERPLEXITY_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'sonar-pro', // Multi-step reasoning with 2x more citations
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          temperature: 0.2,
+          search_recency_filter: 'month', // Focus on recent data
+        }),
+      });
+
+      // If Perplexity fails, fall back to Lovable AI
+      if (!response.ok && LOVABLE_API_KEY) {
+        console.log('Perplexity failed, falling back to Lovable AI');
+        usingPerplexity = false;
+      }
+    }
+
+    // Fall back to Lovable AI if Perplexity not available or failed
+    if (!usingPerplexity && LOVABLE_API_KEY) {
+      console.log('Calling Lovable AI for channel:', channel.name);
+      
+      response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          temperature: 0.3,
+        }),
+      });
+    }
+
+    if (!response || !response.ok) {
+      const errorText = response ? await response.text() : 'No response';
+      console.error('AI gateway error:', response?.status, errorText);
+      
+      if (response?.status === 429) {
         return new Response(
           JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      if (response.status === 402) {
+      if (response?.status === 402) {
         return new Response(
           JSON.stringify({ error: 'AI credits exhausted. Please add funds to continue.' }),
           { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -208,6 +253,7 @@ serve(async (req) => {
 
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content;
+    const citations = data.citations || []; // Perplexity provides citations
 
     if (!content) {
       console.error('No content in AI response');
@@ -239,11 +285,13 @@ serve(async (req) => {
       );
     }
 
-    console.log('Successfully estimated audience for:', channel.name);
+    console.log('Successfully estimated audience for:', channel.name, usingPerplexity ? '(via Perplexity)' : '(via Lovable AI)');
 
     return new Response(
       JSON.stringify({
         success: true,
+        source: usingPerplexity ? 'perplexity' : 'lovable-ai',
+        citations: citations,
         estimate: {
           inputValidation: parsedContent.inputValidation || null,
           politicalLean: parsedContent.politicalLean || null,
