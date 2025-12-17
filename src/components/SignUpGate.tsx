@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { registerTier1Visitor, useAnalytics } from '@/hooks/useAnalytics';
+import { useAppSettings } from '@/hooks/useAppSettings';
 import pinkFavicon from '@/assets/Pink_Favicon.png';
+
 interface SignUpGateProps {
   onJoin: (name: string, email: string) => void;
 }
-const MAILCHIMP_ACTION = "https://group.us12.list-manage.com/subscribe/post?u=8cebbb69cb233fee8e96a59fe&amp;id=de54a87f37&amp;f_id=005e9fe0f0";
+
 const SignUpGate: React.FC<SignUpGateProps> = ({
   onJoin
 }) => {
@@ -13,6 +15,7 @@ const SignUpGate: React.FC<SignUpGateProps> = ({
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+  const { settings } = useAppSettings();
   const {
     setVisitorId,
     initSession,
@@ -89,7 +92,7 @@ US media 2000 - 2025
 
           <p className="text-white/50 text-xs italic mb-4">Already subscribed? Enter your details to unlock.</p>
 
-          <form action={MAILCHIMP_ACTION} method="POST" target="hiddenFrame" onSubmit={handleSubmit} className="space-y-4">
+          <form action={settings.mailchimpUrl} method="POST" target="hiddenFrame" onSubmit={handleSubmit} className="space-y-4">
             <Input type="text" name="FNAME" value={name} onChange={e => setName(e.target.value)} placeholder="Full Name" className="h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus-visible:ring-white/30 focus-visible:ring-offset-0" />
             <Input type="email" name="EMAIL" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email Address" className="h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus-visible:ring-white/30 focus-visible:ring-offset-0" />
 
