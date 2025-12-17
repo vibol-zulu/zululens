@@ -430,6 +430,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
                           case 'community': return 'text-independent';
                           case 'milestone': return 'text-muted-foreground';
                           case 'coming-soon': return 'text-primary';
+                          case 'news': return 'text-blue-500';
                           default: return 'text-muted-foreground';
                         }
                       };
@@ -441,6 +442,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
                           case 'community': return 'COMMUNITY';
                           case 'milestone': return 'MILESTONE';
                           case 'coming-soon': return 'COMING SOON';
+                          case 'news': return 'NEWS';
                           default: return category.toUpperCase();
                         }
                       };

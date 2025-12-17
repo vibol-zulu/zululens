@@ -2551,6 +2551,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                     <SelectItem value="update">Data Update</SelectItem>
                     <SelectItem value="community">Community</SelectItem>
                     <SelectItem value="milestone">Milestone</SelectItem>
+                    <SelectItem value="news">News</SelectItem>
                     <SelectItem value="coming-soon">Coming Soon</SelectItem>
                   </SelectContent>
                 </Select>
