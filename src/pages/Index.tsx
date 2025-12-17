@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import SignUpGate from '@/components/SignUpGate';
 import MediaDashboard from '@/components/MediaDashboard';
-import WelcomeModal from '@/components/WelcomeModal';
 import { INITIAL_DATA, STORAGE_KEY } from '@/data/mediaData';
 import { YearData } from '@/types/media';
 import { Helmet } from 'react-helmet';
@@ -157,12 +156,8 @@ const Index = () => {
         <MediaDashboard 
           visitorName={userName} 
           visitorEmail={userEmail}
-          data={data} 
-        />
-        <WelcomeModal 
-          open={showWelcome} 
-          onOpenChange={setShowWelcome} 
-          userName={userName} 
+          data={data}
+          showWelcomeModal={showWelcome}
         />
       </>
     );
@@ -179,12 +174,8 @@ const Index = () => {
         <MediaDashboard 
           visitorName={visitor.name} 
           visitorEmail={visitor.email}
-          data={data} 
-        />
-        <WelcomeModal 
-          open={showWelcome} 
-          onOpenChange={setShowWelcome} 
-          userName={visitor.name} 
+          data={data}
+          showWelcomeModal={showWelcome}
         />
       </>
     );
