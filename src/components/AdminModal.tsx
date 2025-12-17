@@ -1393,7 +1393,10 @@ Format your response as JSON with this structure:
     try {
       const updateData: Record<string, unknown> = { 
         value_millions: estimationResult.deduplicatedAudience,
-        start_date: estimationResult.suggestedStartDate || 'TBD'
+        start_date: estimationResult.suggestedStartDate || 'TBD',
+        status: 'approved',
+        approved_at: new Date().toISOString(),
+        approved_by: user?.id
       };
       
       // Include political lean if determined by AI
@@ -1408,12 +1411,23 @@ Format your response as JSON with this structure:
 
       if (error) throw error;
 
-      toast({ title: 'Estimation applied to submission' });
-      setSelectedSubmission({
-        ...selectedSubmission,
-        value_millions: estimationResult.deduplicatedAudience,
-        political_lean: estimationResult.politicalLean || selectedSubmission.political_lean
-      });
+      // Send notification to author
+      if (selectedSubmission.author_id) {
+        await supabase.from('notifications').insert({
+          title: 'Submission Approved!',
+          message: `Your channel suggestion "${selectedSubmission.name}" has been approved and is now live.`,
+          type: 'submission_review',
+          target_user_id: selectedSubmission.author_id,
+          target_role: 'member',
+          channel_id: selectedSubmission.id,
+          created_by: user?.id
+        });
+      }
+
+      toast({ title: 'Estimation applied and submission approved' });
+      setShowSubmissionDialog(false);
+      setSelectedSubmission(null);
+      setEstimationResult(null);
       fetchSubmissions();
     } catch (error) {
       console.error('Error applying estimation:', error);
@@ -2149,40 +2163,22 @@ Format your response as JSON with this structure:
                                       </Tooltip>
                                     </TooltipProvider>
                                     {sub.status === 'pending' && (
-                                      <>
-                                        <TooltipProvider>
-                                          <Tooltip>
-                                            <TooltipTrigger asChild>
-                                              <Button 
-                                                variant="ghost" 
-                                                size="icon"
-                                                onClick={() => updateSubmissionStatus(sub.id, 'approved', sub.author_id)}
-                                              >
-                                                <Check className="h-4 w-4 text-green-600" />
-                                              </Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                              <p>Approve</p>
-                                            </TooltipContent>
-                                          </Tooltip>
-                                        </TooltipProvider>
-                                        <TooltipProvider>
-                                          <Tooltip>
-                                            <TooltipTrigger asChild>
-                                              <Button 
-                                                variant="ghost" 
-                                                size="icon"
-                                                onClick={() => updateSubmissionStatus(sub.id, 'rejected', sub.author_id)}
-                                              >
-                                                <XCircle className="h-4 w-4 text-destructive" />
-                                              </Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                              <p>Reject</p>
-                                            </TooltipContent>
-                                          </Tooltip>
-                                        </TooltipProvider>
-                                      </>
+                                      <TooltipProvider>
+                                        <Tooltip>
+                                          <TooltipTrigger asChild>
+                                            <Button 
+                                              variant="ghost" 
+                                              size="icon"
+                                              onClick={() => updateSubmissionStatus(sub.id, 'rejected', sub.author_id)}
+                                            >
+                                              <XCircle className="h-4 w-4 text-destructive" />
+                                            </Button>
+                                          </TooltipTrigger>
+                                          <TooltipContent>
+                                            <p>Reject</p>
+                                          </TooltipContent>
+                                        </Tooltip>
+                                      </TooltipProvider>
                                     )}
                                     <TooltipProvider>
                                       <Tooltip>
