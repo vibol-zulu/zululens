@@ -95,7 +95,14 @@ US media 2000 - 2025
               {error}
             </div>}
 
-          <iframe name="hiddenFrame" className="hidden" title="hiddenFrame" />
+          {/* Hidden iframe target for Mailchimp POST (must NOT be display:none or some browsers block submission) */}
+          <iframe
+            name="hiddenFrame"
+            title="hiddenFrame"
+            aria-hidden="true"
+            tabIndex={-1}
+            className="absolute h-0 w-0 opacity-0 pointer-events-none"
+          />
 
           <p className="text-white/50 text-xs italic mb-4">Already subscribed? Enter your details to unlock.</p>
 
