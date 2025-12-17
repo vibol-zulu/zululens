@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.fetch-article]
 verify_jwt = false
+
+[functions.estimate-audience]
+verify_jwt = false

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Database, MoreVertical, MessageCircle, BarChart3, Trophy, Flame, TrendingUp, Newspaper, ChevronDown, Bell } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Database, MoreVertical, MessageCircle, BarChart3, Trophy, Flame, TrendingUp, Newspaper, ChevronDown, Bell, Sparkles, Loader2 } from 'lucide-react';
 import NotificationsTab from '@/components/NotificationsTab';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -204,6 +204,16 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [showSubmissionDialog, setShowSubmissionDialog] = useState(false);
   const [submissionsStatusFilter, setSubmissionsStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
+  
+  // AI Estimation state
+  const [isEstimating, setIsEstimating] = useState(false);
+  const [estimationResult, setEstimationResult] = useState<{
+    crossPlatformAudience: number;
+    deduplicatedAudience: number;
+    reasoning: string;
+    comparableChannels: string[];
+    suggestedStartDate: string;
+  } | null>(null);
 
   // Comments state
   const [comments, setComments] = useState<AdminComment[]>([]);
@@ -1170,7 +1180,83 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
     }
   };
 
-  // Bulk action toggle functions
+  // AI Audience Estimation function
+  const estimateAudience = async (submission: Submission) => {
+    setIsEstimating(true);
+    setEstimationResult(null);
+    
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/estimate-audience`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          channel: {
+            name: submission.name,
+            platform: submission.platform,
+            contentType: submission.content_type,
+            politicalLean: submission.political_lean,
+            category: submission.category,
+            country: submission.country
+          }
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to estimate audience');
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.estimate) {
+        setEstimationResult(data.estimate);
+        toast({ title: 'Audience estimate generated' });
+      } else {
+        throw new Error('Invalid response from AI');
+      }
+    } catch (error) {
+      console.error('Error estimating audience:', error);
+      toast({ 
+        title: 'Failed to estimate audience', 
+        description: error instanceof Error ? error.message : 'Unknown error',
+        variant: 'destructive' 
+      });
+    } finally {
+      setIsEstimating(false);
+    }
+  };
+
+  // Apply estimation to submission
+  const applyEstimation = async () => {
+    if (!selectedSubmission || !estimationResult) return;
+    
+    try {
+      const { error } = await supabase
+        .from('user_channels')
+        .update({ 
+          value_millions: estimationResult.deduplicatedAudience,
+          start_date: estimationResult.suggestedStartDate || 'TBD'
+        })
+        .eq('id', selectedSubmission.id);
+
+      if (error) throw error;
+
+      toast({ title: 'Estimation applied to submission' });
+      setSelectedSubmission({
+        ...selectedSubmission,
+        value_millions: estimationResult.deduplicatedAudience
+      });
+      fetchSubmissions();
+    } catch (error) {
+      console.error('Error applying estimation:', error);
+      toast({ title: 'Failed to apply estimation', variant: 'destructive' });
+    }
+  };
+
+
   const toggleSelectChannel = (id: string) => {
     setSelectedChannels(prev => {
       const next = new Set(prev);
@@ -2923,6 +3009,73 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                   } className="ml-2">
                     {selectedSubmission.status}
                   </Badge>
+                </div>
+
+                {/* AI Audience Estimation Section */}
+                <div className="border-t pt-4 mt-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <Label className="text-muted-foreground font-medium">AI Audience Estimation</Label>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => estimateAudience(selectedSubmission)}
+                      disabled={isEstimating}
+                    >
+                      {isEstimating ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Estimating...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4 mr-2" />
+                          Estimate Audience
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  {estimationResult && (
+                    <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Cross-Platform Audience</Label>
+                          <p className="text-lg font-bold">{estimationResult.crossPlatformAudience.toFixed(2)}M</p>
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Deduplicated Audience</Label>
+                          <p className="text-lg font-bold text-primary">{estimationResult.deduplicatedAudience.toFixed(2)}M</p>
+                        </div>
+                      </div>
+                      
+                      {estimationResult.suggestedStartDate && (
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Suggested Start Date</Label>
+                          <p className="font-medium">{estimationResult.suggestedStartDate}</p>
+                        </div>
+                      )}
+                      
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Reasoning</Label>
+                        <p className="text-sm text-muted-foreground mt-1">{estimationResult.reasoning}</p>
+                      </div>
+                      
+                      {estimationResult.comparableChannels.length > 0 && (
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Comparable Channels</Label>
+                          <p className="text-sm">{estimationResult.comparableChannels.join(', ')}</p>
+                        </div>
+                      )}
+                      
+                      <Button 
+                        size="sm" 
+                        onClick={applyEstimation}
+                        className="w-full mt-2"
+                      >
+                        Apply Estimation ({estimationResult.deduplicatedAudience.toFixed(2)}M)
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
                 {selectedSubmission.status === 'pending' && (

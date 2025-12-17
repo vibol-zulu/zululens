@@ -58,7 +58,8 @@ import {
   Flag,
   Pencil,
   ChevronDown,
-  Bell
+  Bell,
+  Sparkles
 } from 'lucide-react';
 import NotificationsTab from '@/components/NotificationsTab';
 
@@ -122,6 +123,16 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
   const [channelToReview, setChannelToReview] = useState<ChannelEntry | null>(null);
   const [reviewAction, setReviewAction] = useState<'approve' | 'reject' | null>(null);
   const [showReviewDialog, setShowReviewDialog] = useState(false);
+  
+  // AI Estimation state
+  const [isEstimating, setIsEstimating] = useState(false);
+  const [estimationResult, setEstimationResult] = useState<{
+    crossPlatformAudience: number;
+    deduplicatedAudience: number;
+    reasoning: string;
+    comparableChannels: string[];
+    suggestedStartDate: string;
+  } | null>(null);
 
   // My suggestions state
   const [myChannels, setMyChannels] = useState<ChannelEntry[]>([]);
@@ -630,7 +641,83 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
     }
   };
 
-  const handleDeleteComment = (comment: CommentEntry) => {
+  // AI Audience Estimation function
+  const estimateAudience = async (channel: ChannelEntry) => {
+    setIsEstimating(true);
+    setEstimationResult(null);
+    
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/estimate-audience`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          channel: {
+            name: channel.name,
+            platform: channel.platform || 'Unknown',
+            contentType: channel.content_type || 'Unknown',
+            politicalLean: channel.political_lean || 'Unknown',
+            category: channel.category,
+            country: channel.country
+          }
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to estimate audience');
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.estimate) {
+        setEstimationResult(data.estimate);
+        toast({ title: 'Audience estimate generated' });
+      } else {
+        throw new Error('Invalid response from AI');
+      }
+    } catch (error) {
+      console.error('Error estimating audience:', error);
+      toast({ 
+        title: 'Failed to estimate audience', 
+        description: error instanceof Error ? error.message : 'Unknown error',
+        variant: 'destructive' 
+      });
+    } finally {
+      setIsEstimating(false);
+    }
+  };
+
+  // Apply estimation to channel
+  const applyEstimation = async () => {
+    if (!channelToReview || !estimationResult) return;
+    
+    try {
+      const { error } = await supabase
+        .from('user_channels')
+        .update({ 
+          value_millions: estimationResult.deduplicatedAudience,
+          start_date: estimationResult.suggestedStartDate || 'TBD'
+        })
+        .eq('id', channelToReview.id);
+
+      if (error) throw error;
+
+      toast({ title: 'Estimation applied to channel' });
+      setChannelToReview({
+        ...channelToReview,
+        value_millions: estimationResult.deduplicatedAudience
+      });
+      fetchPendingChannels();
+    } catch (error) {
+      console.error('Error applying estimation:', error);
+      toast({ title: 'Failed to apply estimation', variant: 'destructive' });
+    }
+  };
+
+
     setCommentToDelete(comment);
     setShowDeleteCommentDialog(true);
   };
@@ -1407,31 +1494,150 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
           </Tabs>
         </div>
 
-        {/* Review Dialog */}
-        <AlertDialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>
-                {reviewAction === 'approve' ? 'Approve' : 'Reject'} Channel
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to {reviewAction} "{channelToReview?.name}"?
-                {reviewAction === 'approve' 
-                  ? ' This will make it visible in the visualization.'
-                  : ' The submitter will be notified.'}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={confirmReview}
-                className={reviewAction === 'approve' ? 'bg-green-600 hover:bg-green-700' : ''}
-              >
-                {reviewAction === 'approve' ? 'Approve' : 'Reject'}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        {/* Review Dialog with AI Estimation */}
+        <Dialog open={showReviewDialog} onOpenChange={(open) => {
+          setShowReviewDialog(open);
+          if (!open) {
+            setEstimationResult(null);
+            setChannelToReview(null);
+            setReviewAction(null);
+          }
+        }}>
+          <DialogContent className="max-w-lg">
+            <div className="space-y-4">
+              <h3 className="font-semibold text-lg">
+                {reviewAction === 'approve' ? 'Approve' : 'Reject'} Channel Submission
+              </h3>
+              
+              {channelToReview && (
+                <>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <Label className="text-muted-foreground">Channel Name</Label>
+                      <p className="font-medium">{channelToReview.name}</p>
+                    </div>
+                    <div>
+                      <Label className="text-muted-foreground">Category</Label>
+                      <p className="font-medium capitalize">{channelToReview.category}</p>
+                    </div>
+                    <div>
+                      <Label className="text-muted-foreground">Platform</Label>
+                      <p className="font-medium">{channelToReview.platform || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <Label className="text-muted-foreground">Content Type</Label>
+                      <p className="font-medium">{channelToReview.content_type || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <Label className="text-muted-foreground">Political Lean</Label>
+                      <p className="font-medium">{channelToReview.political_lean || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <Label className="text-muted-foreground">Country</Label>
+                      <p className="font-medium">{channelToReview.country}</p>
+                    </div>
+                  </div>
+
+                  {/* AI Audience Estimation Section */}
+                  <div className="border-t pt-4 mt-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <Label className="text-muted-foreground font-medium">AI Audience Estimation</Label>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => estimateAudience(channelToReview)}
+                        disabled={isEstimating}
+                      >
+                        {isEstimating ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Estimating...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="h-4 w-4 mr-2" />
+                            Estimate Audience
+                          </>
+                        )}
+                      </Button>
+                    </div>
+
+                    {estimationResult && (
+                      <div className="bg-muted/50 rounded-lg p-4 space-y-3 text-sm">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Cross-Platform Audience</Label>
+                            <p className="text-lg font-bold">{estimationResult.crossPlatformAudience.toFixed(2)}M</p>
+                          </div>
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Deduplicated Audience</Label>
+                            <p className="text-lg font-bold text-primary">{estimationResult.deduplicatedAudience.toFixed(2)}M</p>
+                          </div>
+                        </div>
+                        
+                        {estimationResult.suggestedStartDate && (
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Suggested Start Date</Label>
+                            <p className="font-medium">{estimationResult.suggestedStartDate}</p>
+                          </div>
+                        )}
+                        
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Reasoning</Label>
+                          <p className="text-xs text-muted-foreground mt-1">{estimationResult.reasoning}</p>
+                        </div>
+                        
+                        {estimationResult.comparableChannels.length > 0 && (
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Comparable Channels</Label>
+                            <p className="text-xs">{estimationResult.comparableChannels.join(', ')}</p>
+                          </div>
+                        )}
+                        
+                        <Button 
+                          size="sm" 
+                          onClick={applyEstimation}
+                          className="w-full mt-2"
+                        >
+                          Apply Estimation ({estimationResult.deduplicatedAudience.toFixed(2)}M)
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex gap-3 pt-4 border-t">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        setShowReviewDialog(false);
+                        setEstimationResult(null);
+                      }}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                    {reviewAction === 'reject' ? (
+                      <Button 
+                        variant="destructive"
+                        onClick={confirmReview}
+                        className="flex-1"
+                      >
+                        Reject
+                      </Button>
+                    ) : (
+                      <Button 
+                        onClick={confirmReview}
+                        className="flex-1 bg-green-600 hover:bg-green-700"
+                      >
+                        Approve
+                      </Button>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Delete Comment Dialog */}
         <AlertDialog open={showDeleteCommentDialog} onOpenChange={setShowDeleteCommentDialog}>
