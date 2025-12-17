@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Database, MoreVertical, MessageCircle, BarChart3, Trophy, Flame, TrendingUp, Newspaper, ChevronDown, Bell, Sparkles, Loader2, Settings, Save } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Database, MoreVertical, MessageCircle, BarChart3, Trophy, Flame, TrendingUp, Newspaper, ChevronDown, Bell, Loader2, Settings, Save } from 'lucide-react';
+import perplexityLogo from '@/assets/perplexity-logo.svg';
 import {
   Tooltip,
   TooltipContent,
@@ -2787,7 +2788,7 @@ Format your response as JSON with this structure:
                   <Card>
                     <CardHeader>
                       <CardTitle className="text-lg flex items-center gap-2">
-                        <Sparkles className="h-4 w-4" />
+                        <img src={perplexityLogo} alt="Perplexity" className="h-4 w-4" />
                         AI Audience Estimation
                       </CardTitle>
                     </CardHeader>
@@ -3299,19 +3300,18 @@ Format your response as JSON with this structure:
                   <div className="flex items-center justify-between">
                     <h3 className="text-base font-semibold">AI Audience Estimation</h3>
                     <Button
-                      size="sm"
-                      variant="outline"
                       onClick={() => estimateAudience(selectedSubmission)}
                       disabled={isEstimating}
+                      className="h-10 px-4 font-semibold"
                     >
                       {isEstimating ? (
                         <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          <Loader2 className="h-5 w-5 mr-2 animate-spin" />
                           Estimating...
                         </>
                       ) : (
                         <>
-                          <Sparkles className="h-4 w-4 mr-2" />
+                          <img src={perplexityLogo} alt="Perplexity" className="h-5 w-5 mr-2" />
                           Estimate Audience
                         </>
                       )}
