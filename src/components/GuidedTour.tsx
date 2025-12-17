@@ -136,32 +136,21 @@ const GuidedTourCard: React.FC<GuidedTourCardProps> = ({
           <defs>
             <marker
               id="arrowhead"
-              markerWidth="10"
-              markerHeight="7"
-              refX="9"
-              refY="3.5"
+              markerWidth="6"
+              markerHeight="4"
+              refX="5"
+              refY="2"
               orient="auto"
             >
-              <polygon points="0 0, 10 3.5, 0 7" fill="#F8D4C8" />
+              <polygon points="0 0, 6 2, 0 4" fill="#F8D4C8" />
             </marker>
           </defs>
           <path
             d={arrowPath}
             stroke="#F8D4C8"
-            strokeWidth="3"
+            strokeWidth="1.5"
             fill="none"
             markerEnd="url(#arrowhead)"
-            className="animate-pulse"
-          />
-          {/* Target circle indicator */}
-          <circle
-            cx={targetRect.left + targetRect.width / 2}
-            cy={targetRect.top + targetRect.height / 2}
-            r={Math.max(targetRect.width, targetRect.height) / 2 + 8}
-            stroke="#F8D4C8"
-            strokeWidth="2"
-            fill="none"
-            strokeDasharray="5,5"
             className="animate-pulse"
           />
         </svg>
