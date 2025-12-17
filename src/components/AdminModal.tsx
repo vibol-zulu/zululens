@@ -165,7 +165,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   const [password, setPassword] = useState('');
   const [isSigningIn, setIsSigningIn] = useState(false);
   
-  const [activeTab, setActiveTab] = useState('channels');
+  const [activeTab, setActiveTab] = useState('users');
   
   // Channels state
   const [selectedCountry, setSelectedCountry] = useState('United States');
@@ -1449,10 +1449,6 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
               <div className="border-b px-4 shrink-0">
                 <TabsList className="h-12">
-                  <TabsTrigger value="channels" className="gap-2">
-                    <Database className="h-4 w-4" />
-                    Channels
-                  </TabsTrigger>
                   {isAdmin && (
                     <>
                       <TabsTrigger value="users" className="gap-2">
@@ -1471,6 +1467,10 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                       <TabsTrigger value="comments" className="gap-2">
                         <MessageCircle className="h-4 w-4" />
                         Comments
+                      </TabsTrigger>
+                      <TabsTrigger value="channels" className="gap-2">
+                        <Database className="h-4 w-4" />
+                        Channels
                       </TabsTrigger>
                       <TabsTrigger value="analytics" className="gap-2">
                         <BarChart3 className="h-4 w-4" />
