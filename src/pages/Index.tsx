@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import SignUpGate from '@/components/SignUpGate';
 import MediaDashboard from '@/components/MediaDashboard';
 import WelcomeModal from '@/components/WelcomeModal';
@@ -7,6 +7,7 @@ import { YearData } from '@/types/media';
 import { Helmet } from 'react-helmet';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -14,28 +15,32 @@ const Index = () => {
   const [visitor, setVisitor] = useState<{name: string, email: string} | null>(null);
   const [showWelcome, setShowWelcome] = useState(false);
   const [isOAuthCallback, setIsOAuthCallback] = useState(false);
+  const isExchangingOAuthRef = useRef(false);
 
-  // Receive OAuth callback URL from popup and exchange it in this window (iframe-safe)
+  // Receive OAuth callback URL from popup and exchange it in this window
   useEffect(() => {
     const handler = (event: MessageEvent) => {
       if (event.origin !== window.location.origin) return;
       const payload = event.data as any;
       if (payload?.type !== 'oauth-callback' || typeof payload.url !== 'string') return;
+      if (isExchangingOAuthRef.current) return;
 
+      isExchangingOAuthRef.current = true;
       setIsOAuthCallback(true);
+
       supabase.auth.exchangeCodeForSession(payload.url)
         .then(async () => {
           const { data: { session } } = await supabase.auth.getSession();
-          if (!session) {
-            // Embedded storage partitioning: can't persist auth session reliably.
-            setIsOAuthCallback(false);
-            return;
-          }
+          if (!session) throw new Error('No session after exchange');
           window.location.reload();
         })
         .catch((e) => {
           console.error('OAuth exchange failed in main window:', e);
+          toast.error('Could not complete Google sign-in. Please try again.');
           setIsOAuthCallback(false);
+        })
+        .finally(() => {
+          isExchangingOAuthRef.current = false;
         });
     };
 
