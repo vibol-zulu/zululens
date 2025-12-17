@@ -66,12 +66,9 @@ const GuidedTourCard: React.FC<GuidedTourCardProps> = ({
 
   return createPortal(
     <>
-      {/* Overlay */}
-      <div className="fixed inset-0 bg-black/30 z-[9998]" />
-      
       {/* Center Card */}
       <div className="fixed inset-0 flex items-center justify-center z-[10001] pointer-events-none">
-        <div className="bg-card text-card-foreground rounded-lg shadow-xl p-6 max-w-md w-full mx-4 pointer-events-auto border border-border">
+        <div className="bg-card text-card-foreground rounded-lg shadow-2xl p-6 max-w-md w-full mx-4 pointer-events-auto border border-border drop-shadow-2xl">
           {/* Progress indicator */}
           <div className="flex gap-1 mb-4">
             {TOUR_STEPS.map((_, index) => (
