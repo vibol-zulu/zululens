@@ -32,40 +32,62 @@ interface ChannelSubmission {
   country: string;
 }
 
-const DEFAULT_SYSTEM_PROMPT = `You are an expert media analyst specializing in audience measurement and cross-platform reach estimation. Your task is to estimate monthly audience figures for media channels based on their platform, content type, and market positioning.
+const DEFAULT_SYSTEM_PROMPT = `You are an expert media analyst specializing in audience measurement, cross-platform reach estimation, and political media classification. Your task is to:
+1. Validate and cross-check user-submitted information about media channels
+2. Estimate monthly audience figures based on platform, content type, and market positioning
+3. Determine the political lean/bias of the channel based on your knowledge
 
 You have deep knowledge of:
 - Platform-specific audience benchmarks (YouTube, Twitter/X, TikTok, Facebook, Instagram, podcasts, cable TV, print/digital)
 - Cross-platform audience overlap patterns
 - Content type performance benchmarks (news, commentary, podcasts, etc.)
-- Political media landscape and audience segmentation
+- Political media landscape, bias indicators, and audience segmentation
 - Deduplication methodologies for cross-platform reach
+- Media ownership structures and corporate vs independent classification
 
-Use industry-standard audience measurement approaches and historical comparables to provide realistic estimates.`;
+Use industry-standard audience measurement approaches and historical comparables to provide realistic estimates. Be critical in validating user inputs.`;
 
-const DEFAULT_USER_PROMPT = `Analyze this media channel submission and estimate audience metrics:
+const DEFAULT_USER_PROMPT = `Analyze this media channel submission, validate the user's inputs, and estimate metrics:
 
 **Channel Name:** {channel.name}
 **Main Platform:** {channel.platform}
 **Content Type:** {channel.contentType}
-**Political Lean:** {channel.politicalLean}
-**Category:** {channel.category}
+**Category (user selected):** {channel.category}
 **Country:** {channel.country}
 
 Based on this information, provide:
 
-1. **Estimated Cross-Platform Monthly Audience (in millions)** - The total unique audience reach across major platforms (YouTube, X/Twitter, TikTok, Facebook, Instagram, podcast apps, website, etc.)
+1. **Input Validation** - Cross-check the user's inputs:
+   - Is the **Category** (corporate vs independent) correctly classified? Consider ownership structure, funding sources, and corporate affiliations.
+   - Is the **Platform** selection accurate for this channel's primary presence?
+   - Is the **Content Type** appropriate for what this channel produces?
+   - Flag any discrepancies or corrections needed.
 
-2. **Estimated Deduplicated Monthly Audience (in millions)** - Adjusted to remove estimated audience overlap based on the main platform, content type, and typical cross-platform reach patterns.
+2. **Political Lean Analysis** - Based on the channel's content, hosts, editorial stance, and audience:
+   - Determine the political lean from: Far Left, Progressive/Left, Center-Left, Center, Center-Right, Right, Far Right, Libertarian, Independent, Non-partisan
+   - Provide brief justification for your assessment.
 
-3. **Reasoning** (2-4 sentences) - Explain your estimation methodology, including engagement assumptions, platform overlap factors, and key comparison points.
+3. **Estimated Cross-Platform Monthly Audience (in millions)** - The total unique audience reach across major platforms.
 
-4. **Comparable Channels** - List 2-4 similar channels used as benchmarks for this estimate.
+4. **Estimated Deduplicated Monthly Audience (in millions)** - Adjusted to remove estimated audience overlap.
 
-5. **Suggested Start Date** - Estimate when this channel was founded or started operations (format: MM/YYYY or "Founded YYYY").
+5. **Reasoning** (2-4 sentences) - Explain your estimation methodology.
+
+6. **Comparable Channels** - List 2-4 similar channels used as benchmarks.
+
+7. **Suggested Start Date** - Estimate when this channel was founded (format: MM/YYYY or "Founded YYYY").
 
 Format your response as JSON with this structure:
 {
+  "inputValidation": {
+    "categoryCorrect": boolean,
+    "suggestedCategory": "corporate" or "independent" or null,
+    "platformCorrect": boolean,
+    "contentTypeCorrect": boolean,
+    "validationNotes": "string explaining any issues found"
+  },
+  "politicalLean": "string from the options above",
+  "politicalLeanJustification": "brief explanation",
   "crossPlatformAudience": number,
   "deduplicatedAudience": number,
   "reasoning": "string",
@@ -78,7 +100,7 @@ function replaceChannelPlaceholders(template: string, channel: ChannelSubmission
     .replace(/\{channel\.name\}/g, channel.name)
     .replace(/\{channel\.platform\}/g, channel.platform)
     .replace(/\{channel\.contentType\}/g, channel.contentType)
-    .replace(/\{channel\.politicalLean\}/g, channel.politicalLean)
+    .replace(/\{channel\.politicalLean\}/g, channel.politicalLean || 'Not specified')
     .replace(/\{channel\.category\}/g, channel.category)
     .replace(/\{channel\.country\}/g, channel.country);
 }
@@ -94,7 +116,7 @@ serve(async (req) => {
   try {
     const { channel }: { channel: ChannelSubmission } = await req.json();
     
-    if (!channel || !channel.name || !channel.platform || !channel.contentType || !channel.politicalLean) {
+    if (!channel || !channel.name || !channel.platform || !channel.contentType) {
       return new Response(
         JSON.stringify({ error: 'Missing required channel fields' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -223,6 +245,9 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         estimate: {
+          inputValidation: parsedContent.inputValidation || null,
+          politicalLean: parsedContent.politicalLean || null,
+          politicalLeanJustification: parsedContent.politicalLeanJustification || null,
           crossPlatformAudience: parsedContent.crossPlatformAudience,
           deduplicatedAudience: parsedContent.deduplicatedAudience,
           reasoning: parsedContent.reasoning,

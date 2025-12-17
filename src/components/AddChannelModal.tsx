@@ -49,18 +49,6 @@ const CONTENT_TYPES = [
   'Other'
 ];
 
-const POLITICAL_LEANS = [
-  'Far Left',
-  'Progressive/Left',
-  'Center-Left',
-  'Center',
-  'Center-Right',
-  'Right',
-  'Far Right',
-  'Libertarian',
-  'Independent',
-  'Non-partisan'
-];
 
 const AddChannelModal: React.FC<AddChannelModalProps> = ({
   isOpen,
@@ -77,14 +65,13 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
   const [formData, setFormData] = useState({
     name: '',
     platform: '',
-    contentType: '',
-    politicalLean: ''
+    contentType: ''
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.platform || !formData.contentType || !formData.politicalLean) {
+    if (!formData.name || !formData.platform || !formData.contentType) {
       toast({
         title: "Missing fields",
         description: "Please fill in all fields",
@@ -123,7 +110,7 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
           start_date: 'TBD', // To be estimated by mods/admins
           platform: formData.platform,
           content_type: formData.contentType,
-          political_lean: formData.politicalLean,
+          political_lean: 'TBD', // To be analyzed by AI
           country,
           year,
           author_id: user?.id,
@@ -153,8 +140,7 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
       setFormData({
         name: '',
         platform: '',
-        contentType: '',
-        politicalLean: ''
+        contentType: ''
       });
       
       onChannelAdded();
@@ -223,22 +209,6 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label>Political Lean *</Label>
-            <Select 
-              value={formData.politicalLean} 
-              onValueChange={(value) => setFormData(prev => ({ ...prev, politicalLean: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select political lean" />
-              </SelectTrigger>
-              <SelectContent>
-                {POLITICAL_LEANS.map(p => (
-                  <SelectItem key={p} value={p}>{p}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
 
           <div className="text-xs text-muted-foreground">
             Adding to: {country} ({year}) - {category}

@@ -215,6 +215,15 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   // AI Estimation state
   const [isEstimating, setIsEstimating] = useState(false);
   const [estimationResult, setEstimationResult] = useState<{
+    inputValidation?: {
+      categoryCorrect: boolean;
+      suggestedCategory: string | null;
+      platformCorrect: boolean;
+      contentTypeCorrect: boolean;
+      validationNotes: string;
+    } | null;
+    politicalLean?: string | null;
+    politicalLeanJustification?: string | null;
     crossPlatformAudience: number;
     deduplicatedAudience: number;
     reasoning: string;
@@ -305,40 +314,62 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
 
   // Settings state
-  const DEFAULT_SYSTEM_PROMPT = `You are an expert media analyst specializing in audience measurement and cross-platform reach estimation. Your task is to estimate monthly audience figures for media channels based on their platform, content type, and market positioning.
+  const DEFAULT_SYSTEM_PROMPT = `You are an expert media analyst specializing in audience measurement, cross-platform reach estimation, and political media classification. Your task is to:
+1. Validate and cross-check user-submitted information about media channels
+2. Estimate monthly audience figures based on platform, content type, and market positioning
+3. Determine the political lean/bias of the channel based on your knowledge
 
 You have deep knowledge of:
 - Platform-specific audience benchmarks (YouTube, Twitter/X, TikTok, Facebook, Instagram, podcasts, cable TV, print/digital)
 - Cross-platform audience overlap patterns
 - Content type performance benchmarks (news, commentary, podcasts, etc.)
-- Political media landscape and audience segmentation
+- Political media landscape, bias indicators, and audience segmentation
 - Deduplication methodologies for cross-platform reach
+- Media ownership structures and corporate vs independent classification
 
-Use industry-standard audience measurement approaches and historical comparables to provide realistic estimates.`;
+Use industry-standard audience measurement approaches and historical comparables to provide realistic estimates. Be critical in validating user inputs.`;
 
-  const DEFAULT_USER_PROMPT = `Analyze this media channel submission and estimate audience metrics:
+  const DEFAULT_USER_PROMPT = `Analyze this media channel submission, validate the user's inputs, and estimate metrics:
 
 **Channel Name:** {channel.name}
 **Main Platform:** {channel.platform}
 **Content Type:** {channel.contentType}
-**Political Lean:** {channel.politicalLean}
-**Category:** {channel.category}
+**Category (user selected):** {channel.category}
 **Country:** {channel.country}
 
 Based on this information, provide:
 
-1. **Estimated Cross-Platform Monthly Audience (in millions)** - The total unique audience reach across major platforms (YouTube, X/Twitter, TikTok, Facebook, Instagram, podcast apps, website, etc.)
+1. **Input Validation** - Cross-check the user's inputs:
+   - Is the **Category** (corporate vs independent) correctly classified? Consider ownership structure, funding sources, and corporate affiliations.
+   - Is the **Platform** selection accurate for this channel's primary presence?
+   - Is the **Content Type** appropriate for what this channel produces?
+   - Flag any discrepancies or corrections needed.
 
-2. **Estimated Deduplicated Monthly Audience (in millions)** - Adjusted to remove estimated audience overlap based on the main platform, content type, and typical cross-platform reach patterns.
+2. **Political Lean Analysis** - Based on the channel's content, hosts, editorial stance, and audience:
+   - Determine the political lean from: Far Left, Progressive/Left, Center-Left, Center, Center-Right, Right, Far Right, Libertarian, Independent, Non-partisan
+   - Provide brief justification for your assessment.
 
-3. **Reasoning** (2-4 sentences) - Explain your estimation methodology, including engagement assumptions, platform overlap factors, and key comparison points.
+3. **Estimated Cross-Platform Monthly Audience (in millions)** - The total unique audience reach across major platforms.
 
-4. **Comparable Channels** - List 2-4 similar channels used as benchmarks for this estimate.
+4. **Estimated Deduplicated Monthly Audience (in millions)** - Adjusted to remove estimated audience overlap.
 
-5. **Suggested Start Date** - Estimate when this channel was founded or started operations (format: MM/YYYY or "Founded YYYY").
+5. **Reasoning** (2-4 sentences) - Explain your estimation methodology.
+
+6. **Comparable Channels** - List 2-4 similar channels used as benchmarks.
+
+7. **Suggested Start Date** - Estimate when this channel was founded (format: MM/YYYY or "Founded YYYY").
 
 Format your response as JSON with this structure:
 {
+  "inputValidation": {
+    "categoryCorrect": boolean,
+    "suggestedCategory": "corporate" or "independent" or null,
+    "platformCorrect": boolean,
+    "contentTypeCorrect": boolean,
+    "validationNotes": "string explaining any issues found"
+  },
+  "politicalLean": "string from the options above",
+  "politicalLeanJustification": "brief explanation",
   "crossPlatformAudience": number,
   "deduplicatedAudience": number,
   "reasoning": "string",
@@ -1360,12 +1391,19 @@ Format your response as JSON with this structure:
     if (!selectedSubmission || !estimationResult) return;
     
     try {
+      const updateData: Record<string, unknown> = { 
+        value_millions: estimationResult.deduplicatedAudience,
+        start_date: estimationResult.suggestedStartDate || 'TBD'
+      };
+      
+      // Include political lean if determined by AI
+      if (estimationResult.politicalLean) {
+        updateData.political_lean = estimationResult.politicalLean;
+      }
+      
       const { error } = await supabase
         .from('user_channels')
-        .update({ 
-          value_millions: estimationResult.deduplicatedAudience,
-          start_date: estimationResult.suggestedStartDate || 'TBD'
-        })
+        .update(updateData)
         .eq('id', selectedSubmission.id);
 
       if (error) throw error;
@@ -1373,7 +1411,8 @@ Format your response as JSON with this structure:
       toast({ title: 'Estimation applied to submission' });
       setSelectedSubmission({
         ...selectedSubmission,
-        value_millions: estimationResult.deduplicatedAudience
+        value_millions: estimationResult.deduplicatedAudience,
+        political_lean: estimationResult.politicalLean || selectedSubmission.political_lean
       });
       fetchSubmissions();
     } catch (error) {
@@ -3279,14 +3318,55 @@ Format your response as JSON with this structure:
 
                   {estimationResult && (
                     <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+                      {/* Input Validation Section */}
+                      {estimationResult.inputValidation && (
+                        <div className="border-b pb-3">
+                          <Label className="text-xs text-muted-foreground font-medium">Input Validation</Label>
+                          <div className="mt-2 space-y-1 text-sm">
+                            <div className="flex items-center gap-2">
+                              <span className={estimationResult.inputValidation.categoryCorrect ? 'text-green-600' : 'text-amber-600'}>
+                                {estimationResult.inputValidation.categoryCorrect ? '✓' : '⚠'}
+                              </span>
+                              <span>Category: {estimationResult.inputValidation.categoryCorrect ? 'Correct' : `Suggested: ${estimationResult.inputValidation.suggestedCategory}`}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className={estimationResult.inputValidation.platformCorrect ? 'text-green-600' : 'text-amber-600'}>
+                                {estimationResult.inputValidation.platformCorrect ? '✓' : '⚠'}
+                              </span>
+                              <span>Platform: {estimationResult.inputValidation.platformCorrect ? 'Correct' : 'Review needed'}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className={estimationResult.inputValidation.contentTypeCorrect ? 'text-green-600' : 'text-amber-600'}>
+                                {estimationResult.inputValidation.contentTypeCorrect ? '✓' : '⚠'}
+                              </span>
+                              <span>Content Type: {estimationResult.inputValidation.contentTypeCorrect ? 'Correct' : 'Review needed'}</span>
+                            </div>
+                            {estimationResult.inputValidation.validationNotes && (
+                              <p className="text-xs text-muted-foreground mt-2 italic">{estimationResult.inputValidation.validationNotes}</p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Political Lean Section */}
+                      {estimationResult.politicalLean && (
+                        <div className="border-b pb-3">
+                          <Label className="text-xs text-muted-foreground">AI-Determined Political Lean</Label>
+                          <p className="font-bold text-primary mt-1">{estimationResult.politicalLean}</p>
+                          {estimationResult.politicalLeanJustification && (
+                            <p className="text-xs text-muted-foreground mt-1">{estimationResult.politicalLeanJustification}</p>
+                          )}
+                        </div>
+                      )}
+
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <Label className="text-xs text-muted-foreground">Cross-Platform Audience</Label>
-                          <p className="text-lg font-bold">{estimationResult.crossPlatformAudience.toFixed(2)}M</p>
+                          <p className="text-lg font-bold">{estimationResult.crossPlatformAudience?.toFixed(2) || '0.00'}M</p>
                         </div>
                         <div>
                           <Label className="text-xs text-muted-foreground">Deduplicated Audience</Label>
-                          <p className="text-lg font-bold text-primary">{estimationResult.deduplicatedAudience.toFixed(2)}M</p>
+                          <p className="text-lg font-bold text-primary">{estimationResult.deduplicatedAudience?.toFixed(2) || '0.00'}M</p>
                         </div>
                       </div>
                       
@@ -3302,7 +3382,7 @@ Format your response as JSON with this structure:
                         <p className="text-sm text-muted-foreground mt-1">{estimationResult.reasoning}</p>
                       </div>
                       
-                      {estimationResult.comparableChannels.length > 0 && (
+                      {estimationResult.comparableChannels?.length > 0 && (
                         <div>
                           <Label className="text-xs text-muted-foreground">Comparable Channels</Label>
                           <p className="text-sm">{estimationResult.comparableChannels.join(', ')}</p>
@@ -3314,7 +3394,7 @@ Format your response as JSON with this structure:
                         onClick={applyEstimation}
                         className="w-full mt-2"
                       >
-                        Apply Estimation ({estimationResult.deduplicatedAudience.toFixed(2)}M)
+                        Apply Estimation ({estimationResult.deduplicatedAudience?.toFixed(2) || '0.00'}M{estimationResult.politicalLean ? `, ${estimationResult.politicalLean}` : ''})
                       </Button>
                     </div>
                   )}
