@@ -145,6 +145,27 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
     suggestedStartDate: string;
   } | null>(null);
 
+  // Comparable channel analysis state
+  const [showComparableModal, setShowComparableModal] = useState(false);
+  const [comparableChannelName, setComparableChannelName] = useState('');
+  const [comparableEstimating, setComparableEstimating] = useState(false);
+  const [comparableEstimation, setComparableEstimation] = useState<{
+    inputValidation?: {
+      categoryCorrect: boolean;
+      suggestedCategory: string | null;
+      platformCorrect: boolean;
+      contentTypeCorrect: boolean;
+      validationNotes: string;
+    } | null;
+    politicalLean?: string | null;
+    politicalLeanJustification?: string | null;
+    crossPlatformAudience: number;
+    deduplicatedAudience: number;
+    reasoning: string;
+    comparableChannels: string[];
+    suggestedStartDate: string;
+  } | null>(null);
+
   // My suggestions state
   const [myChannels, setMyChannels] = useState<ChannelEntry[]>([]);
   const [myChannelsLoading, setMyChannelsLoading] = useState(false);
@@ -753,6 +774,92 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
     } catch (error) {
       console.error('Error applying estimation:', error);
       toast({ title: 'Failed to apply estimation', variant: 'destructive' });
+    }
+  };
+
+  // Analyze a comparable channel
+  const analyzeComparableChannel = async (channelName: string) => {
+    setComparableChannelName(channelName);
+    setShowComparableModal(true);
+    setComparableEstimating(true);
+    setComparableEstimation(null);
+    
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/estimate-audience`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          channel: {
+            name: channelName,
+            platform: 'Unknown',
+            contentType: 'Unknown',
+            politicalLean: 'Unknown',
+            category: 'independent',
+            country: channelToReview?.country || 'United States'
+          }
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to estimate audience');
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.estimate) {
+        setComparableEstimation(data.estimate);
+        toast({ title: 'Comparable channel analysis complete' });
+      } else {
+        throw new Error('Invalid response from AI');
+      }
+    } catch (error) {
+      console.error('Error analyzing comparable channel:', error);
+      toast({ 
+        title: 'Failed to analyze channel', 
+        description: error instanceof Error ? error.message : 'Unknown error',
+        variant: 'destructive' 
+      });
+    } finally {
+      setComparableEstimating(false);
+    }
+  };
+
+  // Add comparable channel to database as approved
+  const addComparableAsChannel = async () => {
+    if (!comparableEstimation || !comparableChannelName) return;
+    
+    try {
+      const { error } = await supabase
+        .from('user_channels')
+        .insert({
+          name: comparableChannelName,
+          category: comparableEstimation.inputValidation?.suggestedCategory || 'independent',
+          value_millions: comparableEstimation.deduplicatedAudience,
+          platform: 'Unknown',
+          content_type: 'Unknown',
+          political_lean: comparableEstimation.politicalLean || 'Non-partisan',
+          country: channelToReview?.country || 'United States',
+          year: 2025,
+          start_date: comparableEstimation.suggestedStartDate || 'TBD',
+          status: 'approved',
+          approved_at: new Date().toISOString(),
+          approved_by: user?.id,
+          author_id: user?.id
+        });
+
+      if (error) throw error;
+
+      toast({ title: `${comparableChannelName} added as approved channel` });
+      setShowComparableModal(false);
+      setComparableChannelName('');
+      setComparableEstimation(null);
+    } catch (error) {
+      console.error('Error adding comparable channel:', error);
+      toast({ title: 'Failed to add channel', variant: 'destructive' });
     }
   };
 
@@ -1681,7 +1788,20 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                           {estimationResult.comparableChannels?.length > 0 && (
                             <TableRow>
                               <TableCell className="font-medium text-muted-foreground">Comparable Channels</TableCell>
-                              <TableCell className="text-sm">{estimationResult.comparableChannels.join(', ')}</TableCell>
+                              <TableCell className="text-sm">
+                                <div className="flex flex-wrap gap-2">
+                                  {estimationResult.comparableChannels.map((channel, idx) => (
+                                    <Badge 
+                                      key={idx}
+                                      variant="outline"
+                                      className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                                      onClick={() => analyzeComparableChannel(channel)}
+                                    >
+                                      {channel}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </TableCell>
                             </TableRow>
                           )}
                         </TableBody>
@@ -1958,6 +2078,133 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Comparable Channel Analysis Modal */}
+        <Dialog open={showComparableModal} onOpenChange={(open) => {
+          setShowComparableModal(open);
+          if (!open) {
+            setComparableChannelName('');
+            setComparableEstimation(null);
+          }
+        }}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <img src={perplexityLogo} alt="Perplexity" className="h-5 w-5" />
+                Analyze: {comparableChannelName}
+              </DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              {comparableEstimating ? (
+                <div className="flex flex-col items-center justify-center py-12 gap-4">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  <p className="text-muted-foreground">Analyzing {comparableChannelName}...</p>
+                </div>
+              ) : comparableEstimation ? (
+                <div className="space-y-4">
+                  {/* Input Validation Section */}
+                  {comparableEstimation.inputValidation && (
+                    <div className="p-4 bg-muted/50 rounded-lg">
+                      <h4 className="font-semibold mb-2">Input Validation</h4>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className={comparableEstimation.inputValidation.categoryCorrect ? 'text-green-600' : 'text-amber-600'}>
+                            {comparableEstimation.inputValidation.categoryCorrect ? '✓' : '⚠'}
+                          </span>
+                          <span className="text-sm">
+                            Category: {comparableEstimation.inputValidation.suggestedCategory || 'independent'}
+                          </span>
+                        </div>
+                      </div>
+                      {comparableEstimation.inputValidation.validationNotes && (
+                        <p className="text-sm text-muted-foreground mt-3 italic">{comparableEstimation.inputValidation.validationNotes}</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Estimation Results Table */}
+                  <Table>
+                    <TableBody>
+                      {comparableEstimation.politicalLean && (
+                        <TableRow>
+                          <TableCell className="font-medium text-muted-foreground w-1/3">Political Lean</TableCell>
+                          <TableCell>
+                            <span className="font-semibold text-primary">{comparableEstimation.politicalLean}</span>
+                            {comparableEstimation.politicalLeanJustification && (
+                              <p className="text-sm text-muted-foreground mt-1">{comparableEstimation.politicalLeanJustification}</p>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      )}
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground">Cross-Platform Audience</TableCell>
+                        <TableCell className="text-lg font-bold">{comparableEstimation.crossPlatformAudience?.toFixed(2) || '0.00'}M</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground">Deduplicated Audience</TableCell>
+                        <TableCell className="text-lg font-bold text-primary">{comparableEstimation.deduplicatedAudience?.toFixed(2) || '0.00'}M</TableCell>
+                      </TableRow>
+                      {comparableEstimation.suggestedStartDate && (
+                        <TableRow>
+                          <TableCell className="font-medium text-muted-foreground">Suggested Start Date</TableCell>
+                          <TableCell className="font-medium">{comparableEstimation.suggestedStartDate}</TableCell>
+                        </TableRow>
+                      )}
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground">Reasoning</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{comparableEstimation.reasoning}</TableCell>
+                      </TableRow>
+                      {comparableEstimation.comparableChannels?.length > 0 && (
+                        <TableRow>
+                          <TableCell className="font-medium text-muted-foreground">Comparable Channels</TableCell>
+                          <TableCell className="text-sm">
+                            <div className="flex flex-wrap gap-2">
+                              {comparableEstimation.comparableChannels.map((channel, idx) => (
+                                <Badge 
+                                  key={idx}
+                                  variant="outline"
+                                  className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                                  onClick={() => analyzeComparableChannel(channel)}
+                                >
+                                  {channel}
+                                </Badge>
+                              ))}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+
+                  <div className="flex gap-3 pt-4 border-t">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setShowComparableModal(false)}
+                      className="flex-1"
+                    >
+                      Close
+                    </Button>
+                    <Button 
+                      variant="secondary"
+                      onClick={() => analyzeComparableChannel(comparableChannelName)}
+                      disabled={comparableEstimating}
+                      className="flex-1"
+                    >
+                      Re-analyse
+                    </Button>
+                    <Button 
+                      onClick={addComparableAsChannel}
+                      className="flex-1"
+                    >
+                      Add as Channel ({comparableEstimation.deduplicatedAudience?.toFixed(2) || '0'}M)
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </DialogContent>
+        </Dialog>
       </DialogContent>
     </Dialog>
   );
