@@ -720,6 +720,11 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
         updateData.political_lean = estimationResult.politicalLean;
       }
       
+      // Apply category correction if AI suggested one
+      if (estimationResult.inputValidation && !estimationResult.inputValidation.categoryCorrect && estimationResult.inputValidation.suggestedCategory) {
+        updateData.category = estimationResult.inputValidation.suggestedCategory;
+      }
+      
       const { error } = await supabase
         .from('user_channels')
         .update(updateData)
