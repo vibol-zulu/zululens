@@ -15,7 +15,7 @@ const Index = () => {
   const [showWelcome, setShowWelcome] = useState(false);
   const [isOAuthCallback, setIsOAuthCallback] = useState(false);
 
-  // Detect OAuth callback (PKCE code in query OR tokens in URL hash)
+  // Legacy OAuth callback handling (when provider redirects to "/" instead of "/oauth/callback")
   useEffect(() => {
     const url = new URL(window.location.href);
     const hasCode = url.searchParams.has('code');
@@ -23,57 +23,37 @@ const Index = () => {
     const hasTokensInHash = Boolean(hash) && (hash.includes('access_token') || hash.includes('refresh_token'));
     const isPopup = window.opener !== null;
 
-    if (hasCode || hasTokensInHash) {
-      setIsOAuthCallback(true);
-    }
+    if (!hasCode && !hasTokensInHash) return;
 
-    // If we got a PKCE code, exchange it for a session
-    if (hasCode) {
-      supabase.auth.exchangeCodeForSession(window.location.href)
-        .then(() => {
-          // If this is a popup window, notify parent and close
-          if (isPopup) {
-            try {
-              window.opener.postMessage('oauth-success', '*');
-            } catch (e) {
-              // Fallback: parent will detect via polling
-            }
-            window.close();
-            return;
-          }
-        })
-        .catch((e) => console.error('OAuth code exchange failed:', e))
-        .finally(() => {
-          // Clean up URL query/hash regardless; auth listener will update `user`.
-          if (!isPopup) {
-            window.history.replaceState(null, '', window.location.pathname);
-            setIsOAuthCallback(false);
-          }
-        });
-    }
-    
-    // Handle hash-based OAuth callback in popup
-    if (hasTokensInHash && isPopup) {
-      // Give Supabase a moment to process the tokens
-      setTimeout(() => {
+    setIsOAuthCallback(true);
+
+    const finish = () => {
+      if (isPopup) {
         try {
-          window.opener.postMessage('oauth-success', '*');
-        } catch (e) {
-          // Fallback: parent will detect via polling
+          window.opener.postMessage('oauth-success', window.location.origin);
+        } catch {
+          // ignore
         }
         window.close();
-      }, 500);
-    }
-  }, []);
-
-  // Clear OAuth callback state once user is loaded (hash-token flow)
-  useEffect(() => {
-    if (user && isOAuthCallback) {
-      setIsOAuthCallback(false);
-      // Clean up URL hash
+        return;
+      }
       window.history.replaceState(null, '', window.location.pathname);
-    }
-  }, [user, isOAuthCallback]);
+      setIsOAuthCallback(false);
+    };
+
+    (async () => {
+      try {
+        if (hasCode) {
+          await supabase.auth.exchangeCodeForSession(window.location.href);
+        }
+      } catch {
+        // If exchange fails, still close popup so the parent can retry/poll.
+      } finally {
+        // Give the client a brief moment to persist session.
+        setTimeout(finish, 250);
+      }
+    })();
+  }, []);
 
   // Bypass gate for authenticated users
   useEffect(() => {
