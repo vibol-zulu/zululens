@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useRef, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -42,33 +43,65 @@ export const TourTooltip: React.FC<{
   const isActive = currentStep === step;
   const content = tourContent[step];
   const stepNumber = ['select-all', 'add-button', 'country-year', 'view-toggle'].indexOf(step) + 1;
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const [tooltipPos, setTooltipPos] = useState({ top: 0, left: 0 });
 
-  const positionClasses = {
-    top: 'bottom-full mb-2 left-1/2 -translate-x-1/2',
-    bottom: 'top-full mt-2 left-1/2 -translate-x-1/2',
-    left: 'right-full mr-2 top-1/2 -translate-y-1/2',
-    right: 'left-full ml-2 top-1/2 -translate-y-1/2'
-  };
+  useEffect(() => {
+    if (isActive && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      const tooltipWidth = 256; // w-64 = 16rem = 256px
+      const tooltipHeight = 160; // approximate height
+      const gap = 8;
 
-  const arrowClasses = {
-    top: 'top-full left-1/2 -translate-x-1/2 border-t-primary border-x-transparent border-b-transparent',
-    bottom: 'bottom-full left-1/2 -translate-x-1/2 border-b-primary border-x-transparent border-t-transparent',
-    left: 'left-full top-1/2 -translate-y-1/2 border-l-primary border-y-transparent border-r-transparent',
-    right: 'right-full top-1/2 -translate-y-1/2 border-r-primary border-y-transparent border-l-transparent'
+      let top = 0;
+      let left = 0;
+
+      switch (position) {
+        case 'bottom':
+          top = rect.bottom + gap;
+          left = rect.left + rect.width / 2 - tooltipWidth / 2;
+          break;
+        case 'top':
+          top = rect.top - tooltipHeight - gap;
+          left = rect.left + rect.width / 2 - tooltipWidth / 2;
+          break;
+        case 'right':
+          top = rect.top + rect.height / 2 - tooltipHeight / 2;
+          left = rect.right + gap;
+          break;
+        case 'left':
+          top = rect.top + rect.height / 2 - tooltipHeight / 2;
+          left = rect.left - tooltipWidth - gap;
+          break;
+      }
+
+      // Keep tooltip within viewport
+      left = Math.max(8, Math.min(left, window.innerWidth - tooltipWidth - 8));
+      top = Math.max(8, top);
+
+      setTooltipPos({ top, left });
+    }
+  }, [isActive, position]);
+
+  const arrowStyles: Record<string, React.CSSProperties> = {
+    top: { bottom: -8, left: '50%', transform: 'translateX(-50%)', borderWidth: 8, borderStyle: 'solid', borderColor: 'hsl(var(--primary)) transparent transparent transparent' },
+    bottom: { top: -8, left: '50%', transform: 'translateX(-50%)', borderWidth: 8, borderStyle: 'solid', borderColor: 'transparent transparent hsl(var(--primary)) transparent' },
+    left: { right: -8, top: '50%', transform: 'translateY(-50%)', borderWidth: 8, borderStyle: 'solid', borderColor: 'transparent transparent transparent hsl(var(--primary))' },
+    right: { left: -8, top: '50%', transform: 'translateY(-50%)', borderWidth: 8, borderStyle: 'solid', borderColor: 'transparent hsl(var(--primary)) transparent transparent' }
   };
 
   return (
-    <div className={cn("relative inline-flex", className)}>
-      {children}
-      {isActive && (
+    <>
+      <div ref={triggerRef} className={cn("inline-flex", className)}>
+        {children}
+      </div>
+      {isActive && createPortal(
         <div 
-          className={cn(
-            "absolute z-[100] w-64 p-4 rounded-lg shadow-lg bg-primary text-primary-foreground",
-            positionClasses[position]
-          )}
+          className="fixed z-[9999] w-64 p-4 rounded-lg shadow-lg bg-primary text-primary-foreground"
+          style={{ top: tooltipPos.top, left: tooltipPos.left }}
         >
           {/* Arrow */}
-          <div className={cn("absolute w-0 h-0 border-8", arrowClasses[position])} />
+          <div className="absolute w-0 h-0" style={arrowStyles[position]} />
           
           {/* Header */}
           <div className="flex items-start justify-between gap-2 mb-2">
@@ -101,9 +134,10 @@ export const TourTooltip: React.FC<{
               {stepNumber === 4 ? 'Finish' : 'Next'}
             </Button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   );
 };
 
