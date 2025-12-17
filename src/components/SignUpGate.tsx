@@ -103,6 +103,7 @@ US media 2000 - 2025
           }} className="h-12 px-8 tracking-widest uppercase transition-all duration-300 rounded-md text-xs bg-white font-sans opacity-100 shadow-none">
               {submitted ? 'Unlocking...' : 'Unlock Infographic'}
             </button>
+            <p className="text-white/50 text-xs italic mt-3">Already subscribed? Enter your details to unlock.</p>
           </form>
         </div>
       </main>
