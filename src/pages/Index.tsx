@@ -21,20 +21,48 @@ const Index = () => {
     const hasCode = url.searchParams.has('code');
     const hash = window.location.hash;
     const hasTokensInHash = Boolean(hash) && (hash.includes('access_token') || hash.includes('refresh_token'));
+    const isPopup = window.opener !== null;
 
     if (hasCode || hasTokensInHash) {
       setIsOAuthCallback(true);
     }
 
-    // If we got a PKCE code, exchange it for a session so auth is established before showing the gate.
+    // If we got a PKCE code, exchange it for a session
     if (hasCode) {
       supabase.auth.exchangeCodeForSession(window.location.href)
+        .then(() => {
+          // If this is a popup window, notify parent and close
+          if (isPopup) {
+            try {
+              window.opener.postMessage('oauth-success', '*');
+            } catch (e) {
+              // Fallback: parent will detect via polling
+            }
+            window.close();
+            return;
+          }
+        })
         .catch((e) => console.error('OAuth code exchange failed:', e))
         .finally(() => {
           // Clean up URL query/hash regardless; auth listener will update `user`.
-          window.history.replaceState(null, '', window.location.pathname);
-          setIsOAuthCallback(false);
+          if (!isPopup) {
+            window.history.replaceState(null, '', window.location.pathname);
+            setIsOAuthCallback(false);
+          }
         });
+    }
+    
+    // Handle hash-based OAuth callback in popup
+    if (hasTokensInHash && isPopup) {
+      // Give Supabase a moment to process the tokens
+      setTimeout(() => {
+        try {
+          window.opener.postMessage('oauth-success', '*');
+        } catch (e) {
+          // Fallback: parent will detect via polling
+        }
+        window.close();
+      }, 500);
     }
   }, []);
 
