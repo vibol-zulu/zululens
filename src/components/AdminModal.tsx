@@ -3221,78 +3221,78 @@ Format your response as JSON with this structure:
 
         {/* View Submission Dialog */}
         <Dialog open={showSubmissionDialog} onOpenChange={setShowSubmissionDialog}>
-          <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Submission Details</DialogTitle>
+          <DialogContent className="max-w-6xl max-h-[85vh] p-0 overflow-hidden">
+            <DialogHeader className="p-6 pb-4 border-b">
+              <DialogTitle className="text-xl">Submission Details</DialogTitle>
             </DialogHeader>
             
             {selectedSubmission && (
-              <div className="space-y-4 mt-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-muted-foreground">Channel Name</Label>
-                    <p className="font-medium">{selectedSubmission.name}</p>
-                  </div>
-                  <div>
-                    <Label className="text-muted-foreground">Category</Label>
-                    <p className="font-medium capitalize">{selectedSubmission.category}</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-muted-foreground">Country</Label>
-                    <p className="font-medium">{selectedSubmission.country}</p>
-                  </div>
-                  <div>
-                    <Label className="text-muted-foreground">Year</Label>
-                    <p className="font-medium">{selectedSubmission.year}</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-muted-foreground">Platform</Label>
-                    <p className="font-medium">{selectedSubmission.platform}</p>
-                  </div>
-                  <div>
-                    <Label className="text-muted-foreground">Content Type</Label>
-                    <p className="font-medium">{selectedSubmission.content_type}</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-muted-foreground">Audience (Millions)</Label>
-                    <p className="font-medium">{selectedSubmission.value_millions}</p>
-                  </div>
-                  <div>
-                    <Label className="text-muted-foreground">Political Lean</Label>
-                    <p className="font-medium">{selectedSubmission.political_lean}</p>
-                  </div>
-                </div>
-
-                <div>
-                  <Label className="text-muted-foreground">Submitted By</Label>
-                  <p className="font-medium">
-                    {selectedSubmission.author_name || selectedSubmission.author_email || 'Unknown'}
-                  </p>
-                </div>
-
-                <div>
-                  <Label className="text-muted-foreground">Status</Label>
-                  <Badge variant={
-                    selectedSubmission.status === 'pending' ? 'secondary' : 
-                    selectedSubmission.status === 'approved' ? 'default' : 'destructive'
-                  } className="ml-2">
-                    {selectedSubmission.status}
-                  </Badge>
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                {/* Submission Details Table */}
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-1/3">Field</TableHead>
+                        <TableHead>Value</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground">Channel Name</TableCell>
+                        <TableCell className="font-semibold">{selectedSubmission.name}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground">Category</TableCell>
+                        <TableCell className="capitalize">{selectedSubmission.category}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground">Country</TableCell>
+                        <TableCell>{selectedSubmission.country}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground">Year</TableCell>
+                        <TableCell>{selectedSubmission.year}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground">Platform</TableCell>
+                        <TableCell>{selectedSubmission.platform}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground">Content Type</TableCell>
+                        <TableCell>{selectedSubmission.content_type}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground">Audience (Millions)</TableCell>
+                        <TableCell>{selectedSubmission.value_millions}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground">Political Lean</TableCell>
+                        <TableCell>{selectedSubmission.political_lean}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground">Submitted By</TableCell>
+                        <TableCell>{selectedSubmission.author_name || selectedSubmission.author_email || 'Unknown'}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground">Status</TableCell>
+                        <TableCell>
+                          <Badge variant={
+                            selectedSubmission.status === 'pending' ? 'secondary' : 
+                            selectedSubmission.status === 'approved' ? 'default' : 'destructive'
+                          }>
+                            {selectedSubmission.status}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
                 </div>
 
                 {/* AI Audience Estimation Section */}
-                <div className="border-t pt-4 mt-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <Label className="text-muted-foreground font-medium">AI Audience Estimation</Label>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-base font-semibold">AI Audience Estimation</h3>
                     <Button
                       size="sm"
                       variant="outline"
@@ -3314,85 +3314,86 @@ Format your response as JSON with this structure:
                   </div>
 
                   {estimationResult && (
-                    <div className="bg-muted/50 rounded-lg p-4 space-y-3">
-                      {/* Input Validation Section */}
+                    <div className="rounded-md border bg-muted/30 overflow-hidden">
+                      {/* Input Validation */}
                       {estimationResult.inputValidation && (
-                        <div className="border-b pb-3">
-                          <Label className="text-xs text-muted-foreground font-medium">Input Validation</Label>
-                          <div className="mt-2 space-y-1 text-sm">
+                        <div className="p-4 border-b">
+                          <h4 className="text-sm font-semibold mb-3">Input Validation</h4>
+                          <div className="grid grid-cols-3 gap-4">
                             <div className="flex items-center gap-2">
                               <span className={estimationResult.inputValidation.categoryCorrect ? 'text-green-600' : 'text-amber-600'}>
                                 {estimationResult.inputValidation.categoryCorrect ? '✓' : '⚠'}
                               </span>
-                              <span>Category: {estimationResult.inputValidation.categoryCorrect ? 'Correct' : `Suggested: ${estimationResult.inputValidation.suggestedCategory}`}</span>
+                              <span className="text-sm">Category: {estimationResult.inputValidation.categoryCorrect ? 'Correct' : `Suggested: ${estimationResult.inputValidation.suggestedCategory}`}</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <span className={estimationResult.inputValidation.platformCorrect ? 'text-green-600' : 'text-amber-600'}>
                                 {estimationResult.inputValidation.platformCorrect ? '✓' : '⚠'}
                               </span>
-                              <span>Platform: {estimationResult.inputValidation.platformCorrect ? 'Correct' : 'Review needed'}</span>
+                              <span className="text-sm">Platform: {estimationResult.inputValidation.platformCorrect ? 'Correct' : 'Review needed'}</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <span className={estimationResult.inputValidation.contentTypeCorrect ? 'text-green-600' : 'text-amber-600'}>
                                 {estimationResult.inputValidation.contentTypeCorrect ? '✓' : '⚠'}
                               </span>
-                              <span>Content Type: {estimationResult.inputValidation.contentTypeCorrect ? 'Correct' : 'Review needed'}</span>
+                              <span className="text-sm">Content Type: {estimationResult.inputValidation.contentTypeCorrect ? 'Correct' : 'Review needed'}</span>
                             </div>
-                            {estimationResult.inputValidation.validationNotes && (
-                              <p className="text-xs text-muted-foreground mt-2 italic">{estimationResult.inputValidation.validationNotes}</p>
-                            )}
                           </div>
-                        </div>
-                      )}
-
-                      {/* Political Lean Section */}
-                      {estimationResult.politicalLean && (
-                        <div className="border-b pb-3">
-                          <Label className="text-xs text-muted-foreground">AI-Determined Political Lean</Label>
-                          <p className="font-bold text-primary mt-1">{estimationResult.politicalLean}</p>
-                          {estimationResult.politicalLeanJustification && (
-                            <p className="text-xs text-muted-foreground mt-1">{estimationResult.politicalLeanJustification}</p>
+                          {estimationResult.inputValidation.validationNotes && (
+                            <p className="text-sm text-muted-foreground mt-3 italic">{estimationResult.inputValidation.validationNotes}</p>
                           )}
                         </div>
                       )}
 
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label className="text-xs text-muted-foreground">Cross-Platform Audience</Label>
-                          <p className="text-lg font-bold">{estimationResult.crossPlatformAudience?.toFixed(2) || '0.00'}M</p>
-                        </div>
-                        <div>
-                          <Label className="text-xs text-muted-foreground">Deduplicated Audience</Label>
-                          <p className="text-lg font-bold text-primary">{estimationResult.deduplicatedAudience?.toFixed(2) || '0.00'}M</p>
-                        </div>
+                      {/* Estimation Results Table */}
+                      <Table>
+                        <TableBody>
+                          {estimationResult.politicalLean && (
+                            <TableRow>
+                              <TableCell className="font-medium text-muted-foreground w-1/3">Political Lean</TableCell>
+                              <TableCell>
+                                <span className="font-semibold text-primary">{estimationResult.politicalLean}</span>
+                                {estimationResult.politicalLeanJustification && (
+                                  <p className="text-sm text-muted-foreground mt-1">{estimationResult.politicalLeanJustification}</p>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          )}
+                          <TableRow>
+                            <TableCell className="font-medium text-muted-foreground">Cross-Platform Audience</TableCell>
+                            <TableCell className="text-lg font-bold">{estimationResult.crossPlatformAudience?.toFixed(2) || '0.00'}M</TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-medium text-muted-foreground">Deduplicated Audience</TableCell>
+                            <TableCell className="text-lg font-bold text-primary">{estimationResult.deduplicatedAudience?.toFixed(2) || '0.00'}M</TableCell>
+                          </TableRow>
+                          {estimationResult.suggestedStartDate && (
+                            <TableRow>
+                              <TableCell className="font-medium text-muted-foreground">Suggested Start Date</TableCell>
+                              <TableCell className="font-medium">{estimationResult.suggestedStartDate}</TableCell>
+                            </TableRow>
+                          )}
+                          <TableRow>
+                            <TableCell className="font-medium text-muted-foreground">Reasoning</TableCell>
+                            <TableCell className="text-sm text-muted-foreground">{estimationResult.reasoning}</TableCell>
+                          </TableRow>
+                          {estimationResult.comparableChannels?.length > 0 && (
+                            <TableRow>
+                              <TableCell className="font-medium text-muted-foreground">Comparable Channels</TableCell>
+                              <TableCell className="text-sm">{estimationResult.comparableChannels.join(', ')}</TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                      
+                      <div className="p-4 border-t bg-background">
+                        <Button 
+                          onClick={applyEstimation}
+                          className="w-full"
+                        >
+                          Apply Estimation ({estimationResult.deduplicatedAudience?.toFixed(2) || '0.00'}M{estimationResult.politicalLean ? `, ${estimationResult.politicalLean}` : ''})
+                        </Button>
                       </div>
-                      
-                      {estimationResult.suggestedStartDate && (
-                        <div>
-                          <Label className="text-xs text-muted-foreground">Suggested Start Date</Label>
-                          <p className="font-medium">{estimationResult.suggestedStartDate}</p>
-                        </div>
-                      )}
-                      
-                      <div>
-                        <Label className="text-xs text-muted-foreground">Reasoning</Label>
-                        <p className="text-sm text-muted-foreground mt-1">{estimationResult.reasoning}</p>
-                      </div>
-                      
-                      {estimationResult.comparableChannels?.length > 0 && (
-                        <div>
-                          <Label className="text-xs text-muted-foreground">Comparable Channels</Label>
-                          <p className="text-sm">{estimationResult.comparableChannels.join(', ')}</p>
-                        </div>
-                      )}
-                      
-                      <Button 
-                        size="sm" 
-                        onClick={applyEstimation}
-                        className="w-full mt-2"
-                      >
-                        Apply Estimation ({estimationResult.deduplicatedAudience?.toFixed(2) || '0.00'}M{estimationResult.politicalLean ? `, ${estimationResult.politicalLean}` : ''})
-                      </Button>
                     </div>
                   )}
                 </div>
