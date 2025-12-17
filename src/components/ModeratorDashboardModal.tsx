@@ -1687,14 +1687,6 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                         </TableBody>
                       </Table>
                       
-                      <div className="p-4 border-t bg-background">
-                        <Button 
-                          onClick={applyEstimation}
-                          className="w-full"
-                        >
-                          Apply Estimation ({estimationResult.deduplicatedAudience?.toFixed(2) || '0.00'}M{estimationResult.politicalLean ? `, ${estimationResult.politicalLean}` : ''})
-                        </Button>
-                      </div>
                     </div>
                   )}
                 </div>
@@ -1720,10 +1712,10 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                     </Button>
                   ) : (
                     <Button 
-                      onClick={confirmReview}
+                      onClick={estimationResult ? applyEstimation : confirmReview}
                       className="flex-1 bg-green-600 hover:bg-green-700"
                     >
-                      Approve
+                      {estimationResult ? `Approve (${estimationResult.deduplicatedAudience?.toFixed(2) || '0'}M)` : 'Approve'}
                     </Button>
                   )}
                 </div>
