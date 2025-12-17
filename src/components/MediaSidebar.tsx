@@ -11,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import AddChannelModal from './AddChannelModal';
 import ContributorModal from './ContributorModal';
 import { useAuth } from '@/hooks/useAuth';
-import { TourHighlight, TourStep } from '@/components/GuidedTour';
+
 // The Big 6 are the corporate channels from 2000
 const BIG_6_NAMES = [
   'FOX News',
@@ -44,7 +44,6 @@ interface SidebarProps {
   visitorName?: string;
   visitorEmail?: string;
   onSignUpClick?: () => void;
-  tourStep?: TourStep;
 }
 
 const SidebarToggle: React.FC<{ side: 'left' | 'right'; isOpen: boolean; onClick: () => void }> = ({ side, isOpen, onClick }) => (
@@ -71,8 +70,7 @@ interface BrandItemProps {
   isSelected: boolean;
   onToggle: (id: string) => void;
   isMobile?: boolean;
-  showTourHighlight?: boolean;
-  tourStep?: TourStep;
+  isFirstItem?: boolean;
 }
 
 const BrandItem: React.FC<BrandItemProps> = ({ 
@@ -80,11 +78,11 @@ const BrandItem: React.FC<BrandItemProps> = ({
   isSelected, 
   onToggle, 
   isMobile, 
-  showTourHighlight,
-  tourStep
+  isFirstItem
 }) => {
-  const content = (
+  return (
     <div 
+      data-tour={isFirstItem ? "channel-item" : undefined}
       className={cn(
         "flex items-start gap-2 transition-opacity",
         isMobile ? "gap-2" : "gap-3",
@@ -109,16 +107,6 @@ const BrandItem: React.FC<BrandItemProps> = ({
       </label>
     </div>
   );
-
-  if (showTourHighlight && tourStep) {
-    return (
-      <TourHighlight step="channel-item" currentStep={tourStep}>
-        {content}
-      </TourHighlight>
-    );
-  }
-
-  return content;
 };
 
 interface CollapsibleSectionProps {
@@ -129,7 +117,6 @@ interface CollapsibleSectionProps {
   defaultOpen?: boolean;
   isMobile?: boolean;
   showFirstItemTour?: boolean;
-  tourStep?: TourStep;
 }
 
 const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
@@ -140,7 +127,6 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   defaultOpen = true,
   isMobile = false,
   showFirstItemTour = false,
-  tourStep,
 }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const sorted = [...brands].sort((a, b) => b.valueMillions - a.valueMillions);
@@ -162,8 +148,7 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
               isSelected={selectedIds.has(b.id)} 
               onToggle={onToggle}
               isMobile={isMobile}
-              showTourHighlight={showFirstItemTour && index === 0}
-              tourStep={tourStep}
+              isFirstItem={showFirstItemTour && index === 0}
             />
           ))}
         </div>
@@ -187,8 +172,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   onChannelAdded,
   visitorName = '',
   visitorEmail = '',
-  onSignUpClick,
-  tourStep
+  onSignUpClick
 }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showContributorModal, setShowContributorModal] = useState(false);
@@ -259,71 +243,35 @@ const Sidebar: React.FC<SidebarProps> = ({
             {category}
           </h3>
           <div className="flex gap-1 mb-2">
-            {side === 'left' && tourStep ? (
-              <>
-                <TourHighlight step="select-all" currentStep={tourStep}>
+            <Button 
+              data-tour={side === 'left' ? "select-all" : undefined}
+              variant="outline" 
+              size="sm" 
+              onClick={() => onToggleAll(category)}
+              disabled={sorted.length === 0}
+              className="flex-1 text-xs px-1 bg-background/90 hover:bg-background"
+              style={{ color: buttonTextColor }}
+            >
+              {allSelected && sorted.length > 0 ? 'Deselect' : 'Select All'}
+            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
                   <Button 
+                    data-tour={side === 'left' ? "add-button" : undefined}
                     variant="outline" 
                     size="sm" 
-                    onClick={() => onToggleAll(category)}
-                    disabled={sorted.length === 0}
-                    className="flex-1 text-xs px-1 bg-background/90 hover:bg-background"
-                    style={{ color: buttonTextColor }}
+                    onClick={handleAddClick}
+                    className="px-2 shrink-0 bg-background/90 hover:bg-background"
                   >
-                    {allSelected && sorted.length > 0 ? 'Deselect' : 'Select All'}
+                    <Plus className="h-3 w-3" style={{ color: buttonTextColor }} />
                   </Button>
-                </TourHighlight>
-                <TourHighlight step="add-button" currentStep={tourStep}>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={handleAddClick}
-                          className="px-2 shrink-0 bg-background/90 hover:bg-background"
-                        >
-                          <Plus className="h-3 w-3" style={{ color: buttonTextColor }} />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Add a new channel</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </TourHighlight>
-              </>
-            ) : (
-              <>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => onToggleAll(category)}
-                  disabled={sorted.length === 0}
-                  className="flex-1 text-xs px-1 bg-background/90 hover:bg-background"
-                  style={{ color: buttonTextColor }}
-                >
-                  {allSelected && sorted.length > 0 ? 'Deselect' : 'Select All'}
-                </Button>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={handleAddClick}
-                        className="px-2 shrink-0 bg-background/90 hover:bg-background"
-                      >
-                        <Plus className="h-3 w-3" style={{ color: buttonTextColor }} />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Add a new channel</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </>
-            )}
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Add a new channel</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
           <div className="relative">
             <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
@@ -351,8 +299,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   selectedIds={selectedIds} 
                   onToggle={onToggle}
                   isMobile={true}
-                  showFirstItemTour={side === 'left' && !!tourStep}
-                  tourStep={tourStep}
+                  showFirstItemTour={side === 'left'}
                 />
                 <CollapsibleSection 
                   title="Others" 
@@ -423,63 +370,31 @@ const Sidebar: React.FC<SidebarProps> = ({
           {category}
         </h3>
         <div className="flex gap-1.5 mb-2">
-          {side === 'left' && tourStep ? (
-            <>
-              <TourHighlight step="select-all" currentStep={tourStep}>
+          <button 
+            data-tour={side === 'left' ? "select-all" : undefined}
+            onClick={() => onToggleAll(category)}
+            disabled={sorted.length === 0}
+            className="flex-1 text-xs px-2 py-1 rounded bg-background/80 hover:bg-background/95 transition-colors disabled:opacity-50"
+            style={{ color: buttonTextColor }}
+          >
+            {allSelected && sorted.length > 0 ? 'Deselect All' : 'Select All'}
+          </button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
                 <button 
-                  onClick={() => onToggleAll(category)}
-                  disabled={sorted.length === 0}
-                  className="flex-1 text-xs px-2 py-1 rounded bg-background/80 hover:bg-background/95 transition-colors disabled:opacity-50"
-                  style={{ color: buttonTextColor }}
+                  data-tour={side === 'left' ? "add-button" : undefined}
+                  onClick={handleAddClick}
+                  className="px-2 py-1 rounded bg-background/80 hover:bg-background/95 transition-colors"
                 >
-                  {allSelected && sorted.length > 0 ? 'Deselect All' : 'Select All'}
+                  <Plus className="h-3.5 w-3.5" style={{ color: buttonTextColor }} />
                 </button>
-              </TourHighlight>
-              <TourHighlight step="add-button" currentStep={tourStep}>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button 
-                        onClick={handleAddClick}
-                        className="px-2 py-1 rounded bg-background/80 hover:bg-background/95 transition-colors"
-                      >
-                        <Plus className="h-3.5 w-3.5" style={{ color: buttonTextColor }} />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Add a new channel</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </TourHighlight>
-            </>
-          ) : (
-            <>
-              <button 
-                onClick={() => onToggleAll(category)}
-                disabled={sorted.length === 0}
-                className="flex-1 text-xs px-2 py-1 rounded bg-background/80 hover:bg-background/95 transition-colors disabled:opacity-50"
-                style={{ color: buttonTextColor }}
-              >
-                {allSelected && sorted.length > 0 ? 'Deselect All' : 'Select All'}
-              </button>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button 
-                      onClick={handleAddClick}
-                      className="px-2 py-1 rounded bg-background/80 hover:bg-background/95 transition-colors"
-                    >
-                      <Plus className="h-3.5 w-3.5" style={{ color: buttonTextColor }} />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Add a new channel</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </>
-          )}
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Add a new channel</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
         <div className="relative">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
@@ -506,8 +421,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 brands={big6Filtered} 
                 selectedIds={selectedIds} 
                 onToggle={onToggle}
-                showFirstItemTour={side === 'left' && !!tourStep}
-                tourStep={tourStep}
+                showFirstItemTour={side === 'left'}
               />
               <CollapsibleSection 
                 title="Others" 

@@ -37,7 +37,7 @@ import { COLORS } from '@/types/media';
 import { useUserChannels } from '@/hooks/useUserChannels';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { TourHighlight, useTour, TourStep } from '@/components/GuidedTour';
+import { useTour } from '@/components/GuidedTour';
 
 import WelcomeModal from '@/components/WelcomeModal';
 
@@ -219,73 +219,67 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
 
           {/* Country Selector - Desktop only */}
           {!isMobile && (
-            <TourHighlight step="country-year" currentStep={currentStep}>
-              <div className="flex items-center gap-1">
-                <Select value={country} onValueChange={handleCountryChange}>
-                  <SelectTrigger className="w-[140px] h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {COUNTRIES.map(c => (
-                      <SelectItem key={c} value={c}>{c}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            <div data-tour="country-year" className="flex items-center gap-1">
+              <Select value={country} onValueChange={handleCountryChange}>
+                <SelectTrigger className="w-[140px] h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {COUNTRIES.map(c => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-                {/* Year Selector */}
-                <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
-                  <SelectTrigger className="w-[120px] h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="2000">Year: 2000</SelectItem>
-                    <SelectItem value="2025">Year: 2025</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </TourHighlight>
+              {/* Year Selector */}
+              <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
+                <SelectTrigger className="w-[120px] h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="2000">Year: 2000</SelectItem>
+                  <SelectItem value="2025">Year: 2025</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           )}
 
           {/* Mobile Year Selector */}
           {isMobile && (
-            <TourHighlight step="country-year" currentStep={currentStep}>
-              <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
-                <SelectTrigger className="w-[70px] h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="2000">2000</SelectItem>
-                  <SelectItem value="2025">2025</SelectItem>
-                </SelectContent>
-              </Select>
-            </TourHighlight>
+            <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
+              <SelectTrigger data-tour="country-year" className="w-[70px] h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="2000">2000</SelectItem>
+                <SelectItem value="2025">2025</SelectItem>
+              </SelectContent>
+            </Select>
           )}
 
           {/* View Toggle */}
-          <TourHighlight step="view-toggle" currentStep={currentStep}>
-            <div className="flex bg-muted rounded-full p-0.5">
-              <button 
-                onClick={() => setViewMode('default')}
-                className={`${isMobile ? 'px-2 text-xs' : 'px-4 text-sm'} py-1.5 rounded-full font-medium transition-all ${
-                  viewMode === 'default' 
-                    ? 'bg-card shadow-sm text-foreground' 
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {isMobile ? 'Micro' : 'Microscope'}
-              </button>
-              <button 
-                onClick={() => setViewMode('compass')}
-                className={`${isMobile ? 'px-2 text-xs' : 'px-4 text-sm'} py-1.5 rounded-full font-medium transition-all ${
-                  viewMode === 'compass' 
-                    ? 'bg-card shadow-sm text-foreground' 
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {isMobile ? 'Spec' : 'Spectrum'}
-              </button>
-            </div>
-          </TourHighlight>
+          <div data-tour="view-toggle" className="flex bg-muted rounded-full p-0.5">
+            <button 
+              onClick={() => setViewMode('default')}
+              className={`${isMobile ? 'px-2 text-xs' : 'px-4 text-sm'} py-1.5 rounded-full font-medium transition-all ${
+                viewMode === 'default' 
+                  ? 'bg-card shadow-sm text-foreground' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {isMobile ? 'Micro' : 'Microscope'}
+            </button>
+            <button 
+              onClick={() => setViewMode('compass')}
+              className={`${isMobile ? 'px-2 text-xs' : 'px-4 text-sm'} py-1.5 rounded-full font-medium transition-all ${
+                viewMode === 'compass' 
+                  ? 'bg-card shadow-sm text-foreground' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {isMobile ? 'Spec' : 'Spectrum'}
+            </button>
+          </div>
         </div>
 
         {/* Right side menu */}
@@ -442,7 +436,6 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               onChannelAdded={refetchUserChannels}
               visitorName={visitorName}
               visitorEmail={visitorEmail}
-              tourStep={currentStep}
             />
             <Sidebar 
               category="independent" 
@@ -484,7 +477,6 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                 setSignInDefaultTab('signup');
                 setShowSignIn(true);
               }}
-              tourStep={currentStep}
             />
             
             <Sidebar 
@@ -578,7 +570,6 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
           setSignInDefaultTab('signup');
           setShowSignIn(true);
         }}
-        tourStep={currentStep}
       />
       
       {/* Guided Tour Card */}
