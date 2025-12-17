@@ -143,49 +143,68 @@ const ContributorModal: React.FC<ContributorModalProps> = ({
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     try {
-      // Use popup-based OAuth for iframe compatibility
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/oauth/callback`,
-          skipBrowserRedirect: true
-        }
-      });
-      
-      if (error) {
-        toast.error(error.message);
-        setIsGoogleLoading(false);
-        return;
-      }
-      
-      if (data?.url) {
-        // Open OAuth in popup window
-        const width = 500;
-        const height = 600;
-        const left = window.screenX + (window.outerWidth - width) / 2;
-        const top = window.screenY + (window.outerHeight - height) / 2;
-        
-        const popup = window.open(
-          data.url,
-          'google-oauth',
-          `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes,resizable=yes`
-        );
-        
-        // Index.tsx has a global listener that receives the popup callback via postMessage
-        // and completes the code exchange in the main window. Here we only wait.
-        const pollTimer = setInterval(async () => {
-          if (popup?.closed) {
-            clearInterval(pollTimer);
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-              onClose();
-              window.location.reload();
-            } else {
-              toast.error('Sign in not completed. If you finished Google sign-in, please try again (and allow popups).');
-            }
-            setIsGoogleLoading(false);
+      // Detect if we're in an iframe
+      const isInIframe = window.self !== window.top;
+
+      if (isInIframe) {
+        // Use popup-based OAuth for iframe compatibility
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: `${window.location.origin}/oauth/callback`,
+            skipBrowserRedirect: true
           }
-        }, 500);
+        });
+        
+        if (error) {
+          toast.error(error.message);
+          setIsGoogleLoading(false);
+          return;
+        }
+        
+        if (data?.url) {
+          // Open OAuth in popup window
+          const width = 500;
+          const height = 600;
+          const left = window.screenX + (window.outerWidth - width) / 2;
+          const top = window.screenY + (window.outerHeight - height) / 2;
+          
+          const popup = window.open(
+            data.url,
+            'google-oauth',
+            `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes,resizable=yes`
+          );
+          
+          // Index.tsx has a global listener that receives the popup callback via postMessage
+          // and completes the code exchange in the main window. Here we only wait.
+          const pollTimer = setInterval(async () => {
+            if (popup?.closed) {
+              clearInterval(pollTimer);
+              const { data: { session } } = await supabase.auth.getSession();
+              if (session) {
+                onClose();
+                window.location.reload();
+              } else {
+                toast.error('Sign in not completed. If you finished Google sign-in, please try again (and allow popups).');
+              }
+              setIsGoogleLoading(false);
+            }
+          }, 500);
+        }
+      } else {
+        // Not in iframe - use standard redirect flow (more reliable)
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: `${window.location.origin}/oauth/callback`
+          }
+        });
+        
+        if (error) {
+          toast.error(error.message);
+          setIsGoogleLoading(false);
+        }
+        // Browser will redirect, no need to do anything else
       }
     } catch (error) {
       console.error('Google sign in error:', error);
