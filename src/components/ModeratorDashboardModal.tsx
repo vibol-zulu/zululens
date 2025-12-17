@@ -62,7 +62,7 @@ import {
   ChevronDown,
   Bell
 } from 'lucide-react';
-import perplexityLogo from '@/assets/perplexity-logo.svg';
+import perplexityLogo from '@/assets/perplexity-color.svg';
 import NotificationsTab from '@/components/NotificationsTab';
 
 interface ChannelEntry {
@@ -1595,9 +1595,10 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                   <div className="flex items-center justify-between">
                     <h3 className="text-base font-semibold">AI Audience Estimation</h3>
                     <Button
+                      variant="outline"
                       onClick={() => estimateAudience(channelToReview)}
                       disabled={isEstimating}
-                      className="h-10 px-4 font-semibold"
+                      className="h-10 px-5 font-semibold text-foreground border-2"
                     >
                       {isEstimating ? (
                         <>
@@ -1690,42 +1691,44 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                   )}
                 </div>
 
-                <div className="flex gap-3 pt-4 border-t">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => {
-                      setShowReviewDialog(false);
-                      setEstimationResult(null);
-                    }}
-                    className="flex-1"
-                  >
-                    Cancel
-                  </Button>
-                  <Button 
-                    variant="secondary"
-                    onClick={() => channelToReview && estimateAudience(channelToReview)}
-                    disabled={isEstimating}
-                    className="flex-1"
-                  >
-                    {isEstimating ? 'Analysing...' : 'Re-analyse'}
-                  </Button>
-                  {reviewAction === 'reject' ? (
+                {estimationResult && (
+                  <div className="flex gap-3 pt-4 border-t">
                     <Button 
-                      variant="destructive"
-                      onClick={confirmReview}
+                      variant="outline" 
+                      onClick={() => {
+                        setShowReviewDialog(false);
+                        setEstimationResult(null);
+                      }}
                       className="flex-1"
                     >
-                      Reject
+                      Cancel
                     </Button>
-                  ) : (
                     <Button 
-                      onClick={estimationResult ? applyEstimation : confirmReview}
-                      className="flex-1 bg-green-600 hover:bg-green-700"
+                      variant="secondary"
+                      onClick={() => channelToReview && estimateAudience(channelToReview)}
+                      disabled={isEstimating}
+                      className="flex-1"
                     >
-                      {estimationResult ? `Approve (${estimationResult.deduplicatedAudience?.toFixed(2) || '0'}M)` : 'Approve'}
+                      {isEstimating ? 'Analysing...' : 'Re-analyse'}
                     </Button>
-                  )}
-                </div>
+                    {reviewAction === 'reject' ? (
+                      <Button 
+                        variant="destructive"
+                        onClick={confirmReview}
+                        className="flex-1"
+                      >
+                        Reject
+                      </Button>
+                    ) : (
+                      <Button 
+                        onClick={applyEstimation}
+                        className="flex-1 bg-green-600 hover:bg-green-700"
+                      >
+                        Approve ({estimationResult.deduplicatedAudience?.toFixed(2) || '0'}M)
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </DialogContent>

@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Database, MoreVertical, MessageCircle, BarChart3, Trophy, Flame, TrendingUp, Newspaper, ChevronDown, Bell, Loader2, Settings, Save } from 'lucide-react';
-import perplexityLogo from '@/assets/perplexity-logo.svg';
+import perplexityLogo from '@/assets/perplexity-color.svg';
 import {
   Tooltip,
   TooltipContent,
@@ -3300,9 +3300,10 @@ Format your response as JSON with this structure:
                   <div className="flex items-center justify-between">
                     <h3 className="text-base font-semibold">AI Audience Estimation</h3>
                     <Button
+                      variant="outline"
                       onClick={() => estimateAudience(selectedSubmission)}
                       disabled={isEstimating}
-                      className="h-10 px-4 font-semibold"
+                      className="h-10 px-5 font-semibold text-foreground border-2"
                     >
                       {isEstimating ? (
                         <>
@@ -3395,7 +3396,7 @@ Format your response as JSON with this structure:
                   )}
                 </div>
 
-                {selectedSubmission.status === 'pending' && (
+                {selectedSubmission.status === 'pending' && estimationResult && (
                   <div className="flex gap-3 pt-4">
                     <Button 
                       variant="outline" 
@@ -3413,10 +3414,10 @@ Format your response as JSON with this structure:
                       {isEstimating ? 'Analysing...' : 'Re-analyse'}
                     </Button>
                     <Button 
-                      onClick={estimationResult ? applyEstimation : () => updateSubmissionStatus(selectedSubmission.id, 'approved', selectedSubmission.author_id)} 
+                      onClick={applyEstimation} 
                       className="flex-1"
                     >
-                      {estimationResult ? `Approve (${estimationResult.deduplicatedAudience?.toFixed(2) || '0'}M)` : 'Approve'}
+                      Approve ({estimationResult.deduplicatedAudience?.toFixed(2) || '0'}M)
                     </Button>
                   </div>
                 )}
