@@ -27,7 +27,9 @@ const Index = () => {
         .then(async () => {
           const { data: { session } } = await supabase.auth.getSession();
           if (!session) {
-            throw new Error('No session after exchange');
+            // Embedded storage partitioning: can't persist auth session reliably.
+            setIsOAuthCallback(false);
+            return;
           }
           window.location.reload();
         })

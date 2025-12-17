@@ -202,7 +202,14 @@ const SignInModal: React.FC<SignInModalProps> = ({ open, onClose, defaultTab = '
               .then(async () => {
                 const { data: { session } } = await supabase.auth.getSession();
                 if (!session) {
-                  throw new Error('No session after exchange');
+                  // In embedded iframes some browsers block/partition storage, so the session
+                  // cannot persist reliably even though OAuth succeeded.
+                  toast({
+                    title: 'Signed in, but not in this embed',
+                    description: 'Your browser is blocking sign-in inside the embedded view. Please open the app in a new tab to use your account.',
+                    variant: 'destructive',
+                  });
+                  return;
                 }
                 onClose();
                 window.location.reload();
