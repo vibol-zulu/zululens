@@ -1697,29 +1697,26 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                   </Table>
                 </div>
 
-                {/* AI Audience Estimation Section */}
+                {/* Analyse Submission Section */}
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-base font-semibold">AI Audience Estimation</h3>
-                    <Button
-                      variant="outline"
-                      onClick={() => estimateAudience(channelToReview)}
-                      disabled={isEstimating}
-                      className="h-10 px-5 font-semibold text-foreground border-2"
-                    >
-                      {isEstimating ? (
-                        <>
-                          <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                          Estimating...
-                        </>
-                      ) : (
-                        <>
-                          <img src={perplexityLogo} alt="Perplexity" className="h-5 w-5 mr-2" />
-                          Estimate Audience
-                        </>
-                      )}
-                    </Button>
-                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => estimateAudience(channelToReview)}
+                    disabled={isEstimating}
+                    className="w-full h-10 px-5 font-semibold text-foreground border-2"
+                  >
+                    {isEstimating ? (
+                      <>
+                        <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                        Analysing...
+                      </>
+                    ) : (
+                      <>
+                        <img src={perplexityLogo} alt="Perplexity" className="h-5 w-5 mr-2" />
+                        Analyse Submission
+                      </>
+                    )}
+                  </Button>
 
                   {estimationResult && (
                     <div className="rounded-md border bg-muted/30 overflow-hidden">
@@ -1753,7 +1750,10 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                         </div>
                       )}
 
-                      {/* Estimation Results Table */}
+                      {/* Results */}
+                      <div className="p-4 border-t">
+                        <h4 className="text-sm font-semibold mb-3">Results</h4>
+                      </div>
                       <Table>
                         <TableBody>
                           {estimationResult.politicalLean && (
