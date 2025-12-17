@@ -717,7 +717,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
     }
   };
 
-
+  const handleDeleteComment = (comment: CommentEntry) => {
     setCommentToDelete(comment);
     setShowDeleteCommentDialog(true);
   };
