@@ -36,6 +36,7 @@ import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
 import { COLORS } from '@/types/media';
 import { useUserChannels } from '@/hooks/useUserChannels';
 import { useAuth } from '@/hooks/useAuth';
+import { useAppSettings } from '@/hooks/useAppSettings';
 import { supabase } from '@/integrations/supabase/client';
 import { useTour } from '@/components/GuidedTour';
 
@@ -84,8 +85,11 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
   const [pendingSubmissionsCount, setPendingSubmissionsCount] = useState(0);
 
+  // App settings
+  const { settings: appSettings } = useAppSettings();
+  
   // Guided tour state
-  const { currentStep, startTour, nextStep, closeTour, dontShowAgain, setDontShowAgain, TourCard } = useTour();
+  const { currentStep, startTour, nextStep, closeTour, dontShowAgain, setDontShowAgain, TourCard } = useTour(appSettings.guidedTourEnabled);
 
   // Auth state for contributor access
   const { user, isContributor, isModerator, isAdmin, signOut } = useAuth();

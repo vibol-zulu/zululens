@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface AppSettings {
   mailchimpUrl: string;
+  guidedTourEnabled: boolean;
 }
 
 // Decode HTML entities in URLs (e.g., &amp; -> &)
@@ -16,7 +17,8 @@ const DEFAULT_MAILCHIMP_URL = 'https://group.us12.list-manage.com/subscribe/post
 
 export const useAppSettings = () => {
   const [settings, setSettings] = useState<AppSettings>({
-    mailchimpUrl: DEFAULT_MAILCHIMP_URL
+    mailchimpUrl: DEFAULT_MAILCHIMP_URL,
+    guidedTourEnabled: false
   });
   const [loading, setLoading] = useState(true);
 
@@ -36,7 +38,8 @@ export const useAppSettings = () => {
 
         const rawUrl = settingsMap['mailchimp_url'] || DEFAULT_MAILCHIMP_URL;
         setSettings({
-          mailchimpUrl: decodeHtmlEntities(rawUrl)
+          mailchimpUrl: decodeHtmlEntities(rawUrl),
+          guidedTourEnabled: settingsMap['guided_tour_enabled'] === 'true'
         });
       } catch (error) {
         console.error('Error fetching app settings:', error);
