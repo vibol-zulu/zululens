@@ -1702,6 +1702,14 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                   >
                     Cancel
                   </Button>
+                  <Button 
+                    variant="secondary"
+                    onClick={() => channelToReview && estimateAudience(channelToReview)}
+                    disabled={isEstimating}
+                    className="flex-1"
+                  >
+                    {isEstimating ? 'Analysing...' : 'Re-analyse'}
+                  </Button>
                   {reviewAction === 'reject' ? (
                     <Button 
                       variant="destructive"

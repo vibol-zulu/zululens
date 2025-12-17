@@ -3405,6 +3405,14 @@ Format your response as JSON with this structure:
                       Reject
                     </Button>
                     <Button 
+                      variant="secondary"
+                      onClick={() => estimateAudience(selectedSubmission)}
+                      disabled={isEstimating}
+                      className="flex-1"
+                    >
+                      {isEstimating ? 'Analysing...' : 'Re-analyse'}
+                    </Button>
+                    <Button 
                       onClick={estimationResult ? applyEstimation : () => updateSubmissionStatus(selectedSubmission.id, 'approved', selectedSubmission.author_id)} 
                       className="flex-1"
                     >
