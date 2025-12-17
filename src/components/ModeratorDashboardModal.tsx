@@ -706,7 +706,10 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
     try {
       const updateData: Record<string, unknown> = { 
         value_millions: estimationResult.deduplicatedAudience,
-        start_date: estimationResult.suggestedStartDate || 'TBD'
+        start_date: estimationResult.suggestedStartDate || 'TBD',
+        status: 'approved',
+        approved_at: new Date().toISOString(),
+        approved_by: user?.id
       };
       
       // Include political lean if determined by AI
@@ -721,12 +724,23 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
 
       if (error) throw error;
 
-      toast({ title: 'Estimation applied to channel' });
-      setChannelToReview({
-        ...channelToReview,
-        value_millions: estimationResult.deduplicatedAudience,
-        political_lean: estimationResult.politicalLean || channelToReview.political_lean
-      });
+      // Send notification to author
+      if (channelToReview.author_id) {
+        await supabase.from('notifications').insert({
+          title: 'Submission Approved!',
+          message: `Your channel suggestion "${channelToReview.name}" has been approved and is now live.`,
+          type: 'submission_review',
+          target_user_id: channelToReview.author_id,
+          target_role: 'member',
+          channel_id: channelToReview.id,
+          created_by: user?.id
+        });
+      }
+
+      toast({ title: 'Estimation applied and submission approved' });
+      setShowReviewDialog(false);
+      setChannelToReview(null);
+      setEstimationResult(null);
       fetchPendingChannels();
     } catch (error) {
       console.error('Error applying estimation:', error);
@@ -1109,8 +1123,9 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => handleReviewChannel(channel, 'approve')}
+                                  title="Review & Estimate"
                                 >
-                                  <Check className="h-4 w-4 text-green-600" />
+                                  <MessageSquare className="h-4 w-4" />
                                 </Button>
                                 <Button
                                   variant="ghost"
