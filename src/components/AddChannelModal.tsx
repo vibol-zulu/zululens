@@ -76,8 +76,6 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    valueMillions: '',
-    startDate: '',
     platform: '',
     contentType: '',
     politicalLean: ''
@@ -86,8 +84,7 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.valueMillions || !formData.startDate || 
-        !formData.platform || !formData.contentType || !formData.politicalLean) {
+    if (!formData.name || !formData.platform || !formData.contentType || !formData.politicalLean) {
       toast({
         title: "Missing fields",
         description: "Please fill in all fields",
@@ -122,8 +119,8 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
         .insert({
           name: formData.name.trim(),
           category,
-          value_millions: parseFloat(formData.valueMillions),
-          start_date: formData.startDate,
+          value_millions: 0, // To be estimated by mods/admins
+          start_date: 'TBD', // To be estimated by mods/admins
           platform: formData.platform,
           content_type: formData.contentType,
           political_lean: formData.politicalLean,
@@ -155,8 +152,6 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
 
       setFormData({
         name: '',
-        valueMillions: '',
-        startDate: '',
         platform: '',
         contentType: '',
         politicalLean: ''
@@ -191,29 +186,6 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
               placeholder="e.g., The Daily Show"
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="valueMillions">Monthly Audience (Millions) *</Label>
-            <Input
-              id="valueMillions"
-              type="number"
-              step="0.01"
-              min="0"
-              placeholder="e.g., 15.5"
-              value={formData.valueMillions}
-              onChange={(e) => setFormData(prev => ({ ...prev, valueMillions: e.target.value }))}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="startDate">Start Date *</Label>
-            <Input
-              id="startDate"
-              placeholder="MM/DD/YYYY"
-              value={formData.startDate}
-              onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
             />
           </div>
 
