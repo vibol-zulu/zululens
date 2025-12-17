@@ -3221,7 +3221,7 @@ Format your response as JSON with this structure:
 
         {/* View Submission Dialog */}
         <Dialog open={showSubmissionDialog} onOpenChange={setShowSubmissionDialog}>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Submission Details</DialogTitle>
             </DialogHeader>
