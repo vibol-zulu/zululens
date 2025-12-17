@@ -5,6 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Database, MoreVertical, MessageCircle, BarChart3, Trophy, Flame, TrendingUp, Newspaper, ChevronDown, Bell, Sparkles, Loader2, Settings, Save } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import NotificationsTab from '@/components/NotificationsTab';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -2018,38 +2024,74 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                                 </TableCell>
                                 <TableCell>
                                   <div className="flex gap-1">
-                                    <Button 
-                                      variant="ghost" 
-                                      size="icon"
-                                      onClick={() => { setSelectedSubmission(sub); setShowSubmissionDialog(true); }}
-                                    >
-                                      <MessageSquare className="h-4 w-4" />
-                                    </Button>
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <Button 
+                                            variant="ghost" 
+                                            size="icon"
+                                            onClick={() => { setSelectedSubmission(sub); setShowSubmissionDialog(true); }}
+                                          >
+                                            <MessageSquare className="h-4 w-4" />
+                                          </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p>Review</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
                                     {sub.status === 'pending' && (
                                       <>
-                                        <Button 
-                                          variant="ghost" 
-                                          size="icon"
-                                          onClick={() => updateSubmissionStatus(sub.id, 'approved', sub.author_id)}
-                                        >
-                                          <Check className="h-4 w-4 text-green-600" />
-                                        </Button>
-                                        <Button 
-                                          variant="ghost" 
-                                          size="icon"
-                                          onClick={() => updateSubmissionStatus(sub.id, 'rejected', sub.author_id)}
-                                        >
-                                          <XCircle className="h-4 w-4 text-destructive" />
-                                        </Button>
+                                        <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <Button 
+                                                variant="ghost" 
+                                                size="icon"
+                                                onClick={() => updateSubmissionStatus(sub.id, 'approved', sub.author_id)}
+                                              >
+                                                <Check className="h-4 w-4 text-green-600" />
+                                              </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <p>Approve</p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
+                                        <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <Button 
+                                                variant="ghost" 
+                                                size="icon"
+                                                onClick={() => updateSubmissionStatus(sub.id, 'rejected', sub.author_id)}
+                                              >
+                                                <XCircle className="h-4 w-4 text-destructive" />
+                                              </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <p>Reject</p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
                                       </>
                                     )}
-                                    <Button 
-                                      variant="ghost" 
-                                      size="icon"
-                                      onClick={() => deleteSubmission(sub.id)}
-                                    >
-                                      <Trash2 className="h-4 w-4 text-destructive" />
-                                    </Button>
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <Button 
+                                            variant="ghost" 
+                                            size="icon"
+                                            onClick={() => deleteSubmission(sub.id)}
+                                          >
+                                            <Trash2 className="h-4 w-4 text-destructive" />
+                                          </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p>Delete</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
                                   </div>
                                 </TableCell>
                               </TableRow>
