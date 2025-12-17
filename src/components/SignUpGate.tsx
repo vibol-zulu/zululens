@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { registerTier1Visitor, useAnalytics } from '@/hooks/useAnalytics';
 import { useAppSettings } from '@/hooks/useAppSettings';
@@ -21,6 +21,18 @@ const SignUpGate: React.FC<SignUpGateProps> = ({
     initSession,
     trackEvent
   } = useAnalytics();
+
+  // Mailchimp form POSTs into a hidden iframe.
+  // If we switch views too quickly, the browser may abort the POST.
+  const joinCalledRef = useRef(false);
+  const awaitingIframeLoadRef = useRef(false);
+  const joinTimeoutRef = useRef<number | null>(null);
+
+  const callJoinOnce = () => {
+    if (joinCalledRef.current) return;
+    joinCalledRef.current = true;
+    onJoin(name, email);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     setError('');
@@ -53,9 +65,14 @@ const SignUpGate: React.FC<SignUpGateProps> = ({
       }
     })();
 
-    setTimeout(() => {
-      onJoin(name, email);
-    }, 500);
+    // Prefer waiting for the iframe to finish loading the Mailchimp response.
+    awaitingIframeLoadRef.current = true;
+
+    // Safety fallback: if the iframe never loads (ad blockers, etc.), still unlock.
+    if (joinTimeoutRef.current) window.clearTimeout(joinTimeoutRef.current);
+    joinTimeoutRef.current = window.setTimeout(() => {
+      callJoinOnce();
+    }, 2500);
   };
   return <div className="min-h-screen flex flex-col" style={{
     background: 'linear-gradient(135deg, hsl(180 25% 25%) 0%, hsl(170 30% 18%) 50%, hsl(200 20% 30%) 100%)'
@@ -101,6 +118,16 @@ US media 2000 - 2025
             title="hiddenFrame"
             aria-hidden="true"
             tabIndex={-1}
+            onLoad={() => {
+              if (!submitted) return;
+              if (!awaitingIframeLoadRef.current) return;
+              awaitingIframeLoadRef.current = false;
+              if (joinTimeoutRef.current) {
+                window.clearTimeout(joinTimeoutRef.current);
+                joinTimeoutRef.current = null;
+              }
+              callJoinOnce();
+            }}
             className="absolute h-0 w-0 opacity-0 pointer-events-none"
           />
 
