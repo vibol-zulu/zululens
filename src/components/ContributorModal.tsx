@@ -143,17 +143,51 @@ const ContributorModal: React.FC<ContributorModalProps> = ({
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      // Use popup-based OAuth for iframe compatibility
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: `${window.location.origin}/` }
+        options: {
+          redirectTo: `${window.location.origin}/`,
+          skipBrowserRedirect: true
+        }
       });
+      
       if (error) {
         toast.error(error.message);
+        setIsGoogleLoading(false);
+        return;
+      }
+      
+      if (data?.url) {
+        // Open OAuth in popup window
+        const width = 500;
+        const height = 600;
+        const left = window.screenX + (window.outerWidth - width) / 2;
+        const top = window.screenY + (window.outerHeight - height) / 2;
+        
+        const popup = window.open(
+          data.url,
+          'google-oauth',
+          `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes,resizable=yes`
+        );
+        
+        // Poll for popup close and check auth state
+        const pollTimer = setInterval(async () => {
+          if (popup?.closed) {
+            clearInterval(pollTimer);
+            // Check if user is now authenticated
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+              onClose();
+              window.location.reload();
+            }
+            setIsGoogleLoading(false);
+          }
+        }, 500);
       }
     } catch (error) {
       console.error('Google sign in error:', error);
       toast.error('Google sign in failed');
-    } finally {
       setIsGoogleLoading(false);
     }
   };
