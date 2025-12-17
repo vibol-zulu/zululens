@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { registerTier1Visitor, useAnalytics } from '@/hooks/useAnalytics';
 import { useAppSettings } from '@/hooks/useAppSettings';
@@ -15,8 +15,6 @@ const SignUpGate: React.FC<SignUpGateProps> = ({
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
-  const formRef = useRef<HTMLFormElement | null>(null);
-  const hasPostedToMailchimpRef = useRef(false);
   const { settings } = useAppSettings();
   const {
     setVisitorId,
@@ -24,42 +22,36 @@ const SignUpGate: React.FC<SignUpGateProps> = ({
     trackEvent
   } = useAnalytics();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (e: React.FormEvent) => {
     setError('');
 
+    // Only prevent the native POST when validation fails.
     if (!name.trim()) {
+      e.preventDefault();
       setError('Please enter your name.');
       return;
     }
     if (!email.includes('@')) {
+      e.preventDefault();
       setError('Please enter a valid email.');
       return;
     }
 
     setSubmitted(true);
 
-    // Submit to Mailchimp (hidden iframe). We must manually submit because we preventDefault.
-    if (!hasPostedToMailchimpRef.current) {
-      hasPostedToMailchimpRef.current = true;
-      // Defer to ensure latest state/DOM values are applied.
-      setTimeout(() => {
-        formRef.current?.submit();
-      }, 0);
-    }
-
-    // Register visitor in database
-    const visitorId = await registerTier1Visitor(name, email);
-    if (visitorId) {
-      setVisitorId(visitorId);
-      await initSession();
-      trackEvent({
-        event_type: 'page_view',
-        event_data: {
-          page: 'dashboard'
-        }
-      });
-    }
+    // Fire-and-forget analytics + visitor registration.
+    // We do NOT preventDefault here so the browser actually POSTS to Mailchimp.
+    (async () => {
+      const visitorId = await registerTier1Visitor(name, email);
+      if (visitorId) {
+        setVisitorId(visitorId);
+        await initSession();
+        trackEvent({
+          event_type: 'page_view',
+          event_data: { page: 'dashboard' }
+        });
+      }
+    })();
 
     setTimeout(() => {
       onJoin(name, email);
@@ -107,7 +99,7 @@ US media 2000 - 2025
 
           <p className="text-white/50 text-xs italic mb-4">Already subscribed? Enter your details to unlock.</p>
 
-          <form ref={formRef} action={settings.mailchimpUrl} method="POST" target="hiddenFrame" onSubmit={handleSubmit} className="space-y-4">
+          <form action={settings.mailchimpUrl} method="POST" target="hiddenFrame" onSubmit={handleSubmit} className="space-y-4">
             <Input type="text" name="FNAME" value={name} onChange={e => setName(e.target.value)} placeholder="Full Name" className="h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus-visible:ring-white/30 focus-visible:ring-offset-0" />
             <Input type="email" name="EMAIL" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email Address" className="h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus-visible:ring-white/30 focus-visible:ring-offset-0" />
 
