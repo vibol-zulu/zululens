@@ -37,21 +37,29 @@ import { COLORS } from '@/types/media';
 import { useUserChannels } from '@/hooks/useUserChannels';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { TourTooltip, useTour, TourStep } from '@/components/GuidedTour';
+
+import WelcomeModal from '@/components/WelcomeModal';
 
 interface MediaDashboardProps {
   visitorName: string;
   visitorEmail: string;
   data: Record<number, YearData>;
+  showWelcomeModal?: boolean;
 }
 
 const MediaDashboard: React.FC<MediaDashboardProps> = ({
   visitorName,
   visitorEmail,
-  data
+  data,
+  showWelcomeModal = false
 }) => {
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
   const useStackedLayout = isMobile || isTablet;
+  
+  // Welcome modal state
+  const [showWelcome, setShowWelcome] = useState(showWelcomeModal);
   
   const [year, setYear] = useState<number>(2025);
   const [country, setCountry] = useState<string>('United States');
@@ -75,6 +83,9 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   const [signInDefaultTab, setSignInDefaultTab] = useState<'signin' | 'signup'>('signin');
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
   const [pendingSubmissionsCount, setPendingSubmissionsCount] = useState(0);
+
+  // Guided tour state
+  const { currentStep, startTour, nextStep, closeTour } = useTour();
 
   // Auth state for contributor access
   const { user, isContributor, isModerator, isAdmin, signOut } = useAuth();
@@ -208,52 +219,91 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
 
           {/* Country Selector - Desktop only */}
           {!isMobile && (
-            <Select value={country} onValueChange={handleCountryChange}>
-              <SelectTrigger className="w-[140px] h-9">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {COUNTRIES.map(c => (
-                  <SelectItem key={c} value={c}>{c}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <TourTooltip 
+              step="country-year" 
+              currentStep={currentStep} 
+              onNext={nextStep} 
+              onClose={closeTour}
+              position="bottom"
+            >
+              <div className="flex items-center gap-1">
+                <Select value={country} onValueChange={handleCountryChange}>
+                  <SelectTrigger className="w-[140px] h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COUNTRIES.map(c => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {/* Year Selector */}
+                <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
+                  <SelectTrigger className="w-[120px] h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="2000">Year: 2000</SelectItem>
+                    <SelectItem value="2025">Year: 2025</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </TourTooltip>
           )}
 
-          {/* Year Selector */}
-          <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
-            <SelectTrigger className={`${isMobile ? 'w-[70px]' : 'w-[120px]'} h-9`}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="2000">{isMobile ? '2000' : 'Year: 2000'}</SelectItem>
-              <SelectItem value="2025">{isMobile ? '2025' : 'Year: 2025'}</SelectItem>
-            </SelectContent>
-          </Select>
+          {/* Mobile Year Selector */}
+          {isMobile && (
+            <TourTooltip 
+              step="country-year" 
+              currentStep={currentStep} 
+              onNext={nextStep} 
+              onClose={closeTour}
+              position="bottom"
+            >
+              <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
+                <SelectTrigger className="w-[70px] h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="2000">2000</SelectItem>
+                  <SelectItem value="2025">2025</SelectItem>
+                </SelectContent>
+              </Select>
+            </TourTooltip>
+          )}
 
           {/* View Toggle */}
-          <div className="flex bg-muted rounded-full p-0.5">
-            <button 
-              onClick={() => setViewMode('default')}
-              className={`${isMobile ? 'px-2 text-xs' : 'px-4 text-sm'} py-1.5 rounded-full font-medium transition-all ${
-                viewMode === 'default' 
-                  ? 'bg-card shadow-sm text-foreground' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {isMobile ? 'Micro' : 'Microscope'}
-            </button>
-            <button 
-              onClick={() => setViewMode('compass')}
-              className={`${isMobile ? 'px-2 text-xs' : 'px-4 text-sm'} py-1.5 rounded-full font-medium transition-all ${
-                viewMode === 'compass' 
-                  ? 'bg-card shadow-sm text-foreground' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {isMobile ? 'Spec' : 'Spectrum'}
-            </button>
-          </div>
+          <TourTooltip 
+            step="view-toggle" 
+            currentStep={currentStep} 
+            onNext={nextStep} 
+            onClose={closeTour}
+            position="bottom"
+          >
+            <div className="flex bg-muted rounded-full p-0.5">
+              <button 
+                onClick={() => setViewMode('default')}
+                className={`${isMobile ? 'px-2 text-xs' : 'px-4 text-sm'} py-1.5 rounded-full font-medium transition-all ${
+                  viewMode === 'default' 
+                    ? 'bg-card shadow-sm text-foreground' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {isMobile ? 'Micro' : 'Microscope'}
+              </button>
+              <button 
+                onClick={() => setViewMode('compass')}
+                className={`${isMobile ? 'px-2 text-xs' : 'px-4 text-sm'} py-1.5 rounded-full font-medium transition-all ${
+                  viewMode === 'compass' 
+                    ? 'bg-card shadow-sm text-foreground' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {isMobile ? 'Spec' : 'Spectrum'}
+              </button>
+            </div>
+          </TourTooltip>
         </div>
 
         {/* Right side menu */}
@@ -410,6 +460,9 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               onChannelAdded={refetchUserChannels}
               visitorName={visitorName}
               visitorEmail={visitorEmail}
+              tourStep={currentStep}
+              onTourNext={nextStep}
+              onTourClose={closeTour}
             />
             <Sidebar 
               category="independent" 
@@ -451,6 +504,9 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                 setSignInDefaultTab('signup');
                 setShowSignIn(true);
               }}
+              tourStep={currentStep}
+              onTourNext={nextStep}
+              onTourClose={closeTour}
             />
             
             <Sidebar 
@@ -529,6 +585,12 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
       <NewsModal
         open={showNews}
         onOpenChange={setShowNews}
+      />
+      <WelcomeModal 
+        open={showWelcome} 
+        onOpenChange={setShowWelcome} 
+        userName={visitorName}
+        onStartExploring={startTour}
       />
       
       {/* Comments Section - visible for all users */}

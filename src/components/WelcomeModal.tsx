@@ -7,12 +7,18 @@ interface WelcomeModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   userName: string;
+  onStartExploring?: () => void;
 }
 const WelcomeModal: React.FC<WelcomeModalProps> = ({
   open,
   onOpenChange,
-  userName
+  userName,
+  onStartExploring
 }) => {
+  const handleStartExploring = () => {
+    onOpenChange(false);
+    onStartExploring?.();
+  };
   return <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -67,7 +73,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
           </section>
         </div>
 
-        <Button onClick={() => onOpenChange(false)} className="w-full mt-2">
+        <Button onClick={handleStartExploring} className="w-full mt-2">
           Start Exploring
         </Button>
       </DialogContent>

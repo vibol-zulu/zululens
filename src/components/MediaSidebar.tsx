@@ -11,6 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import AddChannelModal from './AddChannelModal';
 import ContributorModal from './ContributorModal';
 import { useAuth } from '@/hooks/useAuth';
+import { TourTooltip, TourStep } from '@/components/GuidedTour';
 // The Big 6 are the corporate channels from 2000
 const BIG_6_NAMES = [
   'FOX News',
@@ -43,6 +44,9 @@ interface SidebarProps {
   visitorName?: string;
   visitorEmail?: string;
   onSignUpClick?: () => void;
+  tourStep?: TourStep;
+  onTourNext?: () => void;
+  onTourClose?: () => void;
 }
 
 const SidebarToggle: React.FC<{ side: 'left' | 'right'; isOpen: boolean; onClick: () => void }> = ({ side, isOpen, onClick }) => (
@@ -158,7 +162,10 @@ const Sidebar: React.FC<SidebarProps> = ({
   onChannelAdded,
   visitorName = '',
   visitorEmail = '',
-  onSignUpClick
+  onSignUpClick,
+  tourStep,
+  onTourNext,
+  onTourClose
 }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showContributorModal, setShowContributorModal] = useState(false);
@@ -229,33 +236,83 @@ const Sidebar: React.FC<SidebarProps> = ({
             {category}
           </h3>
           <div className="flex gap-1 mb-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => onToggleAll(category)}
-              disabled={sorted.length === 0}
-              className="flex-1 text-xs px-1 bg-background/90 hover:bg-background"
-              style={{ color: buttonTextColor }}
-            >
-              {allSelected && sorted.length > 0 ? 'Deselect' : 'Select All'}
-            </Button>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
+            {side === 'left' && tourStep && onTourNext && onTourClose ? (
+              <>
+                <TourTooltip
+                  step="select-all"
+                  currentStep={tourStep}
+                  onNext={onTourNext}
+                  onClose={onTourClose}
+                  position="bottom"
+                >
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    onClick={handleAddClick}
-                    className="px-2 shrink-0 bg-background/90 hover:bg-background"
+                    onClick={() => onToggleAll(category)}
+                    disabled={sorted.length === 0}
+                    className="flex-1 text-xs px-1 bg-background/90 hover:bg-background"
+                    style={{ color: buttonTextColor }}
                   >
-                    <Plus className="h-3 w-3" style={{ color: buttonTextColor }} />
+                    {allSelected && sorted.length > 0 ? 'Deselect' : 'Select All'}
                   </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Add a new channel</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+                </TourTooltip>
+                <TourTooltip
+                  step="add-button"
+                  currentStep={tourStep}
+                  onNext={onTourNext}
+                  onClose={onTourClose}
+                  position="bottom"
+                >
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={handleAddClick}
+                          className="px-2 shrink-0 bg-background/90 hover:bg-background"
+                        >
+                          <Plus className="h-3 w-3" style={{ color: buttonTextColor }} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Add a new channel</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </TourTooltip>
+              </>
+            ) : (
+              <>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => onToggleAll(category)}
+                  disabled={sorted.length === 0}
+                  className="flex-1 text-xs px-1 bg-background/90 hover:bg-background"
+                  style={{ color: buttonTextColor }}
+                >
+                  {allSelected && sorted.length > 0 ? 'Deselect' : 'Select All'}
+                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={handleAddClick}
+                        className="px-2 shrink-0 bg-background/90 hover:bg-background"
+                      >
+                        <Plus className="h-3 w-3" style={{ color: buttonTextColor }} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Add a new channel</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </>
+            )}
           </div>
           <div className="relative">
             <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
@@ -353,29 +410,75 @@ const Sidebar: React.FC<SidebarProps> = ({
           {category}
         </h3>
         <div className="flex gap-1.5 mb-2">
-          <button 
-            onClick={() => onToggleAll(category)}
-            disabled={sorted.length === 0}
-            className="flex-1 text-xs px-2 py-1 rounded bg-background/80 hover:bg-background/95 transition-colors disabled:opacity-50"
-            style={{ color: buttonTextColor }}
-          >
-            {allSelected && sorted.length > 0 ? 'Deselect All' : 'Select All'}
-          </button>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
+          {side === 'left' && tourStep && onTourNext && onTourClose ? (
+            <>
+              <TourTooltip
+                step="select-all"
+                currentStep={tourStep}
+                onNext={onTourNext}
+                onClose={onTourClose}
+                position="right"
+              >
                 <button 
-                  onClick={handleAddClick}
-                  className="px-2 py-1 rounded bg-background/80 hover:bg-background/95 transition-colors"
+                  onClick={() => onToggleAll(category)}
+                  disabled={sorted.length === 0}
+                  className="flex-1 text-xs px-2 py-1 rounded bg-background/80 hover:bg-background/95 transition-colors disabled:opacity-50"
+                  style={{ color: buttonTextColor }}
                 >
-                  <Plus className="h-3.5 w-3.5" style={{ color: buttonTextColor }} />
+                  {allSelected && sorted.length > 0 ? 'Deselect All' : 'Select All'}
                 </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Add a new channel</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+              </TourTooltip>
+              <TourTooltip
+                step="add-button"
+                currentStep={tourStep}
+                onNext={onTourNext}
+                onClose={onTourClose}
+                position="right"
+              >
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button 
+                        onClick={handleAddClick}
+                        className="px-2 py-1 rounded bg-background/80 hover:bg-background/95 transition-colors"
+                      >
+                        <Plus className="h-3.5 w-3.5" style={{ color: buttonTextColor }} />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Add a new channel</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </TourTooltip>
+            </>
+          ) : (
+            <>
+              <button 
+                onClick={() => onToggleAll(category)}
+                disabled={sorted.length === 0}
+                className="flex-1 text-xs px-2 py-1 rounded bg-background/80 hover:bg-background/95 transition-colors disabled:opacity-50"
+                style={{ color: buttonTextColor }}
+              >
+                {allSelected && sorted.length > 0 ? 'Deselect All' : 'Select All'}
+              </button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button 
+                      onClick={handleAddClick}
+                      className="px-2 py-1 rounded bg-background/80 hover:bg-background/95 transition-colors"
+                    >
+                      <Plus className="h-3.5 w-3.5" style={{ color: buttonTextColor }} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Add a new channel</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </>
+          )}
         </div>
         <div className="relative">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
