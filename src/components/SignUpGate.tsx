@@ -112,7 +112,7 @@ US media 2000 - 2025
         <div className="text-white/50 text-[10px] font-mono uppercase leading-relaxed max-w-xs">​ 
         <br />
           ​<br />
-          ​​Powered by Zulu Group
+          © 2026 Zulu Group Ltd. All rights reserved.    
         </div>
         
       </footer>
