@@ -305,9 +305,50 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
 
   // Settings state
+  const DEFAULT_SYSTEM_PROMPT = `You are an expert media analyst specializing in audience measurement and cross-platform reach estimation. Your task is to estimate monthly audience figures for media channels based on their platform, content type, and market positioning.
+
+You have deep knowledge of:
+- Platform-specific audience benchmarks (YouTube, Twitter/X, TikTok, Facebook, Instagram, podcasts, cable TV, print/digital)
+- Cross-platform audience overlap patterns
+- Content type performance benchmarks (news, commentary, podcasts, etc.)
+- Political media landscape and audience segmentation
+- Deduplication methodologies for cross-platform reach
+
+Use industry-standard audience measurement approaches and historical comparables to provide realistic estimates.`;
+
+  const DEFAULT_USER_PROMPT = `Analyze this media channel submission and estimate audience metrics:
+
+**Channel Name:** {channel.name}
+**Main Platform:** {channel.platform}
+**Content Type:** {channel.contentType}
+**Political Lean:** {channel.politicalLean}
+**Category:** {channel.category}
+**Country:** {channel.country}
+
+Based on this information, provide:
+
+1. **Estimated Cross-Platform Monthly Audience (in millions)** - The total unique audience reach across major platforms (YouTube, X/Twitter, TikTok, Facebook, Instagram, podcast apps, website, etc.)
+
+2. **Estimated Deduplicated Monthly Audience (in millions)** - Adjusted to remove estimated audience overlap based on the main platform, content type, and typical cross-platform reach patterns.
+
+3. **Reasoning** (2-4 sentences) - Explain your estimation methodology, including engagement assumptions, platform overlap factors, and key comparison points.
+
+4. **Comparable Channels** - List 2-4 similar channels used as benchmarks for this estimate.
+
+5. **Suggested Start Date** - Estimate when this channel was founded or started operations (format: MM/YYYY or "Founded YYYY").
+
+Format your response as JSON with this structure:
+{
+  "crossPlatformAudience": number,
+  "deduplicatedAudience": number,
+  "reasoning": "string",
+  "comparableChannels": ["channel1", "channel2"],
+  "suggestedStartDate": "string"
+}`;
+
   const [mailchimpUrl, setMailchimpUrl] = useState('');
-  const [audienceSystemPrompt, setAudienceSystemPrompt] = useState('');
-  const [audienceUserPrompt, setAudienceUserPrompt] = useState('');
+  const [audienceSystemPrompt, setAudienceSystemPrompt] = useState(DEFAULT_SYSTEM_PROMPT);
+  const [audienceUserPrompt, setAudienceUserPrompt] = useState(DEFAULT_USER_PROMPT);
   const [settingsLoading, setSettingsLoading] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
 
@@ -2720,7 +2761,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                           className="font-mono text-xs min-h-[150px]"
                         />
                         <p className="text-xs text-muted-foreground">
-                          Defines the AI's role and expertise. Leave empty to use default.
+                          Defines the AI's role and expertise for audience estimation.
                         </p>
                       </div>
                       <div className="space-y-2">
@@ -2733,7 +2774,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                           className="font-mono text-xs min-h-[200px]"
                         />
                         <p className="text-xs text-muted-foreground">
-                          Template for analyzing channels. Use placeholders: {'{channel.name}'}, {'{channel.platform}'}, {'{channel.contentType}'}, {'{channel.politicalLean}'}, {'{channel.category}'}, {'{channel.country}'}. Leave empty to use default.
+                          Template for analyzing channels. Available placeholders: {'{channel.name}'}, {'{channel.platform}'}, {'{channel.contentType}'}, {'{channel.politicalLean}'}, {'{channel.category}'}, {'{channel.country}'}
                         </p>
                       </div>
                     </CardContent>
