@@ -1096,26 +1096,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
 
       if (error) throw error;
 
-      // Send notification to the author
-      console.log('Notification debug:', { authorId, userId: user?.id, status });
-      if (authorId && user?.id) {
-        console.log('Attempting to insert notification for author:', authorId);
-        const { error: notifError, data: notifData } = await supabase.from('notifications').insert({
-          title: `Submission ${status === 'approved' ? 'Approved' : 'Rejected'}`,
-          message: `Your channel submission has been ${status}.`,
-          type: 'submission_review',
-          target_user_id: authorId,
-          target_role: 'member',
-          created_by: user.id
-        }).select();
-        console.log('Notification insert result:', { error: notifError, data: notifData });
-        if (notifError) {
-          console.error('Failed to send notification:', notifError);
-        }
-      } else {
-        console.warn('Skipping notification - missing authorId or userId:', { authorId, userId: user?.id });
-      }
-      
+      // Notification is now handled by database trigger
       toast({ title: `Submission ${status}` });
       setShowSubmissionDialog(false);
       setSelectedSubmission(null);
