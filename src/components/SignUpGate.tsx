@@ -90,9 +90,12 @@ const SignUpGate: React.FC<SignUpGateProps> = ({ onJoin }) => {
           </h1>
 
           {/* Description */}
-          <p className="text-white/70 text-base leading-relaxed mb-8 max-w-lg md:text-sm">
-            Sign up to our newsletter to unlock the interactive infographic.  We respect your privacy. No spam, only
+          <p className="text-white/70 text-base leading-relaxed mb-4 max-w-lg md:text-sm">
+            Sign up to our newsletter to unlock the interactive infographic.  We respect your privacy. No spam, only
             interesting ideas.
+          </p>
+          <p className="text-white/50 text-sm italic mb-8">
+            Already subscribed? Enter details to access.
           </p>
 
           {error && (
