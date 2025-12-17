@@ -37,7 +37,7 @@ import { COLORS } from '@/types/media';
 import { useUserChannels } from '@/hooks/useUserChannels';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { TourTooltip, useTour, TourStep } from '@/components/GuidedTour';
+import { TourHighlight, useTour, TourStep } from '@/components/GuidedTour';
 
 import WelcomeModal from '@/components/WelcomeModal';
 
@@ -85,7 +85,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   const [pendingSubmissionsCount, setPendingSubmissionsCount] = useState(0);
 
   // Guided tour state
-  const { currentStep, startTour, nextStep, closeTour } = useTour();
+  const { currentStep, startTour, nextStep, closeTour, dontShowAgain, setDontShowAgain, TourCard } = useTour();
 
   // Auth state for contributor access
   const { user, isContributor, isModerator, isAdmin, signOut } = useAuth();
@@ -219,13 +219,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
 
           {/* Country Selector - Desktop only */}
           {!isMobile && (
-            <TourTooltip 
-              step="country-year" 
-              currentStep={currentStep} 
-              onNext={nextStep} 
-              onClose={closeTour}
-              position="bottom"
-            >
+            <TourHighlight step="country-year" currentStep={currentStep}>
               <div className="flex items-center gap-1">
                 <Select value={country} onValueChange={handleCountryChange}>
                   <SelectTrigger className="w-[140px] h-9">
@@ -249,18 +243,12 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                   </SelectContent>
                 </Select>
               </div>
-            </TourTooltip>
+            </TourHighlight>
           )}
 
           {/* Mobile Year Selector */}
           {isMobile && (
-            <TourTooltip 
-              step="country-year" 
-              currentStep={currentStep} 
-              onNext={nextStep} 
-              onClose={closeTour}
-              position="bottom"
-            >
+            <TourHighlight step="country-year" currentStep={currentStep}>
               <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
                 <SelectTrigger className="w-[70px] h-9">
                   <SelectValue />
@@ -270,17 +258,11 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                   <SelectItem value="2025">2025</SelectItem>
                 </SelectContent>
               </Select>
-            </TourTooltip>
+            </TourHighlight>
           )}
 
           {/* View Toggle */}
-          <TourTooltip 
-            step="view-toggle" 
-            currentStep={currentStep} 
-            onNext={nextStep} 
-            onClose={closeTour}
-            position="bottom"
-          >
+          <TourHighlight step="view-toggle" currentStep={currentStep}>
             <div className="flex bg-muted rounded-full p-0.5">
               <button 
                 onClick={() => setViewMode('default')}
@@ -303,7 +285,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                 {isMobile ? 'Spec' : 'Spectrum'}
               </button>
             </div>
-          </TourTooltip>
+          </TourHighlight>
         </div>
 
         {/* Right side menu */}
@@ -461,8 +443,6 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               visitorName={visitorName}
               visitorEmail={visitorEmail}
               tourStep={currentStep}
-              onTourNext={nextStep}
-              onTourClose={closeTour}
             />
             <Sidebar 
               category="independent" 
@@ -505,8 +485,6 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                 setShowSignIn(true);
               }}
               tourStep={currentStep}
-              onTourNext={nextStep}
-              onTourClose={closeTour}
             />
             
             <Sidebar 
@@ -601,9 +579,10 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
           setShowSignIn(true);
         }}
         tourStep={currentStep}
-        onTourNext={nextStep}
-        onTourClose={closeTour}
       />
+      
+      {/* Guided Tour Card */}
+      <TourCard />
     </div>
   );
 };
