@@ -5,7 +5,7 @@ import pinkFavicon from '@/assets/Pink_Favicon.png';
 interface SignUpGateProps {
   onJoin: (name: string, email: string) => void;
 }
-const MAILCHIMP_ACTION = "https://group.us14.list-manage.com/subscribe/post?u=8cebbb69cb233fee8e96a59fe&amp;id=de54a87f37";
+const MAILCHIMP_ACTION = "https://group.us12.list-manage.com/subscribe/post?u=8cebbb69cb233fee8e96a59fe&amp;id=de54a87f37&amp;f_id=005e9fe0f0";
 const SignUpGate: React.FC<SignUpGateProps> = ({
   onJoin
 }) => {
