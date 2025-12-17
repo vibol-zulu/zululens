@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { registerTier1Visitor, useAnalytics } from '@/hooks/useAnalytics';
+import pinkFavicon from '@/assets/Pink_Favicon.png';
 interface SignUpGateProps {
   onJoin: (name: string, email: string) => void;
 }
@@ -51,7 +52,8 @@ const SignUpGate: React.FC<SignUpGateProps> = ({
   }}>
       {/* Header */}
       <header className="flex items-center justify-between p-6 md:p-8 px-[12px] py-[12px]">
-        <nav className="flex flex-col gap-1">
+        <nav className="flex items-center gap-2">
+          <img src={pinkFavicon} alt="Zulu" className="h-6 w-6" />
           <a href="https://www.zulu.group" target="_blank" rel="noopener noreferrer" className="text-white/90 font-medium tracking-wide uppercase text-xs font-sans hover:text-white transition-colors">Home</a>
         </nav>
         
