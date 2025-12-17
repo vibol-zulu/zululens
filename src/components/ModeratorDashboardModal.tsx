@@ -2,6 +2,8 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
+  DialogHeader,
+  DialogTitle,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -1536,180 +1538,192 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
             setReviewAction(null);
           }
         }}>
-          <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-            <div className="space-y-4">
-              <h3 className="font-semibold text-lg">
+          <DialogContent className="max-w-6xl max-h-[85vh] p-0 overflow-hidden">
+            <DialogHeader className="p-6 pb-4 border-b">
+              <DialogTitle className="text-xl">
                 {reviewAction === 'approve' ? 'Approve' : 'Reject'} Channel Submission
-              </h3>
+              </DialogTitle>
+            </DialogHeader>
               
-              {channelToReview && (
-                <>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <Label className="text-muted-foreground">Channel Name</Label>
-                      <p className="font-medium">{channelToReview.name}</p>
-                    </div>
-                    <div>
-                      <Label className="text-muted-foreground">Category</Label>
-                      <p className="font-medium capitalize">{channelToReview.category}</p>
-                    </div>
-                    <div>
-                      <Label className="text-muted-foreground">Platform</Label>
-                      <p className="font-medium">{channelToReview.platform || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <Label className="text-muted-foreground">Content Type</Label>
-                      <p className="font-medium">{channelToReview.content_type || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <Label className="text-muted-foreground">Political Lean</Label>
-                      <p className="font-medium">{channelToReview.political_lean || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <Label className="text-muted-foreground">Country</Label>
-                      <p className="font-medium">{channelToReview.country}</p>
-                    </div>
+            {channelToReview && (
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                {/* Submission Details Table */}
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-1/3">Field</TableHead>
+                        <TableHead>Value</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground">Channel Name</TableCell>
+                        <TableCell className="font-semibold">{channelToReview.name}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground">Category</TableCell>
+                        <TableCell className="capitalize">{channelToReview.category}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground">Platform</TableCell>
+                        <TableCell>{channelToReview.platform || 'N/A'}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground">Content Type</TableCell>
+                        <TableCell>{channelToReview.content_type || 'N/A'}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground">Political Lean</TableCell>
+                        <TableCell>{channelToReview.political_lean || 'N/A'}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground">Country</TableCell>
+                        <TableCell>{channelToReview.country}</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* AI Audience Estimation Section */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-base font-semibold">AI Audience Estimation</h3>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => estimateAudience(channelToReview)}
+                      disabled={isEstimating}
+                    >
+                      {isEstimating ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Estimating...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4 mr-2" />
+                          Estimate Audience
+                        </>
+                      )}
+                    </Button>
                   </div>
 
-                  {/* AI Audience Estimation Section */}
-                  <div className="border-t pt-4 mt-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <Label className="text-muted-foreground font-medium">AI Audience Estimation</Label>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => estimateAudience(channelToReview)}
-                        disabled={isEstimating}
-                      >
-                        {isEstimating ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Estimating...
-                          </>
-                        ) : (
-                          <>
-                            <Sparkles className="h-4 w-4 mr-2" />
-                            Estimate Audience
-                          </>
-                        )}
-                      </Button>
-                    </div>
-
-                    {estimationResult && (
-                      <div className="bg-muted/50 rounded-lg p-4 space-y-3 text-sm">
-                        {/* Input Validation Section */}
-                        {estimationResult.inputValidation && (
-                          <div className="border-b pb-3">
-                            <Label className="text-xs text-muted-foreground font-medium">Input Validation</Label>
-                            <div className="mt-2 space-y-1 text-xs">
-                              <div className="flex items-center gap-2">
-                                <span className={estimationResult.inputValidation.categoryCorrect ? 'text-green-600' : 'text-amber-600'}>
-                                  {estimationResult.inputValidation.categoryCorrect ? '✓' : '⚠'}
-                                </span>
-                                <span>Category: {estimationResult.inputValidation.categoryCorrect ? 'Correct' : `Suggested: ${estimationResult.inputValidation.suggestedCategory}`}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className={estimationResult.inputValidation.platformCorrect ? 'text-green-600' : 'text-amber-600'}>
-                                  {estimationResult.inputValidation.platformCorrect ? '✓' : '⚠'}
-                                </span>
-                                <span>Platform: {estimationResult.inputValidation.platformCorrect ? 'Correct' : 'Review needed'}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className={estimationResult.inputValidation.contentTypeCorrect ? 'text-green-600' : 'text-amber-600'}>
-                                  {estimationResult.inputValidation.contentTypeCorrect ? '✓' : '⚠'}
-                                </span>
-                                <span>Content Type: {estimationResult.inputValidation.contentTypeCorrect ? 'Correct' : 'Review needed'}</span>
-                              </div>
-                              {estimationResult.inputValidation.validationNotes && (
-                                <p className="text-xs text-muted-foreground mt-2 italic">{estimationResult.inputValidation.validationNotes}</p>
-                              )}
+                  {estimationResult && (
+                    <div className="rounded-md border bg-muted/30 overflow-hidden">
+                      {/* Input Validation */}
+                      {estimationResult.inputValidation && (
+                        <div className="p-4 border-b">
+                          <h4 className="text-sm font-semibold mb-3">Input Validation</h4>
+                          <div className="grid grid-cols-3 gap-4">
+                            <div className="flex items-center gap-2">
+                              <span className={estimationResult.inputValidation.categoryCorrect ? 'text-green-600' : 'text-amber-600'}>
+                                {estimationResult.inputValidation.categoryCorrect ? '✓' : '⚠'}
+                              </span>
+                              <span className="text-sm">Category: {estimationResult.inputValidation.categoryCorrect ? 'Correct' : `Suggested: ${estimationResult.inputValidation.suggestedCategory}`}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className={estimationResult.inputValidation.platformCorrect ? 'text-green-600' : 'text-amber-600'}>
+                                {estimationResult.inputValidation.platformCorrect ? '✓' : '⚠'}
+                              </span>
+                              <span className="text-sm">Platform: {estimationResult.inputValidation.platformCorrect ? 'Correct' : 'Review needed'}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className={estimationResult.inputValidation.contentTypeCorrect ? 'text-green-600' : 'text-amber-600'}>
+                                {estimationResult.inputValidation.contentTypeCorrect ? '✓' : '⚠'}
+                              </span>
+                              <span className="text-sm">Content Type: {estimationResult.inputValidation.contentTypeCorrect ? 'Correct' : 'Review needed'}</span>
                             </div>
                           </div>
-                        )}
-
-                        {/* Political Lean Section */}
-                        {estimationResult.politicalLean && (
-                          <div className="border-b pb-3">
-                            <Label className="text-xs text-muted-foreground">AI-Determined Political Lean</Label>
-                            <p className="font-bold text-primary mt-1">{estimationResult.politicalLean}</p>
-                            {estimationResult.politicalLeanJustification && (
-                              <p className="text-xs text-muted-foreground mt-1">{estimationResult.politicalLeanJustification}</p>
-                            )}
-                          </div>
-                        )}
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <Label className="text-xs text-muted-foreground">Cross-Platform Audience</Label>
-                            <p className="text-lg font-bold">{estimationResult.crossPlatformAudience?.toFixed(2) || '0.00'}M</p>
-                          </div>
-                          <div>
-                            <Label className="text-xs text-muted-foreground">Deduplicated Audience</Label>
-                            <p className="text-lg font-bold text-primary">{estimationResult.deduplicatedAudience?.toFixed(2) || '0.00'}M</p>
-                          </div>
+                          {estimationResult.inputValidation.validationNotes && (
+                            <p className="text-sm text-muted-foreground mt-3 italic">{estimationResult.inputValidation.validationNotes}</p>
+                          )}
                         </div>
-                        
-                        {estimationResult.suggestedStartDate && (
-                          <div>
-                            <Label className="text-xs text-muted-foreground">Suggested Start Date</Label>
-                            <p className="font-medium">{estimationResult.suggestedStartDate}</p>
-                          </div>
-                        )}
-                        
-                        <div>
-                          <Label className="text-xs text-muted-foreground">Reasoning</Label>
-                          <p className="text-xs text-muted-foreground mt-1">{estimationResult.reasoning}</p>
-                        </div>
-                        
-                        {estimationResult.comparableChannels?.length > 0 && (
-                          <div>
-                            <Label className="text-xs text-muted-foreground">Comparable Channels</Label>
-                            <p className="text-xs">{estimationResult.comparableChannels.join(', ')}</p>
-                          </div>
-                        )}
-                        
+                      )}
+
+                      {/* Estimation Results Table */}
+                      <Table>
+                        <TableBody>
+                          {estimationResult.politicalLean && (
+                            <TableRow>
+                              <TableCell className="font-medium text-muted-foreground w-1/3">Political Lean</TableCell>
+                              <TableCell>
+                                <span className="font-semibold text-primary">{estimationResult.politicalLean}</span>
+                                {estimationResult.politicalLeanJustification && (
+                                  <p className="text-sm text-muted-foreground mt-1">{estimationResult.politicalLeanJustification}</p>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          )}
+                          <TableRow>
+                            <TableCell className="font-medium text-muted-foreground">Cross-Platform Audience</TableCell>
+                            <TableCell className="text-lg font-bold">{estimationResult.crossPlatformAudience?.toFixed(2) || '0.00'}M</TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-medium text-muted-foreground">Deduplicated Audience</TableCell>
+                            <TableCell className="text-lg font-bold text-primary">{estimationResult.deduplicatedAudience?.toFixed(2) || '0.00'}M</TableCell>
+                          </TableRow>
+                          {estimationResult.suggestedStartDate && (
+                            <TableRow>
+                              <TableCell className="font-medium text-muted-foreground">Suggested Start Date</TableCell>
+                              <TableCell className="font-medium">{estimationResult.suggestedStartDate}</TableCell>
+                            </TableRow>
+                          )}
+                          <TableRow>
+                            <TableCell className="font-medium text-muted-foreground">Reasoning</TableCell>
+                            <TableCell className="text-sm text-muted-foreground">{estimationResult.reasoning}</TableCell>
+                          </TableRow>
+                          {estimationResult.comparableChannels?.length > 0 && (
+                            <TableRow>
+                              <TableCell className="font-medium text-muted-foreground">Comparable Channels</TableCell>
+                              <TableCell className="text-sm">{estimationResult.comparableChannels.join(', ')}</TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                      
+                      <div className="p-4 border-t bg-background">
                         <Button 
-                          size="sm" 
                           onClick={applyEstimation}
-                          className="w-full mt-2"
+                          className="w-full"
                         >
                           Apply Estimation ({estimationResult.deduplicatedAudience?.toFixed(2) || '0.00'}M{estimationResult.politicalLean ? `, ${estimationResult.politicalLean}` : ''})
                         </Button>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
+                </div>
 
-                  <div className="flex gap-3 pt-4 border-t">
+                <div className="flex gap-3 pt-4 border-t">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setShowReviewDialog(false);
+                      setEstimationResult(null);
+                    }}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                  {reviewAction === 'reject' ? (
                     <Button 
-                      variant="outline" 
-                      onClick={() => {
-                        setShowReviewDialog(false);
-                        setEstimationResult(null);
-                      }}
+                      variant="destructive"
+                      onClick={confirmReview}
                       className="flex-1"
                     >
-                      Cancel
+                      Reject
                     </Button>
-                    {reviewAction === 'reject' ? (
-                      <Button 
-                        variant="destructive"
-                        onClick={confirmReview}
-                        className="flex-1"
-                      >
-                        Reject
-                      </Button>
-                    ) : (
-                      <Button 
-                        onClick={confirmReview}
-                        className="flex-1 bg-green-600 hover:bg-green-700"
-                      >
-                        Approve
-                      </Button>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
+                  ) : (
+                    <Button 
+                      onClick={confirmReview}
+                      className="flex-1 bg-green-600 hover:bg-green-700"
+                    >
+                      Approve
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
 
