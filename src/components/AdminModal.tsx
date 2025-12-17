@@ -57,6 +57,7 @@ import { COUNTRIES } from '@/data/mediaData';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 
 interface Channel {
   id: string;
@@ -305,6 +306,8 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
 
   // Settings state
   const [mailchimpUrl, setMailchimpUrl] = useState('');
+  const [audienceSystemPrompt, setAudienceSystemPrompt] = useState('');
+  const [audienceUserPrompt, setAudienceUserPrompt] = useState('');
   const [settingsLoading, setSettingsLoading] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
 
@@ -346,13 +349,23 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
     try {
       const { data, error } = await supabase
         .from('app_settings')
-        .select('*')
-        .eq('key', 'mailchimp_url')
-        .single();
+        .select('*');
 
-      if (error && error.code !== 'PGRST116') throw error;
-      if (data) {
-        setMailchimpUrl(data.value);
+      if (error) throw error;
+      
+      const settingsMap: Record<string, string> = {};
+      data?.forEach(item => {
+        settingsMap[item.key] = item.value;
+      });
+      
+      if (settingsMap['mailchimp_url']) {
+        setMailchimpUrl(settingsMap['mailchimp_url']);
+      }
+      if (settingsMap['audience_system_prompt']) {
+        setAudienceSystemPrompt(settingsMap['audience_system_prompt']);
+      }
+      if (settingsMap['audience_user_prompt']) {
+        setAudienceUserPrompt(settingsMap['audience_user_prompt']);
       }
     } catch (error) {
       console.error('Error fetching settings:', error);
@@ -365,16 +378,31 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   const handleSaveSettings = async () => {
     setSavingSettings(true);
     try {
-      const { error } = await supabase
-        .from('app_settings')
-        .upsert({ 
-          key: 'mailchimp_url', 
-          value: mailchimpUrl,
-          updated_at: new Date().toISOString(),
-          updated_by: user?.id 
-        }, { onConflict: 'key' });
+      const settingsToSave = [
+        { key: 'mailchimp_url', value: mailchimpUrl },
+      ];
+      
+      // Only save prompts if they have content
+      if (audienceSystemPrompt.trim()) {
+        settingsToSave.push({ key: 'audience_system_prompt', value: audienceSystemPrompt });
+      }
+      if (audienceUserPrompt.trim()) {
+        settingsToSave.push({ key: 'audience_user_prompt', value: audienceUserPrompt });
+      }
+      
+      for (const setting of settingsToSave) {
+        const { error } = await supabase
+          .from('app_settings')
+          .upsert({ 
+            key: setting.key, 
+            value: setting.value,
+            updated_at: new Date().toISOString(),
+            updated_by: user?.id 
+          }, { onConflict: 'key' });
 
-      if (error) throw error;
+        if (error) throw error;
+      }
+      
       toast({ title: 'Settings saved successfully' });
     } catch (error) {
       console.error('Error saving settings:', error);
@@ -2652,12 +2680,12 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
 
               {/* Settings Tab */}
               <TabsContent value="settings" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
-                <div className="flex-1 overflow-auto p-4">
+                <div className="flex-1 overflow-auto p-4 space-y-4">
                   <Card>
                     <CardHeader>
                       <CardTitle className="text-lg">Integrations</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="mailchimp-url">Mailchimp Form URL</Label>
                         <Input
@@ -2671,20 +2699,58 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                           The Mailchimp form action URL used in the sign-up gate
                         </p>
                       </div>
-                      <Button 
-                        onClick={handleSaveSettings} 
-                        disabled={savingSettings}
-                        className="gap-2"
-                      >
-                        {savingSettings ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Save className="h-4 w-4" />
-                        )}
-                        Save Settings
-                      </Button>
                     </CardContent>
                   </Card>
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Sparkles className="h-4 w-4" />
+                        AI Audience Estimation
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="system-prompt">System Prompt</Label>
+                        <Textarea
+                          id="system-prompt"
+                          value={audienceSystemPrompt}
+                          onChange={(e) => setAudienceSystemPrompt(e.target.value)}
+                          placeholder="You are an expert media analyst specializing in audience measurement..."
+                          className="font-mono text-xs min-h-[150px]"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Defines the AI's role and expertise. Leave empty to use default.
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="user-prompt">User Prompt Template</Label>
+                        <Textarea
+                          id="user-prompt"
+                          value={audienceUserPrompt}
+                          onChange={(e) => setAudienceUserPrompt(e.target.value)}
+                          placeholder="Analyze this media channel submission and estimate audience metrics..."
+                          className="font-mono text-xs min-h-[200px]"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Template for analyzing channels. Use placeholders: {'{channel.name}'}, {'{channel.platform}'}, {'{channel.contentType}'}, {'{channel.politicalLean}'}, {'{channel.category}'}, {'{channel.country}'}. Leave empty to use default.
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Button 
+                    onClick={handleSaveSettings} 
+                    disabled={savingSettings}
+                    className="gap-2"
+                  >
+                    {savingSettings ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Save className="h-4 w-4" />
+                    )}
+                    Save Settings
+                  </Button>
                 </div>
               </TabsContent>
             </Tabs>

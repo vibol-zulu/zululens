@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const allowedOrigins = [
   'https://lovableproject.com',
@@ -31,6 +32,57 @@ interface ChannelSubmission {
   country: string;
 }
 
+const DEFAULT_SYSTEM_PROMPT = `You are an expert media analyst specializing in audience measurement and cross-platform reach estimation. Your task is to estimate monthly audience figures for media channels based on their platform, content type, and market positioning.
+
+You have deep knowledge of:
+- Platform-specific audience benchmarks (YouTube, Twitter/X, TikTok, Facebook, Instagram, podcasts, cable TV, print/digital)
+- Cross-platform audience overlap patterns
+- Content type performance benchmarks (news, commentary, podcasts, etc.)
+- Political media landscape and audience segmentation
+- Deduplication methodologies for cross-platform reach
+
+Use industry-standard audience measurement approaches and historical comparables to provide realistic estimates.`;
+
+const DEFAULT_USER_PROMPT = `Analyze this media channel submission and estimate audience metrics:
+
+**Channel Name:** {channel.name}
+**Main Platform:** {channel.platform}
+**Content Type:** {channel.contentType}
+**Political Lean:** {channel.politicalLean}
+**Category:** {channel.category}
+**Country:** {channel.country}
+
+Based on this information, provide:
+
+1. **Estimated Cross-Platform Monthly Audience (in millions)** - The total unique audience reach across major platforms (YouTube, X/Twitter, TikTok, Facebook, Instagram, podcast apps, website, etc.)
+
+2. **Estimated Deduplicated Monthly Audience (in millions)** - Adjusted to remove estimated audience overlap based on the main platform, content type, and typical cross-platform reach patterns.
+
+3. **Reasoning** (2-4 sentences) - Explain your estimation methodology, including engagement assumptions, platform overlap factors, and key comparison points.
+
+4. **Comparable Channels** - List 2-4 similar channels used as benchmarks for this estimate.
+
+5. **Suggested Start Date** - Estimate when this channel was founded or started operations (format: MM/YYYY or "Founded YYYY").
+
+Format your response as JSON with this structure:
+{
+  "crossPlatformAudience": number,
+  "deduplicatedAudience": number,
+  "reasoning": "string",
+  "comparableChannels": ["channel1", "channel2"],
+  "suggestedStartDate": "string"
+}`;
+
+function replaceChannelPlaceholders(template: string, channel: ChannelSubmission): string {
+  return template
+    .replace(/\{channel\.name\}/g, channel.name)
+    .replace(/\{channel\.platform\}/g, channel.platform)
+    .replace(/\{channel\.contentType\}/g, channel.contentType)
+    .replace(/\{channel\.politicalLean\}/g, channel.politicalLean)
+    .replace(/\{channel\.category\}/g, channel.category)
+    .replace(/\{channel\.country\}/g, channel.country);
+}
+
 serve(async (req) => {
   const origin = req.headers.get('origin');
   const corsHeaders = getCorsHeaders(origin);
@@ -58,46 +110,38 @@ serve(async (req) => {
       );
     }
 
-    const systemPrompt = `You are an expert media analyst specializing in audience measurement and cross-platform reach estimation. Your task is to estimate monthly audience figures for media channels based on their platform, content type, and market positioning.
+    // Fetch custom prompts from app_settings
+    let systemPrompt = DEFAULT_SYSTEM_PROMPT;
+    let userPromptTemplate = DEFAULT_USER_PROMPT;
 
-You have deep knowledge of:
-- Platform-specific audience benchmarks (YouTube, Twitter/X, TikTok, Facebook, Instagram, podcasts, cable TV, print/digital)
-- Cross-platform audience overlap patterns
-- Content type performance benchmarks (news, commentary, podcasts, etc.)
-- Political media landscape and audience segmentation
-- Deduplication methodologies for cross-platform reach
+    try {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+      const supabase = createClient(supabaseUrl, supabaseKey);
 
-Use industry-standard audience measurement approaches and historical comparables to provide realistic estimates.`;
+      const { data: settings } = await supabase
+        .from('app_settings')
+        .select('key, value')
+        .in('key', ['audience_system_prompt', 'audience_user_prompt']);
 
-    const userPrompt = `Analyze this media channel submission and estimate audience metrics:
+      if (settings) {
+        for (const setting of settings) {
+          if (setting.key === 'audience_system_prompt' && setting.value?.trim()) {
+            systemPrompt = setting.value;
+            console.log('Using custom system prompt from settings');
+          }
+          if (setting.key === 'audience_user_prompt' && setting.value?.trim()) {
+            userPromptTemplate = setting.value;
+            console.log('Using custom user prompt from settings');
+          }
+        }
+      }
+    } catch (settingsError) {
+      console.log('Could not fetch custom prompts, using defaults:', settingsError);
+    }
 
-**Channel Name:** ${channel.name}
-**Main Platform:** ${channel.platform}
-**Content Type:** ${channel.contentType}
-**Political Lean:** ${channel.politicalLean}
-**Category:** ${channel.category}
-**Country:** ${channel.country}
-
-Based on this information, provide:
-
-1. **Estimated Cross-Platform Monthly Audience (in millions)** - The total unique audience reach across major platforms (YouTube, X/Twitter, TikTok, Facebook, Instagram, podcast apps, website, etc.)
-
-2. **Estimated Deduplicated Monthly Audience (in millions)** - Adjusted to remove estimated audience overlap based on the main platform, content type, and typical cross-platform reach patterns.
-
-3. **Reasoning** (2-4 sentences) - Explain your estimation methodology, including engagement assumptions, platform overlap factors, and key comparison points.
-
-4. **Comparable Channels** - List 2-4 similar channels used as benchmarks for this estimate.
-
-5. **Suggested Start Date** - Estimate when this channel was founded or started operations (format: MM/YYYY or "Founded YYYY").
-
-Format your response as JSON with this structure:
-{
-  "crossPlatformAudience": number,
-  "deduplicatedAudience": number,
-  "reasoning": "string",
-  "comparableChannels": ["channel1", "channel2"],
-  "suggestedStartDate": "string"
-}`;
+    // Replace placeholders in user prompt
+    const userPrompt = replaceChannelPlaceholders(userPromptTemplate, channel);
 
     console.log('Calling Lovable AI for channel:', channel.name);
 
