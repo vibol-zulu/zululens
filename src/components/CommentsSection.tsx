@@ -446,23 +446,23 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
                       };
                       
                       return (
-                        <div key={item.id} className="bg-muted/30 rounded-lg overflow-hidden border border-border/50">
+                        <div key={item.id} className="bg-muted/30 rounded-lg overflow-hidden border border-border/50 flex">
                           {item.image_url && (
                             <img 
                               src={item.image_url} 
                               alt={item.title}
-                              className="w-full h-24 object-cover"
+                              className="w-1/3 object-cover flex-shrink-0"
                               onError={(e) => (e.currentTarget.style.display = 'none')}
                             />
                           )}
-                          <div className="p-3">
+                          <div className="p-3 flex-1">
                             <span className={`text-xs font-medium ${getCategoryStyle(item.category)}`}>
                               {getCategoryLabel(item.category)}
                             </span>
                             <h4 className="font-medium text-sm mt-1">{item.title}</h4>
                             <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{item.content}</p>
-                            <div className="flex items-center justify-between mt-2">
-                              <span className="text-xs text-muted-foreground">
+                            <div className="mt-2">
+                              <span className="text-xs text-muted-foreground block">
                                 {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
                               </span>
                               {item.source_url && (
