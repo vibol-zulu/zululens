@@ -171,46 +171,17 @@ const ContributorModal: React.FC<ContributorModalProps> = ({
           `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes,resizable=yes`
         );
         
-        // Listen for message from popup (callback URL) and exchange in THIS window
-        const handleMessage = (event: MessageEvent) => {
-          if (event.origin !== window.location.origin) return;
-
-          const payload = event.data as any;
-          if (payload?.type === 'oauth-callback' && typeof payload.url === 'string') {
-            window.removeEventListener('message', handleMessage);
-            clearInterval(pollTimer);
-
-            supabase.auth.exchangeCodeForSession(payload.url)
-              .then(async () => {
-                const { data: { session } } = await supabase.auth.getSession();
-                if (!session) {
-                  toast.error('Signed in, but your browser blocks sign-in inside the embedded view. Please open the app in a new tab to use your account.');
-                  return;
-                }
-                onClose();
-                window.location.reload();
-              })
-              .catch((e) => {
-                console.error('OAuth exchange failed in opener:', e);
-                toast.error('Could not complete Google sign-in.');
-              })
-              .finally(() => {
-                setIsGoogleLoading(false);
-              });
-          }
-        };
-        window.addEventListener('message', handleMessage);
-        
-        // Poll for popup close as fallback
+        // Index.tsx has a global listener that receives the popup callback via postMessage
+        // and completes the code exchange in the main window. Here we only wait.
         const pollTimer = setInterval(async () => {
           if (popup?.closed) {
             clearInterval(pollTimer);
-            window.removeEventListener('message', handleMessage);
-            // Check if user is now authenticated
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
               onClose();
               window.location.reload();
+            } else {
+              toast.error('Sign in not completed. If you finished Google sign-in, please try again (and allow popups).');
             }
             setIsGoogleLoading(false);
           }
