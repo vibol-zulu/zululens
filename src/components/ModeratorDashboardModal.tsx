@@ -471,6 +471,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
       let query = supabase
         .from('user_channels')
         .select('*')
+        .eq('status', 'approved')
         .order('created_at', { ascending: false });
       
       if (allChannelsCountry !== 'all') {

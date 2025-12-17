@@ -492,7 +492,8 @@ Format your response as JSON with this structure:
         .from('user_channels')
         .select('*')
         .eq('country', selectedCountry)
-        .eq('year', selectedYear);
+        .eq('year', selectedYear)
+        .eq('status', 'approved');
       
       if (selectedCategory !== 'all') {
         query = query.eq('category', selectedCategory);
