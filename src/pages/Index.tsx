@@ -25,8 +25,10 @@ const Index = () => {
       setIsOAuthCallback(true);
       supabase.auth.exchangeCodeForSession(payload.url)
         .then(async () => {
-          // Ensure session is persisted before we render
-          await supabase.auth.getSession();
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session) {
+            throw new Error('No session after exchange');
+          }
           window.location.reload();
         })
         .catch((e) => {

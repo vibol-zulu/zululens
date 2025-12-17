@@ -137,6 +137,19 @@ const SignInModal: React.FC<SignInModalProps> = ({ open, onClose, defaultTab = '
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     try {
+      // Safari/embedded contexts may require explicit storage access
+      try {
+        const doc = document as any;
+        if (typeof doc?.hasStorageAccess === 'function' && typeof doc?.requestStorageAccess === 'function') {
+          const hasAccess = await doc.hasStorageAccess();
+          if (!hasAccess) {
+            await doc.requestStorageAccess();
+          }
+        }
+      } catch {
+        // ignore
+      }
+
       // Use popup-based OAuth for iframe compatibility
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -164,6 +177,16 @@ const SignInModal: React.FC<SignInModalProps> = ({ open, onClose, defaultTab = '
           'google-oauth',
           `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes,resizable=yes`
         );
+
+        if (!popup) {
+          toast({
+            title: 'Popup blocked',
+            description: 'Please allow popups to sign in with Google.',
+            variant: 'destructive',
+          });
+          setIsGoogleLoading(false);
+          return;
+        }
         
         // Listen for message from popup (callback URL) and exchange in THIS window
         const handleMessage = (event: MessageEvent) => {
@@ -176,7 +199,11 @@ const SignInModal: React.FC<SignInModalProps> = ({ open, onClose, defaultTab = '
 
             // Exchange in opener context (works in iframes with partitioned storage)
             supabase.auth.exchangeCodeForSession(payload.url)
-              .then(() => {
+              .then(async () => {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                  throw new Error('No session after exchange');
+                }
                 onClose();
                 window.location.reload();
               })
