@@ -8,7 +8,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
-import { TourTooltip, TourStep } from '@/components/GuidedTour';
+import { TourHighlight, TourStep } from '@/components/GuidedTour';
 
 interface NewsItem {
   id: string;
@@ -24,8 +24,6 @@ interface CommentsSectionProps {
   country: string;
   onSignUpClick?: () => void;
   tourStep?: TourStep;
-  onTourNext?: () => void;
-  onTourClose?: () => void;
 }
 
 interface CommentItemProps {
@@ -157,7 +155,7 @@ const PLACEHOLDER_COMMENTS = [
   { username: "David_R", content: "Impressive work. The circle packing approach works really well here." },
 ];
 
-const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClick, tourStep, onTourNext, onTourClose }) => {
+const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClick, tourStep }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
@@ -266,13 +264,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t shadow-lg">
       {/* Toggle Header */}
-      <TourTooltip
-        step="comments-news"
-        currentStep={tourStep || null}
-        onNext={onTourNext || (() => {})}
-        onClose={onTourClose || (() => {})}
-        position="top"
-      >
+      <TourHighlight step="comments-news" currentStep={tourStep || null}>
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className={`w-full px-4 hover:bg-muted/50 transition-colors ${
@@ -322,7 +314,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
             )}
           </div>
         </button>
-      </TourTooltip>
+      </TourHighlight>
 
       {/* Expanded Content */}
       {isExpanded && (

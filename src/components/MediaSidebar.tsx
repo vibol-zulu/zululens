@@ -11,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import AddChannelModal from './AddChannelModal';
 import ContributorModal from './ContributorModal';
 import { useAuth } from '@/hooks/useAuth';
-import { TourTooltip, TourStep } from '@/components/GuidedTour';
+import { TourHighlight, TourStep } from '@/components/GuidedTour';
 // The Big 6 are the corporate channels from 2000
 const BIG_6_NAMES = [
   'FOX News',
@@ -45,8 +45,6 @@ interface SidebarProps {
   visitorEmail?: string;
   onSignUpClick?: () => void;
   tourStep?: TourStep;
-  onTourNext?: () => void;
-  onTourClose?: () => void;
 }
 
 const SidebarToggle: React.FC<{ side: 'left' | 'right'; isOpen: boolean; onClick: () => void }> = ({ side, isOpen, onClick }) => (
@@ -73,10 +71,8 @@ interface BrandItemProps {
   isSelected: boolean;
   onToggle: (id: string) => void;
   isMobile?: boolean;
-  showTourTooltip?: boolean;
+  showTourHighlight?: boolean;
   tourStep?: TourStep;
-  onTourNext?: () => void;
-  onTourClose?: () => void;
 }
 
 const BrandItem: React.FC<BrandItemProps> = ({ 
@@ -84,10 +80,8 @@ const BrandItem: React.FC<BrandItemProps> = ({
   isSelected, 
   onToggle, 
   isMobile, 
-  showTourTooltip,
-  tourStep,
-  onTourNext,
-  onTourClose
+  showTourHighlight,
+  tourStep
 }) => {
   const content = (
     <div 
@@ -116,17 +110,11 @@ const BrandItem: React.FC<BrandItemProps> = ({
     </div>
   );
 
-  if (showTourTooltip && tourStep && onTourNext && onTourClose) {
+  if (showTourHighlight && tourStep) {
     return (
-      <TourTooltip
-        step="channel-item"
-        currentStep={tourStep}
-        onNext={onTourNext}
-        onClose={onTourClose}
-        position={isMobile ? "bottom" : "right"}
-      >
+      <TourHighlight step="channel-item" currentStep={tourStep}>
         {content}
-      </TourTooltip>
+      </TourHighlight>
     );
   }
 
@@ -142,8 +130,6 @@ interface CollapsibleSectionProps {
   isMobile?: boolean;
   showFirstItemTour?: boolean;
   tourStep?: TourStep;
-  onTourNext?: () => void;
-  onTourClose?: () => void;
 }
 
 const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
@@ -155,8 +141,6 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   isMobile = false,
   showFirstItemTour = false,
   tourStep,
-  onTourNext,
-  onTourClose,
 }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const sorted = [...brands].sort((a, b) => b.valueMillions - a.valueMillions);
@@ -178,10 +162,8 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
               isSelected={selectedIds.has(b.id)} 
               onToggle={onToggle}
               isMobile={isMobile}
-              showTourTooltip={showFirstItemTour && index === 0}
+              showTourHighlight={showFirstItemTour && index === 0}
               tourStep={tourStep}
-              onTourNext={onTourNext}
-              onTourClose={onTourClose}
             />
           ))}
         </div>
@@ -206,9 +188,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   visitorName = '',
   visitorEmail = '',
   onSignUpClick,
-  tourStep,
-  onTourNext,
-  onTourClose
+  tourStep
 }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showContributorModal, setShowContributorModal] = useState(false);
@@ -279,15 +259,9 @@ const Sidebar: React.FC<SidebarProps> = ({
             {category}
           </h3>
           <div className="flex gap-1 mb-2">
-            {side === 'left' && tourStep && onTourNext && onTourClose ? (
+            {side === 'left' && tourStep ? (
               <>
-                <TourTooltip
-                  step="select-all"
-                  currentStep={tourStep}
-                  onNext={onTourNext}
-                  onClose={onTourClose}
-                  position="bottom"
-                >
+                <TourHighlight step="select-all" currentStep={tourStep}>
                   <Button 
                     variant="outline" 
                     size="sm" 
@@ -298,14 +272,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                   >
                     {allSelected && sorted.length > 0 ? 'Deselect' : 'Select All'}
                   </Button>
-                </TourTooltip>
-                <TourTooltip
-                  step="add-button"
-                  currentStep={tourStep}
-                  onNext={onTourNext}
-                  onClose={onTourClose}
-                  position="bottom"
-                >
+                </TourHighlight>
+                <TourHighlight step="add-button" currentStep={tourStep}>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -323,7 +291,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
-                </TourTooltip>
+                </TourHighlight>
               </>
             ) : (
               <>
@@ -385,8 +353,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                   isMobile={true}
                   showFirstItemTour={side === 'left' && !!tourStep}
                   tourStep={tourStep}
-                  onTourNext={onTourNext}
-                  onTourClose={onTourClose}
                 />
                 <CollapsibleSection 
                   title="Others" 
@@ -457,15 +423,9 @@ const Sidebar: React.FC<SidebarProps> = ({
           {category}
         </h3>
         <div className="flex gap-1.5 mb-2">
-          {side === 'left' && tourStep && onTourNext && onTourClose ? (
+          {side === 'left' && tourStep ? (
             <>
-              <TourTooltip
-                step="select-all"
-                currentStep={tourStep}
-                onNext={onTourNext}
-                onClose={onTourClose}
-                position="right"
-              >
+              <TourHighlight step="select-all" currentStep={tourStep}>
                 <button 
                   onClick={() => onToggleAll(category)}
                   disabled={sorted.length === 0}
@@ -474,14 +434,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                 >
                   {allSelected && sorted.length > 0 ? 'Deselect All' : 'Select All'}
                 </button>
-              </TourTooltip>
-              <TourTooltip
-                step="add-button"
-                currentStep={tourStep}
-                onNext={onTourNext}
-                onClose={onTourClose}
-                position="right"
-              >
+              </TourHighlight>
+              <TourHighlight step="add-button" currentStep={tourStep}>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -497,7 +451,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-              </TourTooltip>
+              </TourHighlight>
             </>
           ) : (
             <>
@@ -554,8 +508,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                 onToggle={onToggle}
                 showFirstItemTour={side === 'left' && !!tourStep}
                 tourStep={tourStep}
-                onTourNext={onTourNext}
-                onTourClose={onTourClose}
               />
               <CollapsibleSection 
                 title="Others" 
