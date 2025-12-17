@@ -3,8 +3,24 @@ import * as React from "react";
 const MOBILE_BREAKPOINT = 768;
 const TABLET_BREAKPOINT = 1024;
 
+// Helper to get initial value (works in browser only)
+const getInitialMobile = () => {
+  if (typeof window !== 'undefined') {
+    return window.innerWidth < MOBILE_BREAKPOINT;
+  }
+  return false;
+};
+
+const getInitialTablet = () => {
+  if (typeof window !== 'undefined') {
+    const width = window.innerWidth;
+    return width >= MOBILE_BREAKPOINT && width < TABLET_BREAKPOINT;
+  }
+  return false;
+};
+
 export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined);
+  const [isMobile, setIsMobile] = React.useState<boolean>(getInitialMobile);
 
   React.useEffect(() => {
     const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
@@ -12,15 +28,16 @@ export function useIsMobile() {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
     };
     mql.addEventListener("change", onChange);
+    // Set initial value in case it wasn't set correctly
     setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
     return () => mql.removeEventListener("change", onChange);
   }, []);
 
-  return !!isMobile;
+  return isMobile;
 }
 
 export function useIsTablet() {
-  const [isTablet, setIsTablet] = React.useState<boolean | undefined>(undefined);
+  const [isTablet, setIsTablet] = React.useState<boolean>(getInitialTablet);
 
   React.useEffect(() => {
     const onChange = () => {
@@ -33,5 +50,5 @@ export function useIsTablet() {
     return () => mql.removeEventListener("change", onChange);
   }, []);
 
-  return !!isTablet;
+  return isTablet;
 }
