@@ -214,11 +214,12 @@ const GuidedTourCard: React.FC<GuidedTourCardProps> = ({
   );
 };
 
-export const useTour = () => {
+export const useTour = (tourEnabled: boolean = false) => {
   const [currentStep, setCurrentStep] = useState<TourStep>(null);
   const [dontShowAgain, setDontShowAgain] = useState(false);
 
   const startTour = () => {
+    if (!tourEnabled) return;
     const dismissed = localStorage.getItem(TOUR_STORAGE_KEY);
     if (dismissed === 'true') return;
     setCurrentStep('select-all');

@@ -401,6 +401,7 @@ Format your response as JSON with this structure:
 }`;
 
   const [mailchimpUrl, setMailchimpUrl] = useState('');
+  const [guidedTourEnabled, setGuidedTourEnabled] = useState(false);
   const [audienceSystemPrompt, setAudienceSystemPrompt] = useState(DEFAULT_SYSTEM_PROMPT);
   const [audienceUserPrompt, setAudienceUserPrompt] = useState(DEFAULT_USER_PROMPT);
   const [settingsLoading, setSettingsLoading] = useState(false);
@@ -456,6 +457,9 @@ Format your response as JSON with this structure:
       if (settingsMap['mailchimp_url']) {
         setMailchimpUrl(settingsMap['mailchimp_url']);
       }
+      if (settingsMap['guided_tour_enabled'] !== undefined) {
+        setGuidedTourEnabled(settingsMap['guided_tour_enabled'] === 'true');
+      }
       if (settingsMap['audience_system_prompt']) {
         setAudienceSystemPrompt(settingsMap['audience_system_prompt']);
       }
@@ -475,6 +479,7 @@ Format your response as JSON with this structure:
     try {
       const settingsToSave = [
         { key: 'mailchimp_url', value: mailchimpUrl },
+        { key: 'guided_tour_enabled', value: guidedTourEnabled.toString() },
       ];
       
       // Only save prompts if they have content
@@ -2957,6 +2962,27 @@ Format your response as JSON with this structure:
                         <p className="text-xs text-muted-foreground">
                           The Mailchimp form action URL used in the sign-up gate
                         </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Features</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label htmlFor="guided-tour">Guided Tour</Label>
+                          <p className="text-xs text-muted-foreground">
+                            Show the guided tour for new visitors
+                          </p>
+                        </div>
+                        <Checkbox
+                          id="guided-tour"
+                          checked={guidedTourEnabled}
+                          onCheckedChange={(checked) => setGuidedTourEnabled(checked === true)}
+                        />
                       </div>
                     </CardContent>
                   </Card>
