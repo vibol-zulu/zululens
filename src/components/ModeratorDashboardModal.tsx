@@ -60,9 +60,9 @@ import {
   Flag,
   Pencil,
   ChevronDown,
-  Bell,
-  Sparkles
+  Bell
 } from 'lucide-react';
+import perplexityLogo from '@/assets/perplexity-logo.svg';
 import NotificationsTab from '@/components/NotificationsTab';
 
 interface ChannelEntry {
@@ -1595,19 +1595,18 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                   <div className="flex items-center justify-between">
                     <h3 className="text-base font-semibold">AI Audience Estimation</h3>
                     <Button
-                      size="sm"
-                      variant="outline"
                       onClick={() => estimateAudience(channelToReview)}
                       disabled={isEstimating}
+                      className="h-10 px-4 font-semibold"
                     >
                       {isEstimating ? (
                         <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          <Loader2 className="h-5 w-5 mr-2 animate-spin" />
                           Estimating...
                         </>
                       ) : (
                         <>
-                          <Sparkles className="h-4 w-4 mr-2" />
+                          <img src={perplexityLogo} alt="Perplexity" className="h-5 w-5 mr-2" />
                           Estimate Audience
                         </>
                       )}
