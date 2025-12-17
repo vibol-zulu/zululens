@@ -109,7 +109,7 @@ US media 2000 - 2025
 
       {/* Footer */}
       <footer className="p-6 md:p-8 flex-col flex items-start justify-between px-[12px] py-[12px]">
-        <div className="text-white/50 text-[10px] font-mono leading-relaxed max-w-xs">​ 
+        <div className="text-white/50 text-[10px] font-sans  leading-relaxed max-w-xs">​ 
         <br />
           ​<br />
           © 2026 Zulu Group Ltd. All rights reserved.    
