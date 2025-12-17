@@ -146,6 +146,8 @@ interface NewsItem {
   is_published: boolean;
   created_at: string;
   updated_at: string;
+  source_url?: string;
+  image_url?: string;
 }
 
 interface AdminModalProps {
@@ -267,8 +269,11 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
     title: '',
     content: '',
     category: 'update',
-    is_published: true
+    is_published: true,
+    source_url: '',
+    image_url: ''
   });
+  const [fetchingArticle, setFetchingArticle] = useState(false);
 
   // Create contributor state
   const [showCreateUserDialog, setShowCreateUserDialog] = useState(false);
@@ -764,6 +769,41 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
     }
   };
 
+  // Fetch article content from URL
+  const fetchArticle = async () => {
+    if (!newsFormData.source_url) {
+      toast({ title: 'Please enter a URL', variant: 'destructive' });
+      return;
+    }
+
+    setFetchingArticle(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-article', {
+        body: { url: newsFormData.source_url }
+      });
+
+      if (error) throw error;
+
+      if (data.success && data.data) {
+        setNewsFormData(prev => ({
+          ...prev,
+          title: data.data.title || prev.title,
+          content: data.data.content || data.data.description || prev.content,
+          image_url: data.data.image_url || prev.image_url,
+          source_url: data.data.source_url || prev.source_url
+        }));
+        toast({ title: 'Article fetched successfully' });
+      } else {
+        toast({ title: data.error || 'Failed to fetch article', variant: 'destructive' });
+      }
+    } catch (error) {
+      console.error('Error fetching article:', error);
+      toast({ title: 'Failed to fetch article', variant: 'destructive' });
+    } finally {
+      setFetchingArticle(false);
+    }
+  };
+
   // Save news item
   const saveNews = async () => {
     if (!newsFormData.title || !newsFormData.content) {
@@ -779,7 +819,9 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
             title: newsFormData.title,
             content: newsFormData.content,
             category: newsFormData.category,
-            is_published: newsFormData.is_published
+            is_published: newsFormData.is_published,
+            source_url: newsFormData.source_url || null,
+            image_url: newsFormData.image_url || null
           })
           .eq('id', editingNews.id);
 
@@ -793,6 +835,8 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
             content: newsFormData.content,
             category: newsFormData.category,
             is_published: newsFormData.is_published,
+            source_url: newsFormData.source_url || null,
+            image_url: newsFormData.image_url || null,
             created_by: user?.id
           });
 
@@ -802,7 +846,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
 
       setShowNewsDialog(false);
       setEditingNews(null);
-      setNewsFormData({ title: '', content: '', category: 'update', is_published: true });
+      setNewsFormData({ title: '', content: '', category: 'update', is_published: true, source_url: '', image_url: '' });
       fetchNews();
     } catch (error) {
       console.error('Error saving news:', error);
@@ -838,7 +882,9 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
       title: item.title,
       content: item.content,
       category: item.category,
-      is_published: item.is_published
+      is_published: item.is_published,
+      source_url: item.source_url || '',
+      image_url: item.image_url || ''
     });
     setShowNewsDialog(true);
   };
@@ -846,7 +892,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   // Handle add news
   const handleAddNews = () => {
     setEditingNews(null);
-    setNewsFormData({ title: '', content: '', category: 'update', is_published: true });
+    setNewsFormData({ title: '', content: '', category: 'update', is_published: true, source_url: '', image_url: '' });
     setShowNewsDialog(true);
   };
 
@@ -2429,7 +2475,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
           if (!open) {
             setShowNewsDialog(false);
             setEditingNews(null);
-            setNewsFormData({ title: '', content: '', category: 'update', is_published: true });
+            setNewsFormData({ title: '', content: '', category: 'update', is_published: true, source_url: '', image_url: '' });
           }
         }}>
           <DialogContent>
@@ -2437,6 +2483,25 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
               <DialogTitle>{editingNews ? 'Edit News' : 'Add News'}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label>Article URL (optional)</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={newsFormData.source_url}
+                    onChange={(e) => setNewsFormData(prev => ({ ...prev, source_url: e.target.value }))}
+                    placeholder="https://example.com/article"
+                  />
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={fetchArticle}
+                    disabled={fetchingArticle || !newsFormData.source_url}
+                  >
+                    {fetchingArticle ? 'Fetching...' : 'Fetch'}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">Enter a URL and click Fetch to auto-fill title, content, and image</p>
+              </div>
               <div className="space-y-2">
                 <Label>Title *</Label>
                 <Input
@@ -2453,6 +2518,24 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                   onChange={(e) => setNewsFormData(prev => ({ ...prev, content: e.target.value }))}
                   placeholder="News content"
                 />
+              </div>
+              <div className="space-y-2">
+                <Label>Image URL</Label>
+                <Input
+                  value={newsFormData.image_url}
+                  onChange={(e) => setNewsFormData(prev => ({ ...prev, image_url: e.target.value }))}
+                  placeholder="https://example.com/image.jpg"
+                />
+                {newsFormData.image_url && (
+                  <div className="mt-2 rounded-md overflow-hidden border">
+                    <img 
+                      src={newsFormData.image_url} 
+                      alt="Preview" 
+                      className="w-full h-32 object-cover"
+                      onError={(e) => (e.currentTarget.style.display = 'none')}
+                    />
+                  </div>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>Category</Label>

@@ -15,6 +15,8 @@ interface NewsItem {
   content: string;
   category: string;
   created_at: string;
+  source_url?: string;
+  image_url?: string;
 }
 
 interface NewsModalProps {
@@ -32,7 +34,7 @@ const NewsModal: React.FC<NewsModalProps> = ({ open, onOpenChange }) => {
         setLoading(true);
         const { data, error } = await supabase
           .from('news_updates')
-          .select('id, title, content, category, created_at')
+          .select('id, title, content, category, created_at, source_url, image_url')
           .eq('is_published', true)
           .order('created_at', { ascending: false })
           .limit(20);
@@ -90,15 +92,37 @@ const NewsModal: React.FC<NewsModalProps> = ({ open, onOpenChange }) => {
           ) : (
             <div className="space-y-4">
               {newsItems.map((item) => (
-                <div key={item.id} className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                  <span className={`text-xs font-medium ${getCategoryStyle(item.category)}`}>
-                    {getCategoryLabel(item.category)}
-                  </span>
-                  <h4 className="font-medium text-sm mt-1">{item.title}</h4>
-                  <p className="text-sm text-muted-foreground mt-2">{item.content}</p>
-                  <span className="text-xs text-muted-foreground mt-3 block">
-                    {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
-                  </span>
+                <div key={item.id} className="bg-muted/30 rounded-lg overflow-hidden border border-border/50">
+                  {item.image_url && (
+                    <img 
+                      src={item.image_url} 
+                      alt={item.title}
+                      className="w-full h-32 object-cover"
+                      onError={(e) => (e.currentTarget.style.display = 'none')}
+                    />
+                  )}
+                  <div className="p-4">
+                    <span className={`text-xs font-medium ${getCategoryStyle(item.category)}`}>
+                      {getCategoryLabel(item.category)}
+                    </span>
+                    <h4 className="font-medium text-sm mt-1">{item.title}</h4>
+                    <p className="text-sm text-muted-foreground mt-2 line-clamp-3">{item.content}</p>
+                    <div className="flex items-center justify-between mt-3">
+                      <span className="text-xs text-muted-foreground">
+                        {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
+                      </span>
+                      {item.source_url && (
+                        <a 
+                          href={item.source_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-xs text-primary hover:underline"
+                        >
+                          Read more →
+                        </a>
+                      )}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
