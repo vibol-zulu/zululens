@@ -127,6 +127,15 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
   // AI Estimation state
   const [isEstimating, setIsEstimating] = useState(false);
   const [estimationResult, setEstimationResult] = useState<{
+    inputValidation?: {
+      categoryCorrect: boolean;
+      suggestedCategory: string | null;
+      platformCorrect: boolean;
+      contentTypeCorrect: boolean;
+      validationNotes: string;
+    } | null;
+    politicalLean?: string | null;
+    politicalLeanJustification?: string | null;
     crossPlatformAudience: number;
     deduplicatedAudience: number;
     reasoning: string;
@@ -695,12 +704,19 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
     if (!channelToReview || !estimationResult) return;
     
     try {
+      const updateData: Record<string, unknown> = { 
+        value_millions: estimationResult.deduplicatedAudience,
+        start_date: estimationResult.suggestedStartDate || 'TBD'
+      };
+      
+      // Include political lean if determined by AI
+      if (estimationResult.politicalLean) {
+        updateData.political_lean = estimationResult.politicalLean;
+      }
+      
       const { error } = await supabase
         .from('user_channels')
-        .update({ 
-          value_millions: estimationResult.deduplicatedAudience,
-          start_date: estimationResult.suggestedStartDate || 'TBD'
-        })
+        .update(updateData)
         .eq('id', channelToReview.id);
 
       if (error) throw error;
@@ -708,7 +724,8 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
       toast({ title: 'Estimation applied to channel' });
       setChannelToReview({
         ...channelToReview,
-        value_millions: estimationResult.deduplicatedAudience
+        value_millions: estimationResult.deduplicatedAudience,
+        political_lean: estimationResult.politicalLean || channelToReview.political_lean
       });
       fetchPendingChannels();
     } catch (error) {
@@ -1564,14 +1581,55 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
 
                     {estimationResult && (
                       <div className="bg-muted/50 rounded-lg p-4 space-y-3 text-sm">
+                        {/* Input Validation Section */}
+                        {estimationResult.inputValidation && (
+                          <div className="border-b pb-3">
+                            <Label className="text-xs text-muted-foreground font-medium">Input Validation</Label>
+                            <div className="mt-2 space-y-1 text-xs">
+                              <div className="flex items-center gap-2">
+                                <span className={estimationResult.inputValidation.categoryCorrect ? 'text-green-600' : 'text-amber-600'}>
+                                  {estimationResult.inputValidation.categoryCorrect ? '✓' : '⚠'}
+                                </span>
+                                <span>Category: {estimationResult.inputValidation.categoryCorrect ? 'Correct' : `Suggested: ${estimationResult.inputValidation.suggestedCategory}`}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className={estimationResult.inputValidation.platformCorrect ? 'text-green-600' : 'text-amber-600'}>
+                                  {estimationResult.inputValidation.platformCorrect ? '✓' : '⚠'}
+                                </span>
+                                <span>Platform: {estimationResult.inputValidation.platformCorrect ? 'Correct' : 'Review needed'}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className={estimationResult.inputValidation.contentTypeCorrect ? 'text-green-600' : 'text-amber-600'}>
+                                  {estimationResult.inputValidation.contentTypeCorrect ? '✓' : '⚠'}
+                                </span>
+                                <span>Content Type: {estimationResult.inputValidation.contentTypeCorrect ? 'Correct' : 'Review needed'}</span>
+                              </div>
+                              {estimationResult.inputValidation.validationNotes && (
+                                <p className="text-xs text-muted-foreground mt-2 italic">{estimationResult.inputValidation.validationNotes}</p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Political Lean Section */}
+                        {estimationResult.politicalLean && (
+                          <div className="border-b pb-3">
+                            <Label className="text-xs text-muted-foreground">AI-Determined Political Lean</Label>
+                            <p className="font-bold text-primary mt-1">{estimationResult.politicalLean}</p>
+                            {estimationResult.politicalLeanJustification && (
+                              <p className="text-xs text-muted-foreground mt-1">{estimationResult.politicalLeanJustification}</p>
+                            )}
+                          </div>
+                        )}
+
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <Label className="text-xs text-muted-foreground">Cross-Platform Audience</Label>
-                            <p className="text-lg font-bold">{estimationResult.crossPlatformAudience.toFixed(2)}M</p>
+                            <p className="text-lg font-bold">{estimationResult.crossPlatformAudience?.toFixed(2) || '0.00'}M</p>
                           </div>
                           <div>
                             <Label className="text-xs text-muted-foreground">Deduplicated Audience</Label>
-                            <p className="text-lg font-bold text-primary">{estimationResult.deduplicatedAudience.toFixed(2)}M</p>
+                            <p className="text-lg font-bold text-primary">{estimationResult.deduplicatedAudience?.toFixed(2) || '0.00'}M</p>
                           </div>
                         </div>
                         
@@ -1587,7 +1645,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                           <p className="text-xs text-muted-foreground mt-1">{estimationResult.reasoning}</p>
                         </div>
                         
-                        {estimationResult.comparableChannels.length > 0 && (
+                        {estimationResult.comparableChannels?.length > 0 && (
                           <div>
                             <Label className="text-xs text-muted-foreground">Comparable Channels</Label>
                             <p className="text-xs">{estimationResult.comparableChannels.join(', ')}</p>
@@ -1599,7 +1657,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                           onClick={applyEstimation}
                           className="w-full mt-2"
                         >
-                          Apply Estimation ({estimationResult.deduplicatedAudience.toFixed(2)}M)
+                          Apply Estimation ({estimationResult.deduplicatedAudience?.toFixed(2) || '0.00'}M{estimationResult.politicalLean ? `, ${estimationResult.politicalLean}` : ''})
                         </Button>
                       </div>
                     )}
