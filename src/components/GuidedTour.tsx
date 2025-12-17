@@ -67,7 +67,7 @@ const GuidedTourCard: React.FC<GuidedTourCardProps> = ({
   return createPortal(
     <>
       {/* Overlay */}
-      <div className="fixed inset-0 bg-black/50 z-[9998]" />
+      <div className="fixed inset-0 bg-black/30 z-[9998]" />
       
       {/* Center Card */}
       <div className="fixed inset-0 flex items-center justify-center z-[10001] pointer-events-none">
@@ -124,7 +124,7 @@ const GuidedTourCard: React.FC<GuidedTourCardProps> = ({
   );
 };
 
-// Highlight component that wraps elements without affecting layout
+// Highlight component that decorates its child without changing layout (no wrappers)
 export const TourHighlight: React.FC<{
   step: Exclude<TourStep, null>;
   currentStep: TourStep;
@@ -132,23 +132,29 @@ export const TourHighlight: React.FC<{
 }> = ({ step, currentStep, children }) => {
   const isActive = currentStep === step;
 
-  return (
-    <div
-      data-tour={step}
-      style={{ display: 'contents' }}
-    >
-      <div
-        className={isActive ? 'z-[9999] relative animate-[tour-pulse_2s_ease-in-out_infinite]' : ''}
-        style={isActive ? {
-          outline: '3px solid #F8D4C8',
-          outlineOffset: '2px',
-          borderRadius: '8px'
-        } : undefined}
-      >
+  if (!React.isValidElement(children)) {
+    // Fallback: if it's not a single element, we can't safely decorate it without a wrapper.
+    // Use a wrapper that does not affect layout.
+    return (
+      <span data-tour={step} style={{ display: 'contents' }}>
         {children}
-      </div>
-    </div>
-  );
+      </span>
+    );
+  }
+
+  const existingClassName = (children.props as any)?.className ?? '';
+
+  return React.cloneElement(children as React.ReactElement, {
+    'data-tour': step,
+    className: [
+      existingClassName,
+      isActive
+        ? 'relative z-[9999] ring-2 ring-independent ring-offset-2 ring-offset-background animate-tour-pulse'
+        : '',
+    ]
+      .filter(Boolean)
+      .join(' '),
+  });
 };
 
 export const useTour = () => {
