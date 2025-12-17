@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Database, MoreVertical, MessageCircle, BarChart3, Trophy, Flame, TrendingUp, Newspaper, ChevronDown, Bell, Sparkles, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Database, MoreVertical, MessageCircle, BarChart3, Trophy, Flame, TrendingUp, Newspaper, ChevronDown, Bell, Sparkles, Loader2, Settings, Save } from 'lucide-react';
 import NotificationsTab from '@/components/NotificationsTab';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -297,6 +297,11 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   const [selectedNews, setSelectedNews] = useState<Set<string>>(new Set());
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
 
+  // Settings state
+  const [mailchimpUrl, setMailchimpUrl] = useState('');
+  const [settingsLoading, setSettingsLoading] = useState(false);
+  const [savingSettings, setSavingSettings] = useState(false);
+
   const isAuthenticated = user && isAdmin;
 
   const handleSignIn = async () => {
@@ -327,6 +332,50 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   const handleSignOut = async () => {
     await signOut();
     toast({ title: 'Signed out' });
+  };
+
+  // Fetch settings
+  const fetchSettings = async () => {
+    setSettingsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('app_settings')
+        .select('*')
+        .eq('key', 'mailchimp_url')
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      if (data) {
+        setMailchimpUrl(data.value);
+      }
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
+
+  // Save settings
+  const handleSaveSettings = async () => {
+    setSavingSettings(true);
+    try {
+      const { error } = await supabase
+        .from('app_settings')
+        .upsert({ 
+          key: 'mailchimp_url', 
+          value: mailchimpUrl,
+          updated_at: new Date().toISOString(),
+          updated_by: user?.id 
+        }, { onConflict: 'key' });
+
+      if (error) throw error;
+      toast({ title: 'Settings saved successfully' });
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      toast({ title: 'Failed to save settings', variant: 'destructive' });
+    } finally {
+      setSavingSettings(false);
+    }
   };
 
   // Fetch channels
@@ -929,6 +978,8 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
       fetchLeaderboard();
     } else if (isAuthenticated && open && activeTab === 'news' && isAdmin) {
       fetchNews();
+    } else if (isAuthenticated && open && activeTab === 'settings' && isAdmin) {
+      fetchSettings();
     }
   }, [activeTab, isAuthenticated, open, isAdmin]);
 
@@ -1619,6 +1670,10 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
                       <TabsTrigger value="notifications" className="gap-2">
                         <Bell className="h-4 w-4" />
                         Notifications
+                      </TabsTrigger>
+                      <TabsTrigger value="settings" className="gap-2">
+                        <Settings className="h-4 w-4" />
+                        Settings
                       </TabsTrigger>
                     </>
                   )}
@@ -2550,6 +2605,44 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
               <TabsContent value="notifications" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
                 <div className="flex-1 overflow-auto p-4">
                   <NotificationsTab isActive={activeTab === 'notifications'} />
+                </div>
+              </TabsContent>
+
+              {/* Settings Tab */}
+              <TabsContent value="settings" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
+                <div className="flex-1 overflow-auto p-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Integrations</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="mailchimp-url">Mailchimp Form URL</Label>
+                        <Input
+                          id="mailchimp-url"
+                          value={mailchimpUrl}
+                          onChange={(e) => setMailchimpUrl(e.target.value)}
+                          placeholder="https://group.us12.list-manage.com/subscribe/post?u=..."
+                          className="font-mono text-xs"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          The Mailchimp form action URL used in the sign-up gate
+                        </p>
+                      </div>
+                      <Button 
+                        onClick={handleSaveSettings} 
+                        disabled={savingSettings}
+                        className="gap-2"
+                      >
+                        {savingSettings ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Save className="h-4 w-4" />
+                        )}
+                        Save Settings
+                      </Button>
+                    </CardContent>
+                  </Card>
                 </div>
               </TabsContent>
             </Tabs>
