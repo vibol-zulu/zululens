@@ -6,38 +6,45 @@ interface SignUpGateProps {
   onJoin: (name: string, email: string) => void;
 }
 const MAILCHIMP_ACTION =
-  "https://group.us12.list-manage.com/subscribe/post?u=8cebbb69cb233fee8e96a59fe&amp;id=de54a87f37&amp;f_id=005e9fe0f0";
+  "https://group.us12.list-manage.com/subscribe/post?u=8cebbb69cb233fee8e96a59fe&id=de54a87f37&f_id=005e9fe0f0";
 const SignUpGate: React.FC<SignUpGateProps> = ({ onJoin }) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
   const { setVisitorId, initSession, trackEvent } = useAnalytics();
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (e: React.FormEvent) => {
     setError("");
+
     if (!name.trim()) {
+      e.preventDefault();
       setError("Please enter your name.");
       return;
     }
+
     if (!email.includes("@")) {
+      e.preventDefault();
       setError("Please enter a valid email.");
       return;
     }
+
     setSubmitted(true);
 
-    // Register visitor in database
-    const visitorId = await registerTier1Visitor(name, email);
-    if (visitorId) {
-      setVisitorId(visitorId);
-      await initSession();
-      trackEvent({
-        event_type: "page_view",
-        event_data: {
-          page: "dashboard",
-        },
-      });
-    }
+    // Register visitor in database (do not block form submit to Mailchimp)
+    (async () => {
+      const visitorId = await registerTier1Visitor(name, email);
+      if (visitorId) {
+        setVisitorId(visitorId);
+        await initSession();
+        trackEvent({
+          event_type: "page_view",
+          event_data: {
+            page: "dashboard",
+          },
+        });
+      }
+    })();
+
     setTimeout(() => {
       onJoin(name, email);
     }, 500);
@@ -94,7 +101,11 @@ const SignUpGate: React.FC<SignUpGateProps> = ({ onJoin }) => {
             </div>
           )}
 
-          <iframe name="hiddenFrame" className="hidden" title="hiddenFrame" />
+          <iframe
+            name="hiddenFrame"
+            title="hiddenFrame"
+            className="absolute opacity-0 pointer-events-none w-px h-px -z-10"
+          />
 
           <form
             action={MAILCHIMP_ACTION}
