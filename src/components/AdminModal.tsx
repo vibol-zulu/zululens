@@ -323,7 +323,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
     image_url: ''
   });
   const [fetchingArticle, setFetchingArticle] = useState(false);
-
+  const [autoFetchingNews, setAutoFetchingNews] = useState(false);
   // Create contributor state
   const [showCreateUserDialog, setShowCreateUserDialog] = useState(false);
   const [newUserData, setNewUserData] = useState({ email: '', password: '', fullName: '', role: 'member' as 'member' | 'admin' | 'contributor' | 'moderator' });
@@ -1083,6 +1083,42 @@ Format your response as JSON with this structure:
     setEditingNews(null);
     setNewsFormData({ title: '', content: '', category: 'update', is_published: true, source_url: '', image_url: '' });
     setShowNewsDialog(true);
+  };
+
+  // Auto-fetch news articles
+  const autoFetchNews = async () => {
+    setAutoFetchingNews(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/auto-fetch-news`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({}),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast({ 
+          title: 'Articles fetched', 
+          description: `${data.articlesAdded} new articles added as drafts` 
+        });
+        fetchNews();
+      } else {
+        throw new Error(data.error || 'Failed to fetch articles');
+      }
+    } catch (error) {
+      console.error('Error auto-fetching news:', error);
+      toast({ 
+        title: 'Failed to fetch articles', 
+        description: error instanceof Error ? error.message : 'Unknown error',
+        variant: 'destructive' 
+      });
+    } finally {
+      setAutoFetchingNews(false);
+    }
   };
 
   useEffect(() => {
@@ -2787,10 +2823,31 @@ Format your response as JSON with this structure:
                     </DropdownMenu>
                   )}
                   <span className="text-sm text-muted-foreground">{newsItems.length} news items</span>
-                  <Button onClick={handleAddNews} size="sm" className="gap-2 ml-auto">
-                    <Plus className="h-4 w-4" />
-                    Add News
-                  </Button>
+                  <div className="flex gap-2 ml-auto">
+                    <Button 
+                      onClick={autoFetchNews} 
+                      size="sm" 
+                      variant="outline"
+                      disabled={autoFetchingNews}
+                      className="gap-2"
+                    >
+                      {autoFetchingNews ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Fetching...
+                        </>
+                      ) : (
+                        <>
+                          <Newspaper className="h-4 w-4" />
+                          Fetch Latest
+                        </>
+                      )}
+                    </Button>
+                    <Button onClick={handleAddNews} size="sm" className="gap-2">
+                      <Plus className="h-4 w-4" />
+                      Add News
+                    </Button>
+                  </div>
                 </div>
                 <div className="flex-1 overflow-auto p-4">
                   <div className="rounded-md border overflow-x-auto">
