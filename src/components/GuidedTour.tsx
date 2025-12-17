@@ -124,7 +124,7 @@ const GuidedTourCard: React.FC<GuidedTourCardProps> = ({
   );
 };
 
-// Highlight component that wraps elements
+// Highlight component that wraps elements without affecting layout
 export const TourHighlight: React.FC<{
   step: Exclude<TourStep, null>;
   currentStep: TourStep;
@@ -135,15 +135,18 @@ export const TourHighlight: React.FC<{
   return (
     <div
       data-tour={step}
-      className={`relative ${isActive ? 'z-[9999]' : ''}`}
-      style={isActive ? {
-        position: 'relative',
-        boxShadow: '0 0 0 4px hsl(var(--primary))',
-        borderRadius: '8px',
-        background: 'hsl(var(--background))'
-      } : undefined}
+      style={{ display: 'contents' }}
     >
-      {children}
+      <div
+        className={isActive ? 'z-[9999] relative' : ''}
+        style={isActive ? {
+          outline: '3px solid #F8D4C8',
+          outlineOffset: '2px',
+          borderRadius: '8px'
+        } : undefined}
+      >
+        {children}
+      </div>
     </div>
   );
 };
