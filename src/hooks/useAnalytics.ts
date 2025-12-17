@@ -140,45 +140,22 @@ export const useAnalytics = (userId?: string) => {
   };
 };
 
-// Helper to register Tier 1 visitor
+// Helper to register Tier 1 visitor using SECURITY DEFINER function
 export const registerTier1Visitor = async (name: string, email: string, country: string = 'United States'): Promise<string | null> => {
   try {
-    // Check if visitor already exists
-    const { data: existing } = await supabase
-      .from('tier1_visitors')
-      .select('id')
-      .eq('email', email)
-      .maybeSingle();
-
-    if (existing) {
-      // Update last visit
-      await supabase
-        .from('tier1_visitors')
-        .update({
-          last_visit_at: new Date().toISOString(),
-          total_visits: (existing as { id: string; total_visits?: number }).total_visits ? ((existing as { id: string; total_visits?: number }).total_visits || 0) + 1 : 1
-        })
-        .eq('id', existing.id);
-      return existing.id;
-    }
-
-    // Create new visitor
     const { data, error } = await supabase
-      .from('tier1_visitors')
-      .insert({
-        name,
-        email,
-        country
-      })
-      .select('id')
-      .single();
+      .rpc('register_tier1_visitor', {
+        _name: name,
+        _email: email,
+        _country: country
+      });
 
     if (error) {
       console.error('Error registering visitor:', error);
       return null;
     }
 
-    return data.id;
+    return data as string;
   } catch (err) {
     console.error('Visitor registration error:', err);
     return null;

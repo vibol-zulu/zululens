@@ -492,6 +492,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      register_tier1_visitor: {
+        Args: { _country?: string; _email: string; _name: string }
+        Returns: string
+      }
+      update_tier1_visitor_time: {
+        Args: { _additional_seconds: number; _visitor_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "contributor" | "moderator"
