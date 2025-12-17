@@ -73,34 +73,65 @@ interface BrandItemProps {
   isSelected: boolean;
   onToggle: (id: string) => void;
   isMobile?: boolean;
+  showTourTooltip?: boolean;
+  tourStep?: TourStep;
+  onTourNext?: () => void;
+  onTourClose?: () => void;
 }
 
-const BrandItem: React.FC<BrandItemProps> = ({ brand, isSelected, onToggle, isMobile }) => (
-  <div 
-    className={cn(
-      "flex items-start gap-2 transition-opacity",
-      isMobile ? "gap-2" : "gap-3",
-      isSelected ? "opacity-100" : "opacity-70"
-    )}
-  >
-    <Checkbox 
-      id={`cb-${brand.id}`}
-      checked={isSelected} 
-      onCheckedChange={() => onToggle(brand.id)}
-      className="mt-1"
-    />
-    <label 
-      htmlFor={`cb-${brand.id}`}
-      className={cn("cursor-pointer leading-tight flex-1", isMobile ? "text-xs" : "text-sm")}
+const BrandItem: React.FC<BrandItemProps> = ({ 
+  brand, 
+  isSelected, 
+  onToggle, 
+  isMobile, 
+  showTourTooltip,
+  tourStep,
+  onTourNext,
+  onTourClose
+}) => {
+  const content = (
+    <div 
+      className={cn(
+        "flex items-start gap-2 transition-opacity",
+        isMobile ? "gap-2" : "gap-3",
+        isSelected ? "opacity-100" : "opacity-70"
+      )}
     >
-      <span className={cn("font-medium", isSelected && "font-semibold")}>
-        {brand.name}
-      </span>
-      <span className={cn("text-muted-foreground ml-1", isMobile ? "text-xs" : "text-xs")}>({brand.valueMillions}M)</span>
-      <div className={cn("text-muted-foreground italic mt-0.5", isMobile ? "text-[10px]" : "text-xs")}>{brand.platform}</div>
-    </label>
-  </div>
-);
+      <Checkbox 
+        id={`cb-${brand.id}`}
+        checked={isSelected} 
+        onCheckedChange={() => onToggle(brand.id)}
+        className="mt-1"
+      />
+      <label 
+        htmlFor={`cb-${brand.id}`}
+        className={cn("cursor-pointer leading-tight flex-1", isMobile ? "text-xs" : "text-sm")}
+      >
+        <span className={cn("font-medium", isSelected && "font-semibold")}>
+          {brand.name}
+        </span>
+        <span className={cn("text-muted-foreground ml-1", isMobile ? "text-xs" : "text-xs")}>({brand.valueMillions}M)</span>
+        <div className={cn("text-muted-foreground italic mt-0.5", isMobile ? "text-[10px]" : "text-xs")}>{brand.platform}</div>
+      </label>
+    </div>
+  );
+
+  if (showTourTooltip && tourStep && onTourNext && onTourClose) {
+    return (
+      <TourTooltip
+        step="channel-item"
+        currentStep={tourStep}
+        onNext={onTourNext}
+        onClose={onTourClose}
+        position={isMobile ? "bottom" : "right"}
+      >
+        {content}
+      </TourTooltip>
+    );
+  }
+
+  return content;
+};
 
 interface CollapsibleSectionProps {
   title: string;
@@ -109,6 +140,10 @@ interface CollapsibleSectionProps {
   onToggle: (id: string) => void;
   defaultOpen?: boolean;
   isMobile?: boolean;
+  showFirstItemTour?: boolean;
+  tourStep?: TourStep;
+  onTourNext?: () => void;
+  onTourClose?: () => void;
 }
 
 const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
@@ -118,6 +153,10 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   onToggle,
   defaultOpen = true,
   isMobile = false,
+  showFirstItemTour = false,
+  tourStep,
+  onTourNext,
+  onTourClose,
 }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const sorted = [...brands].sort((a, b) => b.valueMillions - a.valueMillions);
@@ -132,13 +171,17 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
       </CollapsibleTrigger>
       <CollapsibleContent className="pt-2">
         <div className={cn("space-y-2", isMobile ? "pl-2" : "pl-2 space-y-3")}>
-          {sorted.map(b => (
+          {sorted.map((b, index) => (
             <BrandItem 
               key={b.id} 
               brand={b} 
               isSelected={selectedIds.has(b.id)} 
               onToggle={onToggle}
               isMobile={isMobile}
+              showTourTooltip={showFirstItemTour && index === 0}
+              tourStep={tourStep}
+              onTourNext={onTourNext}
+              onTourClose={onTourClose}
             />
           ))}
         </div>
@@ -340,6 +383,10 @@ const Sidebar: React.FC<SidebarProps> = ({
                   selectedIds={selectedIds} 
                   onToggle={onToggle}
                   isMobile={true}
+                  showFirstItemTour={side === 'left' && !!tourStep}
+                  tourStep={tourStep}
+                  onTourNext={onTourNext}
+                  onTourClose={onTourClose}
                 />
                 <CollapsibleSection 
                   title="Others" 
@@ -505,6 +552,10 @@ const Sidebar: React.FC<SidebarProps> = ({
                 brands={big6Filtered} 
                 selectedIds={selectedIds} 
                 onToggle={onToggle}
+                showFirstItemTour={side === 'left' && !!tourStep}
+                tourStep={tourStep}
+                onTourNext={onTourNext}
+                onTourClose={onTourClose}
               />
               <CollapsibleSection 
                 title="Others" 

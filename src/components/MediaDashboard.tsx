@@ -600,6 +600,9 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
           setSignInDefaultTab('signup');
           setShowSignIn(true);
         }}
+        tourStep={currentStep}
+        onTourNext={nextStep}
+        onTourClose={closeTour}
       />
     </div>
   );
