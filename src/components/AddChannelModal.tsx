@@ -84,16 +84,31 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
       return;
     }
 
-    // Check for duplicate channel name (case-insensitive)
-    const trimmedName = formData.name.trim().toLowerCase();
-    const isDuplicate = existingChannelNames.some(
-      name => name.toLowerCase() === trimmedName
-    );
+    // Check for duplicate channel name in database (any status)
+    const trimmedName = formData.name.trim();
     
-    if (isDuplicate) {
+    const { data: existingChannel, error: checkError } = await supabase
+      .from('user_channels')
+      .select('id, name, status, country, year')
+      .ilike('name', trimmedName)
+      .eq('country', country)
+      .eq('year', year)
+      .maybeSingle();
+    
+    if (checkError) {
+      console.error('Error checking for duplicate:', checkError);
+    }
+    
+    if (existingChannel) {
+      const statusText = existingChannel.status === 'pending' 
+        ? 'is pending approval' 
+        : existingChannel.status === 'rejected'
+        ? 'was previously submitted'
+        : 'already exists';
+      
       toast({
-        title: "Channel already exists",
-        description: `"${formData.name.trim()}" is already in the ${category} dataset for ${country} (${year}).`,
+        title: "Channel already submitted",
+        description: `"${existingChannel.name}" ${statusText} for ${country} (${year}).`,
         variant: "destructive"
       });
       return;
