@@ -1703,7 +1703,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                     variant="outline"
                     onClick={() => estimateAudience(channelToReview)}
                     disabled={isEstimating}
-                    className="w-full h-10 px-5 font-semibold text-foreground border-2"
+                    className="w-full h-12 px-5 font-semibold text-foreground border-2"
                   >
                     {isEstimating ? (
                       <>
