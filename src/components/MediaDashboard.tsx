@@ -16,6 +16,7 @@ import ContributorDashboardModal from '@/components/ContributorDashboardModal';
 import ModeratorDashboardModal from '@/components/ModeratorDashboardModal';
 import CommentsSection from '@/components/CommentsSection';
 import NewsModal from '@/components/NewsModal';
+import ShareButton from '@/components/ShareButton';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import {
@@ -281,6 +282,9 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               Sign Up
             </Button>
           )}
+
+          {/* Share Button */}
+          <ShareButton />
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
