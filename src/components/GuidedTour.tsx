@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -92,7 +91,7 @@ export const TourTooltip: React.FC<{
 
   return (
     <>
-      <div ref={triggerRef} className={cn("inline-flex", className)}>
+      <div ref={triggerRef} className={className} style={{ display: 'contents' }}>
         {children}
       </div>
       {isActive && createPortal(
@@ -104,20 +103,7 @@ export const TourTooltip: React.FC<{
           <div className="absolute w-0 h-0" style={arrowStyles[position]} />
           
           {/* Header */}
-          <div className="flex items-start justify-between gap-2 mb-2">
-            <div className="flex items-center gap-2">
-              <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary-foreground text-primary text-xs font-bold">
-                {stepNumber}
-              </span>
-              <h4 className="font-semibold text-sm">{content.title}</h4>
-            </div>
-            <button 
-              onClick={onClose}
-              className="p-0.5 hover:bg-primary-foreground/20 rounded transition-colors"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
+          <h4 className="font-semibold text-sm mb-2">{content.title}</h4>
           
           {/* Content */}
           <p className="text-xs opacity-90 mb-3">{content.description}</p>
