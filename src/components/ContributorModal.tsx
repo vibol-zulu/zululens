@@ -181,7 +181,12 @@ const ContributorModal: React.FC<ContributorModalProps> = ({
             clearInterval(pollTimer);
 
             supabase.auth.exchangeCodeForSession(payload.url)
-              .then(() => {
+              .then(async () => {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                  toast.error('Signed in, but your browser blocks sign-in inside the embedded view. Please open the app in a new tab to use your account.');
+                  return;
+                }
                 onClose();
                 window.location.reload();
               })
