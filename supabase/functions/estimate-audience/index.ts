@@ -40,13 +40,20 @@ Your task is to:
 3. Estimate monthly audience figures based on actual platform metrics you find
 4. Determine the political lean/bias based on verified content analysis and third-party assessments
 
+KEY DATA SOURCES TO USE:
+- **SocialBlade.com** - Use this for YouTube subscriber counts, estimated monthly views, growth trends, and historical data
+- **VidIQ.com** - Use this for YouTube analytics, view counts, engagement metrics, and audience insights
+- **Similar Web** - For website traffic and audience demographics
+- **Podcast charts** (Apple Podcasts, Spotify) - For podcast download/listener estimates
+- **Media bias organizations** (AllSides, Ad Fontes Media, Media Bias/Fact Check) - For political lean assessments
+
 You have deep knowledge of:
 - Platform-specific audience benchmarks (YouTube, Twitter/X, TikTok, Facebook, Instagram, podcasts, cable TV, print/digital)
 - Cross-platform audience overlap patterns and deduplication methodologies
 - Political media landscape, bias indicators, and audience segmentation
 - Media ownership structures and corporate vs independent classification
 
-IMPORTANT: Use your search capabilities to find REAL, CURRENT data about this channel. Include citations where possible.`;
+IMPORTANT: Use your search capabilities to find REAL, CURRENT data about this channel. Prioritize SocialBlade and VidIQ for YouTube channels. Include citations where possible.`;
 
 const DEFAULT_USER_PROMPT = `Research and analyze this media channel submission using real-time web search:
 
@@ -56,11 +63,12 @@ const DEFAULT_USER_PROMPT = `Research and analyze this media channel submission 
 **Category (user selected):** {channel.category}
 **Country:** {channel.country}
 
-SEARCH for current information about "{channel.name}" including:
-- Current subscriber/follower counts across platforms
-- Recent viewership or audience data
-- Ownership structure (corporate parent or independent)
-- Political lean assessments from media bias organizations
+SEARCH for current information about "{channel.name}" using these specific sources:
+- **SocialBlade.com** - Search for "{channel.name} socialblade" to get subscriber counts, monthly views, and growth data
+- **VidIQ.com** - Search for "{channel.name} vidiq" for engagement metrics and audience analytics
+- Cross-reference with the channel's official social media pages for follower counts
+- Look up ownership structure (corporate parent or independent)
+- Check media bias organizations for political lean assessments
 
 Based on your research, provide:
 
@@ -74,13 +82,17 @@ Based on your research, provide:
    - Determine the political lean from: Far Left, Progressive/Left, Center-Left, Center, Center-Right, Right, Far Right, Libertarian, Independent, Non-partisan
    - Cite sources for your assessment where possible.
 
-3. **Estimated Cross-Platform Monthly Audience (in millions)** - Based on actual subscriber/follower data you found.
+3. **Estimated Cross-Platform Monthly Audience (in millions)** - Based on actual subscriber/follower data from SocialBlade, VidIQ, and other sources.
 
-4. **Estimated Deduplicated Monthly Audience (in millions)** - Adjusted for overlap using industry-standard 20-40% deduplication.
+4. **Estimated Deduplicated Unique Monthly Audience "UMA" (in millions)** - This is the KEY metric that determines the circle radius in the visualization. Calculate by:
+   - Starting with cross-platform reach
+   - Applying 20-40% deduplication for audience overlap across platforms
+   - For YouTube: Use monthly views / 4-8 (depending on content frequency) as a proxy for unique monthly viewers
+   - Cite your methodology and data sources
 
-5. **Reasoning** (2-4 sentences) - Cite the data sources you found.
+5. **Reasoning** (2-4 sentences) - Cite the specific data sources you found (SocialBlade stats, VidIQ metrics, etc.).
 
-6. **Comparable Channels** - List 2-4 similar channels with similar audience size.
+6. **Comparable Channels** - List 2-4 similar channels with similar audience size for context.
 
 7. **Suggested Start Date** - When this channel was founded based on your research.
 
@@ -97,7 +109,7 @@ Format your response as JSON with this structure:
   "politicalLeanJustification": "brief explanation with sources",
   "crossPlatformAudience": number,
   "deduplicatedAudience": number,
-  "reasoning": "string with data sources",
+  "reasoning": "string with data sources including SocialBlade/VidIQ citations",
   "comparableChannels": ["channel1", "channel2"],
   "suggestedStartDate": "string"
 }`;
