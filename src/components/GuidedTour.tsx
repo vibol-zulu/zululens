@@ -3,7 +3,9 @@ import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-export type TourStep = 'select-all' | 'add-button' | 'country-year' | 'view-toggle' | null;
+export type TourStep = 'select-all' | 'add-button' | 'channel-item' | 'country-year' | 'view-toggle' | 'comments-news' | null;
+
+const TOUR_STEPS: Exclude<TourStep, null>[] = ['select-all', 'add-button', 'channel-item', 'country-year', 'view-toggle', 'comments-news'];
 
 interface GuidedTourProps {
   currentStep: TourStep;
@@ -20,6 +22,10 @@ const tourContent: Record<Exclude<TourStep, null>, { title: string; description:
     title: 'Add Channel',
     description: 'Suggest new media channels to add to the dataset. Create an account to start contributing!'
   },
+  'channel-item': {
+    title: 'Individual Channels',
+    description: 'Click on any checkbox to show or hide individual channels on the visualization. Each channel represents a media outlet.'
+  },
   'country-year': {
     title: 'Country & Year',
     description: 'Use these dropdowns to explore media landscapes across different countries and compare how the landscape has changed between 2000 and 2025.'
@@ -27,6 +33,10 @@ const tourContent: Record<Exclude<TourStep, null>, { title: string; description:
   'view-toggle': {
     title: 'View Modes',
     description: 'Switch between Microscope view (size-based visualization) and Spectrum view (political lean distribution).'
+  },
+  'comments-news': {
+    title: 'Comments & News',
+    description: 'Click here to expand the comments section where you can discuss the media landscape with others. News updates appear on the right.'
   }
 };
 
@@ -41,7 +51,8 @@ export const TourTooltip: React.FC<{
 }> = ({ step, currentStep, onNext, onClose, position = 'bottom', className, children }) => {
   const isActive = currentStep === step;
   const content = tourContent[step];
-  const stepNumber = ['select-all', 'add-button', 'country-year', 'view-toggle'].indexOf(step) + 1;
+  const stepNumber = TOUR_STEPS.indexOf(step) + 1;
+  const totalSteps = TOUR_STEPS.length;
   const triggerRef = useRef<HTMLDivElement>(null);
   const [tooltipPos, setTooltipPos] = useState({ top: 0, left: 0 });
 
@@ -110,14 +121,14 @@ export const TourTooltip: React.FC<{
           
           {/* Footer */}
           <div className="flex items-center justify-between">
-            <span className="text-xs opacity-70">{stepNumber} of 4</span>
+            <span className="text-xs opacity-70">{stepNumber} of {totalSteps}</span>
             <Button 
               size="sm" 
               variant="secondary"
               onClick={onNext}
               className="h-7 text-xs"
             >
-              {stepNumber === 4 ? 'Finish' : 'Next'}
+              {stepNumber === totalSteps ? 'Finish' : 'Next'}
             </Button>
           </div>
         </div>,
@@ -138,12 +149,18 @@ export const useTour = () => {
         setCurrentStep('add-button');
         break;
       case 'add-button':
+        setCurrentStep('channel-item');
+        break;
+      case 'channel-item':
         setCurrentStep('country-year');
         break;
       case 'country-year':
         setCurrentStep('view-toggle');
         break;
       case 'view-toggle':
+        setCurrentStep('comments-news');
+        break;
+      case 'comments-news':
         setCurrentStep(null);
         break;
       default:

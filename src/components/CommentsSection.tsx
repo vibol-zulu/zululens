@@ -8,6 +8,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
+import { TourTooltip, TourStep } from '@/components/GuidedTour';
 
 interface NewsItem {
   id: string;
@@ -22,6 +23,9 @@ interface NewsItem {
 interface CommentsSectionProps {
   country: string;
   onSignUpClick?: () => void;
+  tourStep?: TourStep;
+  onTourNext?: () => void;
+  onTourClose?: () => void;
 }
 
 interface CommentItemProps {
@@ -153,7 +157,7 @@ const PLACEHOLDER_COMMENTS = [
   { username: "David_R", content: "Impressive work. The circle packing approach works really well here." },
 ];
 
-const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClick }) => {
+const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClick, tourStep, onTourNext, onTourClose }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
@@ -262,55 +266,63 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t shadow-lg">
       {/* Toggle Header */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className={`w-full px-4 hover:bg-muted/50 transition-colors ${
-          isExpanded ? 'py-2' : 'py-4'
-        } ${
-          isMobile && !isExpanded ? 'flex flex-col gap-3' : 'flex items-center justify-between'
-        }`}
+      <TourTooltip
+        step="comments-news"
+        currentStep={tourStep || null}
+        onNext={onTourNext || (() => {})}
+        onClose={onTourClose || (() => {})}
+        position="top"
       >
-        {/* Mobile: Preview on top when collapsed */}
-        {isMobile && !isExpanded && (
-          <div className="w-full text-sm text-muted-foreground overflow-hidden text-left">
-            <span 
-              key={previewIndex}
-              className="block truncate animate-fade-in"
-            >
-              <span className="font-medium text-foreground/70">{currentPreview.username}:</span>{" "}
-              <span className="italic">{currentPreview.content}</span>
-            </span>
-          </div>
-        )}
-        
-        <div className="flex items-center justify-between w-full">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <MessageSquare className="h-4 w-4 text-primary shrink-0" />
-            <span className="font-medium text-sm shrink-0">
-              Comments {totalComments > 0 && `(${totalComments})`}
-            </span>
-            <span className="text-xs text-muted-foreground shrink-0">— {country}</span>
-            
-            {/* Desktop: Cycling preview inline when collapsed */}
-            {!isMobile && !isExpanded && (
-              <div className="flex items-center gap-2 ml-6 text-sm text-muted-foreground overflow-hidden">
-                <span 
-                  key={previewIndex}
-                  className="truncate animate-fade-in"
-                >
-                  <span className="font-medium text-foreground/70">{currentPreview.username}:</span>{" "}
-                  <span className="italic">{currentPreview.content}</span>
-                </span>
-              </div>
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className={`w-full px-4 hover:bg-muted/50 transition-colors ${
+            isExpanded ? 'py-2' : 'py-4'
+          } ${
+            isMobile && !isExpanded ? 'flex flex-col gap-3' : 'flex items-center justify-between'
+          }`}
+        >
+          {/* Mobile: Preview on top when collapsed */}
+          {isMobile && !isExpanded && (
+            <div className="w-full text-sm text-muted-foreground overflow-hidden text-left">
+              <span 
+                key={previewIndex}
+                className="block truncate animate-fade-in"
+              >
+                <span className="font-medium text-foreground/70">{currentPreview.username}:</span>{" "}
+                <span className="italic">{currentPreview.content}</span>
+              </span>
+            </div>
+          )}
+          
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <MessageSquare className="h-4 w-4 text-primary shrink-0" />
+              <span className="font-medium text-sm shrink-0">
+                Comments {totalComments > 0 && `(${totalComments})`}
+              </span>
+              <span className="text-xs text-muted-foreground shrink-0">— {country}</span>
+              
+              {/* Desktop: Cycling preview inline when collapsed */}
+              {!isMobile && !isExpanded && (
+                <div className="flex items-center gap-2 ml-6 text-sm text-muted-foreground overflow-hidden">
+                  <span 
+                    key={previewIndex}
+                    className="truncate animate-fade-in"
+                  >
+                    <span className="font-medium text-foreground/70">{currentPreview.username}:</span>{" "}
+                    <span className="italic">{currentPreview.content}</span>
+                  </span>
+                </div>
+              )}
+            </div>
+            {isExpanded ? (
+              <ChevronDown className="h-4 w-4 shrink-0" />
+            ) : (
+              <ChevronUp className="h-4 w-4 shrink-0" />
             )}
           </div>
-          {isExpanded ? (
-            <ChevronDown className="h-4 w-4 shrink-0" />
-          ) : (
-            <ChevronUp className="h-4 w-4 shrink-0" />
-          )}
-        </div>
-      </button>
+        </button>
+      </TourTooltip>
 
       {/* Expanded Content */}
       {isExpanded && (
