@@ -165,7 +165,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   const [password, setPassword] = useState('');
   const [isSigningIn, setIsSigningIn] = useState(false);
   
-  const [activeTab, setActiveTab] = useState('users');
+  const [activeTab, setActiveTab] = useState('submissions');
   
   // Channels state
   const [selectedCountry, setSelectedCountry] = useState('United States');
@@ -201,7 +201,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   const [submissionsLoading, setSubmissionsLoading] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [showSubmissionDialog, setShowSubmissionDialog] = useState(false);
-  const [submissionsStatusFilter, setSubmissionsStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+  const [submissionsStatusFilter, setSubmissionsStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
 
   // Comments state
   const [comments, setComments] = useState<AdminComment[]>([]);
