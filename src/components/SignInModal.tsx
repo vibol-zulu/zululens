@@ -165,13 +165,28 @@ const SignInModal: React.FC<SignInModalProps> = ({ open, onClose, defaultTab = '
           `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes,resizable=yes`
         );
         
-        // Listen for message from popup
+        // Listen for message from popup (callback URL) and exchange in THIS window
         const handleMessage = (event: MessageEvent) => {
-          if (event.data === 'oauth-success') {
+          if (event.origin !== window.location.origin) return;
+
+          const payload = event.data as any;
+          if (payload?.type === 'oauth-callback' && typeof payload.url === 'string') {
             window.removeEventListener('message', handleMessage);
             clearInterval(pollTimer);
-            onClose();
-            window.location.reload();
+
+            // Exchange in opener context (works in iframes with partitioned storage)
+            supabase.auth.exchangeCodeForSession(payload.url)
+              .then(() => {
+                onClose();
+                window.location.reload();
+              })
+              .catch((e) => {
+                console.error('OAuth exchange failed in opener:', e);
+                toast({ title: 'Sign in failed', description: 'Could not complete Google sign-in.', variant: 'destructive' });
+              })
+              .finally(() => {
+                setIsGoogleLoading(false);
+              });
           }
         };
         window.addEventListener('message', handleMessage);
