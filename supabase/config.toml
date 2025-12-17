@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.estimate-audience]
 verify_jwt = false
+
+[functions.auto-fetch-news]
+verify_jwt = false
