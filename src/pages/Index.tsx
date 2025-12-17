@@ -15,6 +15,30 @@ const Index = () => {
   const [showWelcome, setShowWelcome] = useState(false);
   const [isOAuthCallback, setIsOAuthCallback] = useState(false);
 
+  // Receive OAuth callback URL from popup and exchange it in this window (iframe-safe)
+  useEffect(() => {
+    const handler = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+      const payload = event.data as any;
+      if (payload?.type !== 'oauth-callback' || typeof payload.url !== 'string') return;
+
+      setIsOAuthCallback(true);
+      supabase.auth.exchangeCodeForSession(payload.url)
+        .then(async () => {
+          // Ensure session is persisted before we render
+          await supabase.auth.getSession();
+          window.location.reload();
+        })
+        .catch((e) => {
+          console.error('OAuth exchange failed in main window:', e);
+          setIsOAuthCallback(false);
+        });
+    };
+
+    window.addEventListener('message', handler);
+    return () => window.removeEventListener('message', handler);
+  }, []);
+
   // Legacy OAuth callback handling (when provider redirects to "/" instead of "/oauth/callback")
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -30,7 +54,10 @@ const Index = () => {
     const finish = () => {
       if (isPopup) {
         try {
-          window.opener.postMessage('oauth-success', window.location.origin);
+          window.opener.postMessage(
+            { type: 'oauth-callback', url: window.location.href },
+            window.location.origin
+          );
         } catch {
           // ignore
         }
@@ -43,13 +70,13 @@ const Index = () => {
 
     (async () => {
       try {
-        if (hasCode) {
+        // Only exchange in non-popup context; in popup we send URL to opener.
+        if (hasCode && !isPopup) {
           await supabase.auth.exchangeCodeForSession(window.location.href);
         }
       } catch {
-        // If exchange fails, still close popup so the parent can retry/poll.
+        // ignore
       } finally {
-        // Give the client a brief moment to persist session.
         setTimeout(finish, 250);
       }
     })();

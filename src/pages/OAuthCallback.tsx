@@ -11,6 +11,22 @@ const OAuthCallback = () => {
         (window.location.hash.includes("access_token") ||
           window.location.hash.includes("refresh_token"));
 
+      // If opened as a popup from the app, DO NOT exchange here (storage may be partitioned).
+      // Instead, send the callback URL back to the opener so it can exchange the code
+      // within the iframe/top-level storage context.
+      if (window.opener) {
+        try {
+          window.opener.postMessage(
+            { type: "oauth-callback", url: window.location.href },
+            window.location.origin
+          );
+        } catch {
+          // ignore
+        }
+        window.close();
+        return;
+      }
+
       try {
         if (hasCode) {
           await supabase.auth.exchangeCodeForSession(window.location.href);
@@ -20,17 +36,6 @@ const OAuthCallback = () => {
         }
       } catch {
         // Intentionally silent: we’ll fallback to redirect below.
-      }
-
-      // If opened as a popup from the app, notify parent and close.
-      if (window.opener) {
-        try {
-          window.opener.postMessage("oauth-success", window.location.origin);
-        } catch {
-          // ignore
-        }
-        window.close();
-        return;
       }
 
       // Non-popup fallback
