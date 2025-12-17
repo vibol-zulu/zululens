@@ -121,7 +121,7 @@ const GuidedTourCard: React.FC<GuidedTourCardProps> = ({
   );
 };
 
-// Highlight component that decorates its child without changing layout (no wrappers)
+// Highlight component - uses inline-flex wrapper that doesn't affect layout
 export const TourHighlight: React.FC<{
   step: Exclude<TourStep, null>;
   currentStep: TourStep;
@@ -129,29 +129,19 @@ export const TourHighlight: React.FC<{
 }> = ({ step, currentStep, children }) => {
   const isActive = currentStep === step;
 
-  if (!React.isValidElement(children)) {
-    // Fallback: if it's not a single element, we can't safely decorate it without a wrapper.
-    // Use a wrapper that does not affect layout.
-    return (
-      <span data-tour={step} style={{ display: 'contents' }}>
-        {children}
-      </span>
-    );
-  }
-
-  const existingClassName = (children.props as any)?.className ?? '';
-
-  return React.cloneElement(children as React.ReactElement, {
-    'data-tour': step,
-    className: [
-      existingClassName,
-      isActive
-        ? 'relative z-[9999] ring-2 ring-independent ring-offset-2 ring-offset-background animate-tour-pulse'
-        : '',
-    ]
-      .filter(Boolean)
-      .join(' '),
-  });
+  return (
+    <span
+      data-tour={step}
+      className={
+        isActive
+          ? 'relative z-[9999] rounded-md ring-2 ring-independent ring-offset-2 ring-offset-background animate-tour-pulse'
+          : ''
+      }
+      style={{ display: 'inline-flex' }}
+    >
+      {children}
+    </span>
+  );
 };
 
 export const useTour = () => {
