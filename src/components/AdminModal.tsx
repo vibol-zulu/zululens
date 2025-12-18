@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Database, MoreVertical, MessageCircle, BarChart3, Trophy, Flame, TrendingUp, Newspaper, ChevronDown, Bell, Loader2, Settings, Save } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Search, Database, MoreVertical, MessageCircle, BarChart3, Trophy, Flame, TrendingUp, Newspaper, ChevronDown, Bell, Loader2, Settings, Save } from 'lucide-react';
 import perplexityLogo from '@/assets/perplexity-color.svg';
 import { sendSubmissionEmail } from '@/lib/sendSubmissionEmail';
 import {
@@ -2337,7 +2337,7 @@ Format your response as JSON with this structure:
                                             size="icon"
                                             onClick={() => { setSelectedSubmission(sub); setShowSubmissionDialog(true); }}
                                           >
-                                            <MessageSquare className="h-4 w-4" />
+                                            <Search className="h-4 w-4" />
                                           </Button>
                                         </TooltipTrigger>
                                         <TooltipContent>
