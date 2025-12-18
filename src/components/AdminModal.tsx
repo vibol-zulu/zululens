@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Search, Database, MoreVertical, MessageCircle, BarChart3, Trophy, Flame, TrendingUp, Newspaper, ChevronDown, Bell, Loader2, Settings, Save } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Search, Database, MoreVertical, MessageCircle, BarChart3, Trophy, Flame, TrendingUp, Newspaper, ChevronDown, Bell, Loader2, Settings, Save, RefreshCw } from 'lucide-react';
 import perplexityLogo from '@/assets/perplexity-color.svg';
 import { sendSubmissionEmail } from '@/lib/sendSubmissionEmail';
 import {
@@ -1970,6 +1970,24 @@ Return your analysis as JSON with this structure:
           <div className="flex flex-col h-[80vh]">
             <div className="border-b p-4 flex items-center justify-between shrink-0 pr-12">
               <h2 className="font-semibold text-lg">Admin Panel</h2>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => {
+                  fetchChannels();
+                  fetchUsers();
+                  fetchSubmissions();
+                  fetchComments();
+                  fetchAnalytics();
+                  fetchLeaderboard();
+                  fetchNews();
+                  toast({ title: 'Dashboard refreshed' });
+                }}
+                className="gap-2"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Refresh
+              </Button>
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
