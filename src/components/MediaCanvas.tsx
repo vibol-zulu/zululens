@@ -11,7 +11,7 @@ interface MediaCanvasProps {
   onCircleClick: () => void;
   viewMode: ViewMode;
   country: string;
-  personalizedChannelIds?: string[] | null;
+  userPoliticalScore?: number | null; // -100 to +100 from AI analysis
   userName?: string;
 }
 
@@ -24,7 +24,7 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
   onCircleClick,
   viewMode,
   country,
-  personalizedChannelIds,
+  userPoliticalScore,
   userName = 'You'
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -33,20 +33,16 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
   const scaleRef = useRef<number>(1);
   const userBubbleRef = useRef<{ x: number; y: number; vx: number; vy: number; binIndex: number } | null>(null);
 
-  // Calculate user's political position based on their selected channels
+  // Convert user's political score (-100 to +100) to bin index (0-8)
   const userPoliticalPosition = useMemo(() => {
-    if (!personalizedChannelIds || personalizedChannelIds.length === 0) return null;
+    if (userPoliticalScore === null || userPoliticalScore === undefined) return null;
     
-    const selectedBrands = yearData.brands.filter(b => personalizedChannelIds.includes(b.id));
-    if (selectedBrands.length === 0) return null;
-    
-    // Calculate average bin index
-    const totalBinIndex = selectedBrands.reduce((sum, brand) => {
-      return sum + getSpectrumBinIndex(brand.politicalLean);
-    }, 0);
-    
-    return Math.round(totalBinIndex / selectedBrands.length);
-  }, [personalizedChannelIds, yearData.brands]);
+    // Map -100 to +100 to bin index 0-8
+    // -100 = Far Left = bin 0
+    // +100 = Far Right = bin 8
+    const normalized = (userPoliticalScore + 100) / 200; // 0 to 1
+    return Math.round(normalized * 8);
+  }, [userPoliticalScore]);
 
   // Initialize user bubble position when personalized mode activates
   useEffect(() => {
@@ -73,13 +69,9 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
     
     const boundaryRadius = yearData.totalRadiusPx || 385;
     
-    // Filter brands if in personalized mode
-    const brandsToRender = personalizedChannelIds 
-      ? yearData.brands.filter(b => personalizedChannelIds.includes(b.id))
-      : yearData.brands;
-    
-    circlesRef.current = brandsToRender.map(b => new BrandCircle(b, boundaryRadius));
-  }, [year, yearData, personalizedChannelIds]);
+    // Use all brands - personalized mode just shows user position without filtering
+    circlesRef.current = yearData.brands.map(b => new BrandCircle(b, boundaryRadius));
+  }, [year, yearData]);
 
   // Animation loop
   useEffect(() => {
@@ -347,7 +339,7 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
 
     requestRef.current = requestAnimationFrame(render);
     return () => cancelAnimationFrame(requestRef.current);
-  }, [year, yearData, selectedIds, hoveredId, country, viewMode, personalizedChannelIds, userPoliticalPosition, userName]);
+  }, [year, yearData, selectedIds, hoveredId, country, viewMode, userPoliticalScore, userPoliticalPosition, userName]);
 
   const handleCanvasMouseMove = useCallback((e: React.MouseEvent) => {
     if (!canvasRef.current) return;
