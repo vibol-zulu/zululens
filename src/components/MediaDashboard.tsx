@@ -698,6 +698,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
           setShowSpectrumInput(false);
         }}
         userName={user?.user_metadata?.full_name || visitorName || 'You'}
+        user={user}
       />
       
       {/* Comments Section - visible for all users */}
