@@ -33,7 +33,7 @@ const MissionModal: React.FC<MissionModalProps> = ({
           <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
             <h4 className="font-semibold text-foreground">Why We Exist</h4>
             <p>
-              The Zulu Digital Microscope aims to provide unprecedented transparency into the media landscape. 
+              The Zulu Digital Microscope (by <a href="https://www.zulu.group" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80">Zulu Group</a>) aims to provide unprecedented transparency into the media landscape. 
               By visualizing audience reach and ownership structures, we empower citizens, researchers, and 
               policymakers to understand how information flows through society and who controls the narrative.
             </p>
