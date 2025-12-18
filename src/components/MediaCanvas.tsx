@@ -188,38 +188,14 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
         ctx.setLineDash([]);
       }
 
-      // Compass Grid (Compass mode only)
+      // Compass Grid background line (Compass mode only)
       if (viewMode === 'compass') {
-        const totalW = SPECTRUM_BIN_WIDTH * 5;
-        const startX = cx - totalW / 2;
-        const labels = ["Left", "Progressive", "Moderate", "Conservative", "Right"];
-
         ctx.beginPath();
         ctx.moveTo(0, cy);
         ctx.lineTo(width / viewScale, cy);
         ctx.strokeStyle = '#e0e0e0';
         ctx.lineWidth = 2;
         ctx.stroke();
-
-        for (let i = 0; i < 5; i++) {
-          const x = startX + i * SPECTRUM_BIN_WIDTH;
-          const labelText = labels[i];
-          const textX = x + SPECTRUM_BIN_WIDTH / 2;
-          const textY = cy;
-
-          ctx.font = 'bold 16px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          
-          const metrics = ctx.measureText(labelText);
-          const bgH = 24;
-          const bgW = metrics.width + 14;
-          ctx.fillStyle = 'rgba(255,255,255,0.8)';
-          ctx.fillRect(textX - bgW/2, textY - bgH/2, bgW, bgH);
-
-          ctx.fillStyle = '#666';
-          ctx.fillText(labelText, textX, textY);
-        }
       }
 
       // Update & Draw Circles
@@ -334,6 +310,33 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
       }
       
       ctx.restore();
+
+      // Draw spectrum labels ON TOP of bubbles (after restore to use screen coords)
+      if (viewMode === 'compass') {
+        const totalW = SPECTRUM_BIN_WIDTH * 5;
+        const startX = cx - totalW / 2;
+        const labels = ["Left", "Progressive", "Moderate", "Conservative", "Right"];
+
+        for (let i = 0; i < 5; i++) {
+          const x = startX + i * SPECTRUM_BIN_WIDTH;
+          const labelText = labels[i];
+          const textX = x + SPECTRUM_BIN_WIDTH / 2;
+          const textY = cy;
+
+          ctx.font = 'bold 16px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          
+          const metrics = ctx.measureText(labelText);
+          const bgH = 24;
+          const bgW = metrics.width + 14;
+          ctx.fillStyle = 'rgba(255,255,255,0.9)';
+          ctx.fillRect(textX - bgW/2, textY - bgH/2, bgW, bgH);
+
+          ctx.fillStyle = '#666';
+          ctx.fillText(labelText, textX, textY);
+        }
+      }
       requestRef.current = requestAnimationFrame(render);
     };
 
