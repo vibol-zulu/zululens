@@ -62,7 +62,8 @@ import {
   Flag,
   Pencil,
   ChevronDown,
-  Bell
+  Bell,
+  RefreshCw
 } from 'lucide-react';
 import perplexityLogo from '@/assets/perplexity-color.svg';
 import NotificationsTab from '@/components/NotificationsTab';
@@ -1104,6 +1105,22 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
               <h2 className="font-semibold text-lg">{userName}'s Dashboard</h2>
               <Badge variant="secondary">Moderator</Badge>
             </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => {
+                fetchPendingChannels();
+                fetchMyChannels();
+                fetchAllChannels();
+                fetchComments();
+                fetchNews();
+                toast({ title: 'Dashboard refreshed' });
+              }}
+              className="gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </Button>
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
