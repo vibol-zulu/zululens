@@ -328,8 +328,8 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
           ctx.textBaseline = 'middle';
           
           const metrics = ctx.measureText(labelText);
-          const bgH = 28;
-          const bgW = metrics.width + 16;
+          const bgH = 36;
+          const bgW = metrics.width + 28;
           const bgX = textX - bgW / 2;
           const bgY = textY - bgH / 2;
           const radius = 6;
