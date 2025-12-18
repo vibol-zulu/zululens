@@ -189,4 +189,17 @@
     0% { background-position: 200% 0; }
     100% { background-position: 0% 0; }
   }
+
+  .shimmer-button {
+    background: linear-gradient(
+      90deg,
+      hsl(0 0% 100%) 0%,
+      hsl(0 0% 100%) 40%,
+      hsl(0 0% 85%) 50%,
+      hsl(0 0% 100%) 60%,
+      hsl(0 0% 100%) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
+  }
 }
