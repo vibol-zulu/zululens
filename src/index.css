@@ -170,9 +170,9 @@
   .shimmer-text {
     background: linear-gradient(
       90deg,
-      hsl(var(--muted-foreground)) 0%,
-      hsl(var(--foreground)) 50%,
-      hsl(var(--muted-foreground)) 100%
+      hsl(var(--independent)) 0%,
+      hsl(10 70% 85%) 50%,
+      hsl(var(--independent)) 100%
     );
     background-size: 200% 100%;
     -webkit-background-clip: text;
