@@ -78,9 +78,32 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.scale(dpr * viewScale, dpr * viewScale);
 
-      const cx = (width / viewScale) / 2;
-      const cy = (height / viewScale) / 2;
+      const scaledWidth = width / viewScale;
+      const scaledHeight = height / viewScale;
+      const cx = scaledWidth / 2;
+      const cy = scaledHeight / 2;
       const boundaryRadius = yearData.totalRadiusPx || 385;
+
+      // Draw faint background grid
+      const gridSize = 40;
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.04)';
+      ctx.lineWidth = 1;
+      
+      // Vertical lines
+      for (let x = 0; x <= scaledWidth; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, scaledHeight);
+        ctx.stroke();
+      }
+      
+      // Horizontal lines
+      for (let y = 0; y <= scaledHeight; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(scaledWidth, y);
+        ctx.stroke();
+      }
 
       // Draw boundaries (Default mode only)
       if (viewMode === 'default') {
