@@ -97,13 +97,13 @@ const BrandItem: React.FC<BrandItemProps> = ({
       />
       <label
         htmlFor={`cb-${brand.id}`}
-        className={cn("cursor-pointer leading-tight flex-1 font-geist", isMobile ? "text-xs" : "text-sm")}
+        className={cn("cursor-pointer leading-tight flex-1 font-geist", isMobile ? "text-[10px]" : "text-xs")}
       >
         <span className={cn("font-medium", isSelected && "font-semibold")}>
           {brand.name}
         </span>
-        <span className={cn("text-muted-foreground ml-1", isMobile ? "text-xs" : "text-xs")}>({brand.valueMillions}M)</span>
-        <div className={cn("text-muted-foreground italic mt-0.5", isMobile ? "text-[10px]" : "text-xs")}>{brand.platform}</div>
+        <span className={cn("text-muted-foreground ml-1", isMobile ? "text-[9px]" : "text-[10px]")}>({brand.valueMillions}M)</span>
+        <div className={cn("text-muted-foreground italic mt-0.5", isMobile ? "text-[9px]" : "text-[10px]")}>{brand.platform}</div>
       </label>
     </div>
   );
