@@ -41,6 +41,36 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Check how many unpublished articles exist
+    const { data: unpublishedNews, error: unpublishedError } = await supabase
+      .from('news_updates')
+      .select('id')
+      .eq('is_published', false);
+
+    if (unpublishedError) {
+      console.error('Error checking unpublished articles:', unpublishedError);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Failed to check unpublished articles' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const unpublishedCount = unpublishedNews?.length || 0;
+    console.log(`Found ${unpublishedCount} unpublished articles`);
+
+    // Only fetch new articles if there are fewer than 5 unpublished
+    if (unpublishedCount >= 5) {
+      console.log('Skipping fetch - 5 or more unpublished articles pending review');
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          articlesAdded: 0,
+          message: `Skipped: ${unpublishedCount} unpublished articles pending review. Publish existing articles before fetching more.`
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Get existing article titles to avoid duplicates
     const { data: existingNews } = await supabase
       .from('news_updates')
