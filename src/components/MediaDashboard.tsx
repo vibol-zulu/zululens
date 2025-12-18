@@ -377,11 +377,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               {isMobile ? 'Micro' : 'Microscope'}
             </button>
             <button 
-              onClick={() => {
-                if (viewMode !== 'compass') {
-                  setShowSpectrumInput(true);
-                }
-              }}
+              onClick={() => setViewMode('compass')}
               className={`${isMobile ? 'px-2 text-xs' : 'px-4 text-sm'} py-1.5 rounded-full font-medium transition-all ${
                 viewMode === 'compass' 
                   ? 'bg-card shadow-sm text-foreground' 
@@ -538,7 +534,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                 variant="outline"
                 className="bg-card/90 backdrop-blur-sm shadow-lg hover:bg-card"
               >
-                Change My Channels
+                {personalizedChannelIds ? 'Change My Channels' : 'Find My Position'}
               </Button>
             </div>
           )}
