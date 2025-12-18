@@ -1,10 +1,18 @@
 import { supabase } from '@/integrations/supabase/client';
 
+interface AIAnalysisData {
+  estimatedAudience?: number;
+  politicalLean?: string;
+  category?: string;
+  comparableChannels?: string[];
+}
+
 interface SendSubmissionEmailParams {
   userId: string;
   channelName: string;
   status: 'approved' | 'rejected';
   country: string;
+  aiAnalysis?: AIAnalysisData;
 }
 
 export async function sendSubmissionEmail(params: SendSubmissionEmailParams): Promise<boolean> {

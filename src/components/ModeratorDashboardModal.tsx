@@ -794,12 +794,18 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
           created_by: user?.id
         });
         
-        // Send email notification
+        // Send email notification with AI analysis data
         sendSubmissionEmail({
           userId: channelToReview.author_id,
           channelName: channelToReview.name,
           status: 'approved',
-          country: channelToReview.country
+          country: channelToReview.country,
+          aiAnalysis: {
+            estimatedAudience: estimationResult.deduplicatedAudience,
+            politicalLean: estimationResult.politicalLean,
+            category: estimationResult.inputValidation?.suggestedCategory || channelToReview.category,
+            comparableChannels: estimationResult.comparableChannels
+          }
         });
       }
 
