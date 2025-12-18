@@ -41,6 +41,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTour } from '@/components/GuidedTour';
 
 import WelcomeModal from '@/components/WelcomeModal';
+import ContributorCelebration from '@/components/ContributorCelebration';
 
 interface MediaDashboardProps {
   visitorName: string;
@@ -84,6 +85,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   const [signInDefaultTab, setSignInDefaultTab] = useState<'signin' | 'signup'>('signin');
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
   const [pendingSubmissionsCount, setPendingSubmissionsCount] = useState(0);
+  const [showContributorCelebration, setShowContributorCelebration] = useState(false);
 
   // App settings
   const { settings: appSettings } = useAppSettings();
@@ -148,7 +150,45 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   
   // Check if user is a Tier 2 member (authenticated but not contributor/moderator/admin)
   const isMember = user && !isContributor && !isModerator && !isAdmin;
-  
+
+  // Check if member has reached 10 approved submissions for celebration
+  useEffect(() => {
+    const checkContributorEligibility = async () => {
+      if (!user || !isMember) return;
+      
+      // Check localStorage to see if user has already seen the celebration
+      const celebrationKey = `contributor_celebration_${user.id}`;
+      const hasSeenCelebration = localStorage.getItem(celebrationKey);
+      
+      if (hasSeenCelebration) return;
+      
+      try {
+        // Count approved submissions for this user
+        const { count, error } = await supabase
+          .from('user_channels')
+          .select('*', { count: 'exact', head: true })
+          .eq('author_id', user.id)
+          .eq('status', 'approved');
+        
+        if (error) {
+          console.error('Error checking approved submissions:', error);
+          return;
+        }
+        
+        // Show celebration if they have 10+ approved submissions
+        if (count !== null && count >= 10) {
+          setShowContributorCelebration(true);
+          // Mark as seen so it doesn't show again
+          localStorage.setItem(celebrationKey, 'true');
+        }
+      } catch (err) {
+        console.error('Error checking contributor eligibility:', err);
+      }
+    };
+    
+    checkContributorEligibility();
+  }, [user, isMember]);
+
   // Get user tier badge
   const getUserBadge = () => {
     if (isAdmin) return { label: 'Admin', variant: 'default' as const };
@@ -565,6 +605,11 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
         onOpenChange={setShowWelcome} 
         userName={visitorName}
         onStartExploring={startTour}
+      />
+      <ContributorCelebration
+        open={showContributorCelebration}
+        onOpenChange={setShowContributorCelebration}
+        userName={user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Member'}
       />
       
       {/* Comments Section - visible for all users */}

@@ -54,7 +54,7 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
 }) => {
   const { submissions, stats, loading, refetch } = useMySubmissions();
   const { toast } = useToast();
-  const progressPercent = (stats.progressToContributor / 20) * 100;
+  const progressPercent = (stats.progressToContributor / 10) * 100;
   const [activeTab, setActiveTab] = React.useState('overview');
   const [submissionsSearch, setSubmissionsSearch] = React.useState('');
 
@@ -220,11 +220,11 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
                       <TrendingUp className="w-4 h-4 text-primary" />
                       <span>Progress to Contributor</span>
                     </div>
-                    <span className="text-sm font-semibold text-primary">{stats.approved}/20</span>
+                    <span className="text-sm font-semibold text-primary">{stats.approved}/10</span>
                   </div>
                   <Progress value={progressPercent} className="h-2 mb-2" />
                   <p className="text-xs text-muted-foreground">
-                    {20 - stats.approved} more approved suggestions needed
+                    {Math.max(0, 10 - stats.approved)} more approved suggestions needed
                   </p>
                 </div>
 

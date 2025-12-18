@@ -24,7 +24,7 @@ export interface SubmissionStats {
   pending: number;
   approved: number;
   rejected: number;
-  progressToContributor: number; // out of 20
+  progressToContributor: number; // out of 10
 }
 
 export function useMySubmissions() {
@@ -76,7 +76,7 @@ export function useMySubmissions() {
         pending,
         approved,
         rejected,
-        progressToContributor: Math.min(approved, 20)
+        progressToContributor: Math.min(approved, 10)
       });
     } catch (error) {
       console.error('Error fetching submissions:', error);
