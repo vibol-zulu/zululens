@@ -85,7 +85,7 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
       const boundaryRadius = yearData.totalRadiusPx || 385;
 
       // Draw faint background grid
-      const gridSize = 40;
+      const gridSize = 20;
       ctx.strokeStyle = 'rgba(0, 0, 0, 0.04)';
       ctx.lineWidth = 1;
       
