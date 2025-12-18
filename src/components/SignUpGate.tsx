@@ -144,9 +144,15 @@ const SignUpGate: React.FC<SignUpGateProps> = ({ onJoin }) => {
             <button
               type="submit"
               disabled={submitted}
+              style={{
+                background: "white",
+                color: "hsl(170 30% 18%)",
+                mixBlendMode: "screen",
+                boxShadow: "none",
+              }}
               className="w-full h-14 px-10 tracking-widest uppercase transition-all duration-300 rounded-md text-sm font-medium font-sans bg-white"
             >
-              <span className="shimmer-text-dark">{submitted ? "Unlocking..." : "Unlock Infographic"}</span>
+              {submitted ? "Unlocking..." : "Unlock Infographic"}
             </button>
           </form>
 
