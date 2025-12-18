@@ -125,8 +125,8 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
         ctx.setLineDash([]);
 
         // Draw circular line array (radial lines) inside the dashed circle
-        const lineArrayOuterRadius = boundaryRadius - 12; // Gap from dashed circle
-        const lineArrayInnerRadius = boundaryRadius - 37; // Line length
+        const lineArrayOuterRadius = boundaryRadius - 6; // Gap from dashed circle
+        const lineArrayInnerRadius = boundaryRadius - 46; // Line length
         const numLines = 300; // Number of radial lines
         ctx.strokeStyle = '#e0e0e0'; // Match dashed circle color
         ctx.lineWidth = 1;
