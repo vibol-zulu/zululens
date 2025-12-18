@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const allowedOrigins = [
   'https://lovableproject.com',
@@ -22,7 +23,7 @@ function getCorsHeaders(origin: string | null) {
   };
 }
 
-const SYSTEM_PROMPT = `You are an expert media analyst specializing in political media classification and audience analysis. Your task is to analyze a list of news sources/channels that a user consumes and determine their likely position on the political spectrum.
+const DEFAULT_SYSTEM_PROMPT = `You are an expert media analyst specializing in political media classification and audience analysis. Your task is to analyze a list of news sources/channels that a user consumes and determine their likely position on the political spectrum.
 
 You have deep knowledge of:
 - Political positioning of major and independent media outlets worldwide
@@ -31,7 +32,7 @@ You have deep knowledge of:
 
 Use your search capabilities to look up any channels you're not familiar with to determine their political lean.`;
 
-const USER_PROMPT_TEMPLATE = `A user has indicated they regularly consume news from the following sources:
+const DEFAULT_USER_PROMPT_TEMPLATE = `A user has indicated they regularly consume news from the following sources:
 
 {channels}
 
@@ -73,6 +74,43 @@ Return your analysis as JSON with this structure:
   "diversityNote": "Brief note about ideological diversity in their media consumption"
 }`;
 
+async function getPromptsFromSettings(): Promise<{ systemPrompt: string; userPromptTemplate: string }> {
+  try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.log('Supabase credentials not available, using default prompts');
+      return { systemPrompt: DEFAULT_SYSTEM_PROMPT, userPromptTemplate: DEFAULT_USER_PROMPT_TEMPLATE };
+    }
+    
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    const { data, error } = await supabase
+      .from('app_settings')
+      .select('key, value')
+      .in('key', ['political_system_prompt', 'political_user_prompt']);
+    
+    if (error) {
+      console.error('Error fetching prompts from settings:', error);
+      return { systemPrompt: DEFAULT_SYSTEM_PROMPT, userPromptTemplate: DEFAULT_USER_PROMPT_TEMPLATE };
+    }
+    
+    const settingsMap: Record<string, string> = {};
+    data?.forEach(item => {
+      settingsMap[item.key] = item.value;
+    });
+    
+    return {
+      systemPrompt: settingsMap['political_system_prompt'] || DEFAULT_SYSTEM_PROMPT,
+      userPromptTemplate: settingsMap['political_user_prompt'] || DEFAULT_USER_PROMPT_TEMPLATE
+    };
+  } catch (err) {
+    console.error('Failed to fetch prompts:', err);
+    return { systemPrompt: DEFAULT_SYSTEM_PROMPT, userPromptTemplate: DEFAULT_USER_PROMPT_TEMPLATE };
+  }
+}
+
 serve(async (req) => {
   const origin = req.headers.get('origin');
   const corsHeaders = getCorsHeaders(origin);
@@ -102,8 +140,12 @@ serve(async (req) => {
       );
     }
 
+    // Fetch prompts from database settings
+    const { systemPrompt, userPromptTemplate } = await getPromptsFromSettings();
+    console.log('Using prompts from settings');
+
     const channelList = channels.map((c, i) => `${i + 1}. ${c}`).join('\n');
-    const userPrompt = USER_PROMPT_TEMPLATE.replace('{channels}', channelList);
+    const userPrompt = userPromptTemplate.replace('{channels}', channelList);
 
     let response;
     let usingPerplexity = false;
@@ -122,7 +164,7 @@ serve(async (req) => {
         body: JSON.stringify({
           model: 'sonar',
           messages: [
-            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'system', content: systemPrompt },
             { role: 'user', content: userPrompt }
           ],
           temperature: 0.2,
@@ -148,7 +190,7 @@ serve(async (req) => {
         body: JSON.stringify({
           model: 'google/gemini-2.5-flash',
           messages: [
-            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'system', content: systemPrompt },
             { role: 'user', content: userPrompt }
           ],
           temperature: 0.3,

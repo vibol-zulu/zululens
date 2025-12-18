@@ -408,6 +408,61 @@ Format your response as JSON with this structure:
   const [guidedTourEnabled, setGuidedTourEnabled] = useState(false);
   const [audienceSystemPrompt, setAudienceSystemPrompt] = useState(DEFAULT_SYSTEM_PROMPT);
   const [audienceUserPrompt, setAudienceUserPrompt] = useState(DEFAULT_USER_PROMPT);
+  
+  // Political Position Analysis Prompts
+  const DEFAULT_POLITICAL_SYSTEM_PROMPT = `You are an expert media analyst specializing in political media classification and audience analysis. Your task is to analyze a list of news sources/channels that a user consumes and determine their likely position on the political spectrum.
+
+You have deep knowledge of:
+- Political positioning of major and independent media outlets worldwide
+- Media bias indicators and classifications from organizations like AllSides, Ad Fontes Media, Media Bias/Fact Check
+- The political landscape of news media including podcasts, YouTube channels, cable news, print media, and digital outlets
+
+Use your search capabilities to look up any channels you're not familiar with to determine their political lean.`;
+
+  const DEFAULT_POLITICAL_USER_PROMPT = `A user has indicated they regularly consume news from the following sources:
+
+{channels}
+
+Please analyze these news sources and determine:
+
+1. **Individual Channel Analysis** - For each channel, identify:
+   - The channel's political lean (Far Left, Progressive/Left, Center-Left, Center, Center-Right, Right, Far Right, Libertarian, or Non-partisan)
+   - Brief reasoning for the classification
+
+2. **Overall Political Position** - Based on the combination of sources, determine where this user likely sits on the political spectrum. Consider:
+   - The weighted average of their news diet
+   - Whether they consume diverse perspectives or stay in one ideological lane
+   - The frequency-weight (assume equal consumption across listed sources)
+
+3. **Position on Spectrum** - Return a numeric value from -100 to +100 where:
+   - -100 = Far Left
+   - -60 = Progressive/Left
+   - -30 = Center-Left
+   - 0 = Center
+   - +30 = Center-Right
+   - +60 = Right
+   - +100 = Far Right
+
+Return your analysis as JSON with this structure:
+{
+  "channels": [
+    {
+      "name": "Channel Name",
+      "politicalLean": "Center-Left",
+      "reasoning": "Brief explanation"
+    }
+  ],
+  "overallPosition": {
+    "label": "Center-Left",
+    "numericValue": -30,
+    "description": "Based on your news diet, you consume primarily center-left perspectives with some mainstream sources."
+  },
+  "diversityScore": "low/medium/high",
+  "diversityNote": "Brief note about ideological diversity in their media consumption"
+}`;
+
+  const [politicalSystemPrompt, setPoliticalSystemPrompt] = useState(DEFAULT_POLITICAL_SYSTEM_PROMPT);
+  const [politicalUserPrompt, setPoliticalUserPrompt] = useState(DEFAULT_POLITICAL_USER_PROMPT);
   const [settingsLoading, setSettingsLoading] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
 
@@ -470,6 +525,12 @@ Format your response as JSON with this structure:
       if (settingsMap['audience_user_prompt']) {
         setAudienceUserPrompt(settingsMap['audience_user_prompt']);
       }
+      if (settingsMap['political_system_prompt']) {
+        setPoliticalSystemPrompt(settingsMap['political_system_prompt']);
+      }
+      if (settingsMap['political_user_prompt']) {
+        setPoliticalUserPrompt(settingsMap['political_user_prompt']);
+      }
     } catch (error) {
       console.error('Error fetching settings:', error);
     } finally {
@@ -492,6 +553,12 @@ Format your response as JSON with this structure:
       }
       if (audienceUserPrompt.trim()) {
         settingsToSave.push({ key: 'audience_user_prompt', value: audienceUserPrompt });
+      }
+      if (politicalSystemPrompt.trim()) {
+        settingsToSave.push({ key: 'political_system_prompt', value: politicalSystemPrompt });
+      }
+      if (politicalUserPrompt.trim()) {
+        settingsToSave.push({ key: 'political_user_prompt', value: politicalUserPrompt });
       }
       
       for (const setting of settingsToSave) {
@@ -3035,6 +3102,43 @@ Format your response as JSON with this structure:
                         />
                         <p className="text-xs text-muted-foreground">
                           Template for analyzing channels. Available placeholders: {'{channel.name}'}, {'{channel.platform}'}, {'{channel.contentType}'}, {'{channel.politicalLean}'}, {'{channel.category}'}, {'{channel.country}'}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <img src={perplexityLogo} alt="Perplexity" className="h-4 w-4" />
+                        Political Position Analysis Prompts
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="political-system-prompt">System Prompt</Label>
+                        <Textarea
+                          id="political-system-prompt"
+                          value={politicalSystemPrompt}
+                          onChange={(e) => setPoliticalSystemPrompt(e.target.value)}
+                          placeholder="You are an expert media analyst specializing in political media classification..."
+                          className="font-mono text-xs min-h-[150px]"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Defines the AI's role for analyzing user's political position based on news sources.
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="political-user-prompt">User Prompt Template</Label>
+                        <Textarea
+                          id="political-user-prompt"
+                          value={politicalUserPrompt}
+                          onChange={(e) => setPoliticalUserPrompt(e.target.value)}
+                          placeholder="A user has indicated they regularly consume news from the following sources..."
+                          className="font-mono text-xs min-h-[200px]"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Template for analyzing user's political position. Use {'{channels}'} placeholder for the list of channels.
                         </p>
                       </div>
                     </CardContent>
