@@ -114,6 +114,26 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
         ctx.stroke();
         ctx.setLineDash([]);
 
+        // Draw circular line array (radial lines) inside the dashed circle
+        const lineArrayOuterRadius = boundaryRadius - 25; // Gap from dashed circle
+        const lineArrayInnerRadius = boundaryRadius - 50; // Line length
+        const numLines = 180; // Number of radial lines
+        ctx.strokeStyle = 'rgba(248, 212, 200, 0.4)'; // Peach color with transparency
+        ctx.lineWidth = 1;
+        
+        for (let i = 0; i < numLines; i++) {
+          const angle = (i / numLines) * Math.PI * 2;
+          const x1 = cx + Math.cos(angle) * lineArrayInnerRadius;
+          const y1 = cy + Math.sin(angle) * lineArrayInnerRadius;
+          const x2 = cx + Math.cos(angle) * lineArrayOuterRadius;
+          const y2 = cy + Math.sin(angle) * lineArrayOuterRadius;
+          
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.stroke();
+        }
+
         ctx.beginPath();
         ctx.arc(cx, cy, INNER_CONTAINER_RADIUS, 0, Math.PI * 2);
         ctx.strokeStyle = 'rgba(0,0,0,0.05)';
