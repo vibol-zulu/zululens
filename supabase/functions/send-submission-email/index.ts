@@ -4,6 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 const allowedOrigins = [
   'https://rrkafsajterndartjuvg.lovableproject.com',
   'https://preview--rrkafsajterndartjuvg.lovable.app',
+  'https://rrkafsajterndartjuvg.lovable.app',
   'http://localhost:5173',
   'http://localhost:3000'
 ];
@@ -94,10 +95,15 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { userId, channelName, status, country, aiAnalysis }: SubmissionEmailRequest = await req.json();
+    console.log('send-submission-email function invoked');
+    const body = await req.json();
+    console.log('Request body:', JSON.stringify(body));
+    
+    const { userId, channelName, status, country, aiAnalysis }: SubmissionEmailRequest = body;
 
     // Validate inputs
     if (!userId || !channelName || !status) {
+      console.error('Missing required fields:', { userId, channelName, status });
       return new Response(
         JSON.stringify({ error: "Missing required fields" }),
         { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }

@@ -16,6 +16,8 @@ interface SendSubmissionEmailParams {
 }
 
 export async function sendSubmissionEmail(params: SendSubmissionEmailParams): Promise<boolean> {
+  console.log('sendSubmissionEmail called with params:', params);
+  
   try {
     const { data, error } = await supabase.functions.invoke('send-submission-email', {
       body: params
