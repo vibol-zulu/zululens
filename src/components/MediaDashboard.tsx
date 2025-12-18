@@ -104,7 +104,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   
   // Personalized spectrum state
   const [showSpectrumInput, setShowSpectrumInput] = useState(false);
-  const [personalizedChannelIds, setPersonalizedChannelIds] = useState<string[] | null>(null);
+  const [userPoliticalScore, setUserPoliticalScore] = useState<number | null>(null);
 
   const { settings: appSettings } = useAppSettings();
   
@@ -366,7 +366,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
             <button 
               onClick={() => {
                 setViewMode('default');
-                setPersonalizedChannelIds(null);
+                setUserPoliticalScore(null);
               }}
               className={`${isMobile ? 'px-2 text-xs' : 'px-4 text-sm'} py-1.5 rounded-full font-medium transition-all ${
                 viewMode === 'default' 
@@ -522,7 +522,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
             onCircleClick={handleCircleClick}
             viewMode={viewMode}
             country={country}
-            personalizedChannelIds={personalizedChannelIds}
+            userPoliticalScore={userPoliticalScore}
             userName={user?.user_metadata?.full_name || visitorName || 'You'}
           />
           
@@ -692,12 +692,11 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
       <SpectrumInputModal
         isOpen={showSpectrumInput}
         onClose={() => setShowSpectrumInput(false)}
-        onSubmit={(channelIds) => {
-          setPersonalizedChannelIds(channelIds);
+        onSubmit={(result) => {
+          setUserPoliticalScore(result.overallPosition.numericValue);
           setViewMode('compass');
           setShowSpectrumInput(false);
         }}
-        allChannels={mergedData.brands}
         userName={user?.user_metadata?.full_name || visitorName || 'You'}
       />
       
