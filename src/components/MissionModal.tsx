@@ -1,7 +1,7 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Rocket } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/useAuth';
 
 interface MissionModalProps {
@@ -22,94 +22,71 @@ const MissionModal: React.FC<MissionModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold flex items-center gap-2">
-            <Rocket className="h-6 w-6" style={{ color: '#F8D4C8' }} />
+      <DialogContent className="max-w-2xl max-h-[90vh] p-0">
+        <DialogHeader className="p-6 pb-0">
+          <DialogTitle className="text-2xl text-primary">
             Our Mission
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
-          {/* Goal Section */}
-          <section>
-            <h3 className="text-lg font-semibold mb-2 text-foreground">Why We Exist</h3>
-            <p className="text-muted-foreground leading-relaxed">
+        <ScrollArea className="max-h-[70vh] px-6 pb-6">
+          <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
+            <h4 className="font-semibold text-foreground">Why We Exist</h4>
+            <p>
               The Zulu Digital Microscope aims to provide unprecedented transparency into the media landscape. 
               By visualizing audience reach and ownership structures, we empower citizens, researchers, and 
               policymakers to understand how information flows through society and who controls the narrative.
             </p>
-          </section>
 
-          {/* Community Section */}
-          <section>
-            <h3 className="text-lg font-semibold mb-2 text-foreground">
-              Building a Community of Contributors
-            </h3>
-            <p className="text-muted-foreground leading-relaxed">
+            <h4 className="font-semibold text-foreground mt-6">Building a Community of Contributors</h4>
+            <p>
               No single team can map the global media landscape alone. We're building a community of 
               passionate contributors who can help us expand coverage to every country and refine data 
               accuracy over time. Whether you're a media researcher, journalist, or simply someone who 
               cares about media transparency, your knowledge is invaluable.
             </p>
-          </section>
 
-          {/* User Tiers Section */}
-          <section>
-            <h3 className="text-lg font-semibold mb-4 text-foreground">
-              Your Journey with Us
-            </h3>
+            <h4 className="font-semibold text-foreground mt-6">Your Journey with Us</h4>
             
-            <div className="space-y-3">
-              {/* Tier 1 */}
-              <div className="border rounded-lg p-4 bg-muted/30">
-                <h4 className="font-medium mb-1">Visitor</h4>
-                <p className="text-sm text-muted-foreground">
-                  Explore the visualization. Create an account to become a Member.      
-                </p>
+            <div className="space-y-3 mt-4">
+              <div>
+                <h5 className="font-medium text-foreground">Visitor</h5>
+                <p>Explore the visualization. Create an account to become a Member.</p>
               </div>
 
-              {/* Tier 2 */}
-              <div className="border rounded-lg p-4 bg-muted/30">
-                <h4 className="font-medium mb-1">Member</h4>
-                <p className="text-sm text-muted-foreground">
-                  Suggest new channels and join discussions. 
-                  Earn Contributor status by getting 20 suggestions approved.
-                </p>
+              <div>
+                <h5 className="font-medium text-foreground">Member</h5>
+                <p>Suggest new channels and join discussions. Earn Contributor status by getting 10 suggestions approved.</p>
               </div>
 
-              {/* Tier 3 */}
-              <div className="border rounded-lg p-4 bg-muted/30">
-                <h4 className="font-medium mb-1">Contributor</h4>
-                <p className="text-sm text-muted-foreground">
-                  Consistent Contributors will be invited to become Moderators!
-                </p>
+              <div>
+                <h5 className="font-medium text-foreground">Contributor</h5>
+                <p>Consistent Contributors will be invited to become Moderators!</p>
               </div>
 
-              {/* Tier 4 */}
-              <div className="border rounded-lg p-4 bg-muted/30">
-                <h4 className="font-medium mb-1">Moderator</h4>
-                <p className="text-sm text-muted-foreground">
-                  Moderators review and approve channel submissions, ensuring data quality and accuracy.
-                </p>
+              <div>
+                <h5 className="font-medium text-foreground">Moderator</h5>
+                <p>Moderators review and approve channel submissions, ensuring data quality and accuracy.</p>
               </div>
             </div>
-          </section>
 
-          {/* CTA - Only show for Tier 1 (unauthenticated) users */}
-          {!isAuthenticated && (
-            <section className="text-center pt-4 border-t space-y-4">
-              <p className="text-muted-foreground">
-                Ready to join our community?
-              </p>
-              <Button onClick={() => {
-                onOpenChange(false);
-                onSignUpClick?.();
-              }}>
-                Create an account
-              </Button>
-            </section>
-          )}
+            {/* CTA - Only show for Tier 1 (unauthenticated) users */}
+            {!isAuthenticated && (
+              <div className="text-center pt-6 mt-6 border-t">
+                <p className="mb-4">Ready to join our community?</p>
+                <Button onClick={() => {
+                  onOpenChange(false);
+                  onSignUpClick?.();
+                }}>
+                  Create an account
+                </Button>
+              </div>
+            )}
+          </div>
+        </ScrollArea>
+
+        <div className="p-6 pt-0 flex justify-center">
+          <Button onClick={() => onOpenChange(false)}>Close</Button>
         </div>
       </DialogContent>
     </Dialog>
