@@ -29,11 +29,59 @@ function escapeHtml(str: string): string {
     .replace(/'/g, '&#039;');
 }
 
+interface AIAnalysisData {
+  estimatedAudience?: number;
+  politicalLean?: string;
+  category?: string;
+  comparableChannels?: string[];
+}
+
 interface SubmissionEmailRequest {
   userId: string;
   channelName: string;
   status: 'approved' | 'rejected';
   country: string;
+  aiAnalysis?: AIAnalysisData;
+}
+
+function buildAIAnalysisSection(aiAnalysis: AIAnalysisData | undefined, isApproved: boolean): string {
+  if (!aiAnalysis) return '';
+  
+  const items: string[] = [];
+  
+  if (aiAnalysis.estimatedAudience !== undefined) {
+    items.push(`<li><strong>Estimated Monthly Audience:</strong> ${aiAnalysis.estimatedAudience.toFixed(2)}M</li>`);
+  }
+  
+  if (aiAnalysis.politicalLean) {
+    items.push(`<li><strong>Political Lean:</strong> ${escapeHtml(aiAnalysis.politicalLean)}</li>`);
+  }
+  
+  if (aiAnalysis.category) {
+    items.push(`<li><strong>Category:</strong> ${escapeHtml(aiAnalysis.category)}</li>`);
+  }
+  
+  if (aiAnalysis.comparableChannels && aiAnalysis.comparableChannels.length > 0) {
+    const channels = aiAnalysis.comparableChannels.slice(0, 3).map(c => escapeHtml(c)).join(', ');
+    items.push(`<li><strong>Comparable Channels:</strong> ${channels}</li>`);
+  }
+  
+  if (items.length === 0) return '';
+  
+  const bgColor = isApproved ? '#E3F2FD' : '#FFF8E1';
+  const borderColor = isApproved ? '#2196F3' : '#FFC107';
+  const headerColor = isApproved ? '#1565C0' : '#F57F17';
+  
+  return `
+    <div style="background-color: ${bgColor}; border-left: 4px solid ${borderColor}; padding: 15px; margin: 20px 0; border-radius: 4px;">
+      <p style="margin: 0 0 10px 0; color: ${headerColor}; font-weight: bold; font-size: 14px;">
+        📊 AI Analysis Results
+      </p>
+      <ul style="margin: 0; padding-left: 20px; color: #333; font-size: 14px; line-height: 1.8;">
+        ${items.join('')}
+      </ul>
+    </div>
+  `;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -46,7 +94,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { userId, channelName, status, country }: SubmissionEmailRequest = await req.json();
+    const { userId, channelName, status, country, aiAnalysis }: SubmissionEmailRequest = await req.json();
 
     // Validate inputs
     if (!userId || !channelName || !status) {
@@ -92,6 +140,8 @@ const handler = async (req: Request): Promise<Response> => {
       ? `🎉 Your Channel Submission Has Been Approved!`
       : `Update on Your Channel Submission`;
 
+    const aiAnalysisHtml = buildAIAnalysisSection(aiAnalysis, isApproved);
+
     const htmlContent = isApproved
       ? `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -100,6 +150,8 @@ const handler = async (req: Request): Promise<Response> => {
           <p style="color: #333; font-size: 16px; line-height: 1.6;">
             Your channel submission <strong>"${safeChannelName}"</strong> for ${safeCountry} has been approved and is now live in the Media Landscape visualization!
           </p>
+          
+          ${aiAnalysisHtml}
           
           <div style="background-color: #E8F5E9; border-left: 4px solid #4CAF50; padding: 15px; margin: 20px 0;">
             <p style="margin: 0; color: #2E7D32; font-size: 14px;">
@@ -141,6 +193,8 @@ const handler = async (req: Request): Promise<Response> => {
             <li>The submission may not meet our editorial guidelines</li>
           </ul>
           
+          ${aiAnalysisHtml}
+          
           <div style="background-color: #FFF3E0; border-left: 4px solid #FF9800; padding: 15px; margin: 20px 0;">
             <p style="margin: 0; color: #E65100; font-size: 14px;">
               <strong>Want to dispute this decision?</strong><br />
@@ -160,7 +214,7 @@ const handler = async (req: Request): Promise<Response> => {
         </div>
       `;
 
-    console.log(`Sending ${status} email to ${profile.email} for channel "${channelName}"`);
+    console.log(`Sending ${status} email to ${profile.email} for channel "${channelName}"`, aiAnalysis ? 'with AI analysis' : '');
 
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",

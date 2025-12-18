@@ -1494,12 +1494,18 @@ Format your response as JSON with this structure:
           created_by: user?.id
         });
         
-        // Send email notification
+        // Send email notification with AI analysis data
         sendSubmissionEmail({
           userId: selectedSubmission.author_id,
           channelName: selectedSubmission.name,
           status: 'approved',
-          country: selectedSubmission.country
+          country: selectedSubmission.country,
+          aiAnalysis: {
+            estimatedAudience: estimationResult.deduplicatedAudience,
+            politicalLean: estimationResult.politicalLean,
+            category: estimationResult.inputValidation?.suggestedCategory || selectedSubmission.category,
+            comparableChannels: estimationResult.comparableChannels
+          }
         });
       }
 
