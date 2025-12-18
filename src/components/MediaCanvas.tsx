@@ -1,6 +1,6 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { YearData, ViewMode, COLORS } from '@/types/media';
-import { BrandCircle, INNER_CONTAINER_RADIUS, SPECTRUM_BIN_WIDTH, SPECTRUM_BIN_HEIGHT } from '@/lib/BrandCircle';
+import { BrandCircle, INNER_CONTAINER_RADIUS, SPECTRUM_BIN_WIDTH, SPECTRUM_BIN_HEIGHT, getSpectrumBinIndex } from '@/lib/BrandCircle';
 
 interface MediaCanvasProps {
   year: number;
@@ -11,6 +11,8 @@ interface MediaCanvasProps {
   onCircleClick: () => void;
   viewMode: ViewMode;
   country: string;
+  personalizedChannelIds?: string[] | null;
+  userName?: string;
 }
 
 const MediaCanvas: React.FC<MediaCanvasProps> = ({
@@ -21,12 +23,46 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
   setHoveredId,
   onCircleClick,
   viewMode,
-  country
+  country,
+  personalizedChannelIds,
+  userName = 'You'
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const circlesRef = useRef<BrandCircle[]>([]);
   const requestRef = useRef<number>(0);
   const scaleRef = useRef<number>(1);
+  const userBubbleRef = useRef<{ x: number; y: number; vx: number; vy: number; binIndex: number } | null>(null);
+
+  // Calculate user's political position based on their selected channels
+  const userPoliticalPosition = useMemo(() => {
+    if (!personalizedChannelIds || personalizedChannelIds.length === 0) return null;
+    
+    const selectedBrands = yearData.brands.filter(b => personalizedChannelIds.includes(b.id));
+    if (selectedBrands.length === 0) return null;
+    
+    // Calculate average bin index
+    const totalBinIndex = selectedBrands.reduce((sum, brand) => {
+      return sum + getSpectrumBinIndex(brand.politicalLean);
+    }, 0);
+    
+    return Math.round(totalBinIndex / selectedBrands.length);
+  }, [personalizedChannelIds, yearData.brands]);
+
+  // Initialize user bubble position when personalized mode activates
+  useEffect(() => {
+    if (userPoliticalPosition !== null && viewMode === 'compass') {
+      const targetX = (userPoliticalPosition - 2) * SPECTRUM_BIN_WIDTH;
+      userBubbleRef.current = {
+        x: targetX + (Math.random() - 0.5) * 100,
+        y: (Math.random() - 0.5) * 100,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        binIndex: userPoliticalPosition
+      };
+    } else {
+      userBubbleRef.current = null;
+    }
+  }, [userPoliticalPosition, viewMode]);
 
   // Initialize circles when year or data changes
   useEffect(() => {
@@ -36,8 +72,14 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
     }
     
     const boundaryRadius = yearData.totalRadiusPx || 385;
-    circlesRef.current = yearData.brands.map(b => new BrandCircle(b, boundaryRadius));
-  }, [year, yearData]);
+    
+    // Filter brands if in personalized mode
+    const brandsToRender = personalizedChannelIds 
+      ? yearData.brands.filter(b => personalizedChannelIds.includes(b.id))
+      : yearData.brands;
+    
+    circlesRef.current = brandsToRender.map(b => new BrandCircle(b, boundaryRadius));
+  }, [year, yearData, personalizedChannelIds]);
 
   // Animation loop
   useEffect(() => {
@@ -250,6 +292,52 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
           ctx.shadowOffsetY = 0;
         }
       });
+
+      // Draw user bubble in personalized spectrum mode
+      if (viewMode === 'compass' && userBubbleRef.current && userPoliticalPosition !== null) {
+        const ub = userBubbleRef.current;
+        const userRadius = 35;
+        
+        // Update user bubble physics
+        ub.x += ub.vx;
+        ub.y += ub.vy;
+        
+        // Constrain to bin
+        const targetX = (ub.binIndex - 2) * SPECTRUM_BIN_WIDTH;
+        const halfW = (SPECTRUM_BIN_WIDTH / 2) - userRadius;
+        const halfH = (SPECTRUM_BIN_HEIGHT / 2) - userRadius;
+        
+        if (ub.x < targetX - halfW) { ub.x = targetX - halfW; ub.vx *= -0.8; }
+        if (ub.x > targetX + halfW) { ub.x = targetX + halfW; ub.vx *= -0.8; }
+        if (ub.y < -halfH) { ub.y = -halfH; ub.vy *= -0.8; }
+        if (ub.y > halfH) { ub.y = halfH; ub.vy *= -0.8; }
+        
+        // Gentle random motion
+        if (Math.hypot(ub.vx, ub.vy) < 0.05) {
+          ub.vx += (Math.random() - 0.5) * 0.1;
+          ub.vy += (Math.random() - 0.5) * 0.1;
+        }
+        
+        // Draw user bubble with purple color
+        ctx.beginPath();
+        ctx.arc(ub.x, ub.y, userRadius, 0, Math.PI * 2);
+        ctx.fillStyle = COLORS.userBubble;
+        ctx.globalAlpha = 0.85;
+        ctx.fill();
+        
+        // White border
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        // User name label
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(userName, ub.x, ub.y);
+      }
       
       ctx.restore();
       requestRef.current = requestAnimationFrame(render);
@@ -257,7 +345,7 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
 
     requestRef.current = requestAnimationFrame(render);
     return () => cancelAnimationFrame(requestRef.current);
-  }, [year, yearData, selectedIds, hoveredId, country, viewMode]);
+  }, [year, yearData, selectedIds, hoveredId, country, viewMode, personalizedChannelIds, userPoliticalPosition, userName]);
 
   const handleCanvasMouseMove = useCallback((e: React.MouseEvent) => {
     if (!canvasRef.current) return;

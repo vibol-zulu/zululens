@@ -2,11 +2,11 @@ import { BrandData, Category, ViewMode, COLORS } from '@/types/media';
 
 const DEFAULT_RADIUS = 6;
 const RADIUS_SCALE = 0.8;
-const INNER_CONTAINER_RADIUS = 200;
-const SPECTRUM_BIN_WIDTH = 200;
-const SPECTRUM_BIN_HEIGHT = 500;
+export const INNER_CONTAINER_RADIUS = 200;
+export const SPECTRUM_BIN_WIDTH = 200;
+export const SPECTRUM_BIN_HEIGHT = 500;
 
-const getSpectrumBinIndex = (politicalLean: string) => {
+export const getSpectrumBinIndex = (politicalLean: string) => {
   const lean = (politicalLean || '').toLowerCase();
   
   if (lean.includes('far left') || lean.includes('socialist') || lean.includes('communist')) {
@@ -221,5 +221,3 @@ export class BrandCircle {
     return d <= this.currentRadius;
   }
 }
-
-export { INNER_CONTAINER_RADIUS, SPECTRUM_BIN_WIDTH, SPECTRUM_BIN_HEIGHT };
