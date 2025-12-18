@@ -323,18 +323,22 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
           const textX = x + SPECTRUM_BIN_WIDTH / 2;
           const textY = cy;
 
-          ctx.font = 'bold 16px sans-serif';
+          ctx.font = 'bold 20px sans-serif';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           
-          const metrics = ctx.measureText(labelText);
-          const bgH = 24;
-          const bgW = metrics.width + 14;
-          ctx.fillStyle = 'rgba(255,255,255,0.9)';
-          ctx.fillRect(textX - bgW/2, textY - bgH/2, bgW, bgH);
+          // White drop shadow
+          ctx.shadowColor = 'rgba(255, 255, 255, 1)';
+          ctx.shadowBlur = 8;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 0;
 
-          ctx.fillStyle = '#666';
+          ctx.fillStyle = '#555';
           ctx.fillText(labelText, textX, textY);
+          
+          // Reset shadow
+          ctx.shadowColor = 'transparent';
+          ctx.shadowBlur = 0;
         }
       }
       requestRef.current = requestAnimationFrame(render);
