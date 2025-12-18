@@ -114,6 +114,128 @@ Format your response as JSON with this structure:
   "suggestedStartDate": "string"
 }`;
 
+const DEFAULT_CORPORATE_USER_PROMPT = `You are assisting researchers in estimating a corporate media conglomerate's deduplicated Unique Monthly Audience (UMA) using a top-level brand approach.
+
+**Corporate Conglomerate Name:** {channel.name}
+**Main Platform:** {channel.platform}
+**Content Type:** {channel.contentType}
+**Category (user selected):** {channel.category}
+**Primary Geography / Market Focus:** {channel.country}
+
+The goal is to work at the level of:
+- Primary TV / cable / streaming news brands (e.g. Fox News Channel, CNN, MSNBC, ABC News, NBC News).
+- Major digital and streaming properties directly associated with those brands (e.g. foxnews.com, cnn.com, NBCNews.com, YouTube channels, news apps, podcast networks).
+
+Do not attempt an exhaustive sub-brand breakdown. Focus on the main audience-driving brands and their major digital extensions.
+
+**Step 1: Identify main news/information brands and key digital properties**
+
+List the conglomerate's top-level news and public-affairs brands and their largest related digital properties, for example:
+- Linear / cable / broadcast news networks (e.g. Fox News Channel, CNN, MSNBC, ABC News, CBS News, NBC News).
+- Flagship news websites (e.g. foxnews.com, cnn.com, nytimes.com for relevant owners).
+- Major streaming news brands or tiles (e.g. CNN on Max, NBC News on Peacock, etc., if significant).
+- Major digital video / social presences directly tied to these brands (e.g. "Fox News" YouTube, "CNN" YouTube, "MSNBC" YouTube).
+
+For each top-level brand, provide:
+- Brand name.
+- Type: cable news, broadcast news, digital news site, streaming news, or multi-platform news brand.
+- Main platforms that matter for audience (TV, website, app, YouTube, other social).
+
+**Step 2: Estimate cross-platform monthly audience per top-level brand**
+
+For each brand (including its major digital properties), estimate a cross-platform monthly audience (unique people per month) in millions. Treat the TV channel and its tightly associated digital properties as one brand cluster for this step.
+
+For each brand cluster, provide:
+- A point estimate in millions of unique people reached per month.
+- A short explanation referencing typical scale of similar US or global news brands (e.g. "major US cable news network," "large national news site," "smaller but influential cable channel").
+
+Example format (illustrative only):
+- Fox News (linear + foxnews.com + main Fox News YouTube/social): 90–110M monthly uniques; working estimate 100M.
+- Fox Business (TV + digital): 20–30M; working estimate 25M.
+
+**Step 3: Apply deduplication across brand clusters**
+
+Work at the brand cluster level (e.g. Fox News vs Fox Business vs broadcast network news for the same conglomerate). Estimate overlap between audiences and apply deduplication factors.
+
+For each additional brand after the largest one, estimate the incremental audience that is not already counted:
+- Define whether overlap with the largest brand is high, moderate, or low.
+  - High overlap: heavily overlapping news audiences within same ideological lane and owner (e.g. Fox News vs Fox Business; CNN linear vs CNN digital).
+  - Moderate overlap: related but somewhat distinct audiences (e.g. broadcast evening news vs cable news; news site vs more lifestyle/soft news property).
+  - Low overlap: brands in different genres or strongly different demographics (e.g. children's or general entertainment vs hard news).
+- Translate this into an overlap rate, such as:
+  - 60–70% overlap for high.
+  - 40–60% overlap for moderate.
+  - 10–30% overlap for low.
+
+Use this relationship to compute incremental audience added by each brand:
+- Incremental audience ≈ Brand cluster audience × (1 − overlap_rate).
+
+Clearly state the overlap rate and reasoning for each brand cluster relative to the already-counted ones.
+
+**Step 4: Compute conglomerate-level UMA**
+
+1. Choose the largest news/information brand cluster as the anchor and take its cross-platform monthly audience as the starting point.
+2. Add each remaining brand cluster's incremental audience (after deduplication) to build up a conglomerate-level UMA.
+3. Provide:
+   - A stepwise description showing the anchor brand, each added brand, its overlap rate, incremental audience, and running total.
+   - A final UMA point estimate in millions of unique people per month, plus a plausible low–high range.
+
+**Step 5: Input Validation**
+
+Cross-check the user's inputs:
+- Is the **Category** (corporate vs independent) correctly classified? Research ownership structure.
+- Is the **Platform** selection accurate for this conglomerate's primary presence?
+- Is the **Content Type** appropriate for what this conglomerate produces?
+- Flag any discrepancies or corrections needed.
+
+**Step 6: Political Lean Analysis**
+
+Based on your research of the conglomerate's content, editorial stance, and third-party assessments:
+- Determine the political lean from: Far Left, Progressive/Left, Center-Left, Center, Center-Right, Right, Far Right, Libertarian, Independent, Non-partisan
+- Cite sources for your assessment where possible.
+
+**Output Format**
+
+Return your answer as JSON with this structure:
+{
+  "inputValidation": {
+    "categoryCorrect": boolean,
+    "suggestedCategory": "corporate" or "independent" or null,
+    "platformCorrect": boolean,
+    "contentTypeCorrect": boolean,
+    "validationNotes": "string explaining any issues found with citations"
+  },
+  "politicalLean": "string from the options above",
+  "politicalLeanJustification": "brief explanation with sources",
+  "brandClusters": [
+    {
+      "name": "Brand Name",
+      "type": "cable news / broadcast news / digital news site / streaming news / multi-platform",
+      "platforms": ["TV", "website", "YouTube", "etc"],
+      "estimatedAudience": number,
+      "reasoning": "brief explanation"
+    }
+  ],
+  "deduplicationSteps": [
+    {
+      "brand": "Brand Name",
+      "overlapWithAnchor": "high / moderate / low",
+      "overlapRate": number,
+      "incrementalAudience": number,
+      "runningTotal": number
+    }
+  ],
+  "crossPlatformAudience": number,
+  "deduplicatedAudience": number,
+  "audienceRange": {
+    "low": number,
+    "high": number
+  },
+  "reasoning": "Summary of methodology and key data sources used",
+  "comparableChannels": ["conglomerate1", "conglomerate2"],
+  "suggestedStartDate": "string"
+}`;
+
 function replaceChannelPlaceholders(template: string, channel: ChannelSubmission): string {
   return template
     .replace(/\{channel\.name\}/g, channel.name)
@@ -157,6 +279,7 @@ serve(async (req) => {
     // Fetch custom prompts from app_settings
     let systemPrompt = DEFAULT_SYSTEM_PROMPT;
     let userPromptTemplate = DEFAULT_USER_PROMPT;
+    let corporateUserPromptTemplate = DEFAULT_CORPORATE_USER_PROMPT;
 
     try {
       const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -166,7 +289,7 @@ serve(async (req) => {
       const { data: settings } = await supabase
         .from('app_settings')
         .select('key, value')
-        .in('key', ['audience_system_prompt', 'audience_user_prompt']);
+        .in('key', ['audience_system_prompt', 'audience_user_prompt', 'audience_corporate_user_prompt']);
 
       if (settings) {
         for (const setting of settings) {
@@ -178,14 +301,23 @@ serve(async (req) => {
             userPromptTemplate = setting.value;
             console.log('Using custom user prompt from settings');
           }
+          if (setting.key === 'audience_corporate_user_prompt' && setting.value?.trim()) {
+            corporateUserPromptTemplate = setting.value;
+            console.log('Using custom corporate user prompt from settings');
+          }
         }
       }
     } catch (settingsError) {
       console.log('Could not fetch custom prompts, using defaults:', settingsError);
     }
 
+    // Select the appropriate user prompt based on channel category
+    const isCorporate = channel.category?.toLowerCase() === 'corporate';
+    const selectedUserPromptTemplate = isCorporate ? corporateUserPromptTemplate : userPromptTemplate;
+    console.log(`Using ${isCorporate ? 'corporate' : 'independent'} user prompt template`);
+
     // Replace placeholders in user prompt
-    const userPrompt = replaceChannelPlaceholders(userPromptTemplate, channel);
+    const userPrompt = replaceChannelPlaceholders(selectedUserPromptTemplate, channel);
 
     let response;
     let usingPerplexity = false;
