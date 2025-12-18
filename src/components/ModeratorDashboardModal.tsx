@@ -304,35 +304,16 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
 
       if (error) throw error;
 
-      // Send notifications to authors
-      const notifications = channelsToApprove
-        .filter(c => c.author_id)
-        .map(c => ({
-          title: 'Submission Approved!',
-          message: `Your channel suggestion "${c.name}" has been approved and is now live in the visualization.`,
-          type: 'submission_review',
-          target_role: 'member',
-          target_user_id: c.author_id,
-          channel_id: c.id,
-          created_by: user.id
-        }));
-
-      if (notifications.length > 0) {
-        const { error: notifError } = await supabase.from('notifications').insert(notifications);
-        if (notifError) {
-          console.error('Failed to send bulk approval notifications:', notifError);
-        }
-        
-        // Send email notifications
-        channelsToApprove.filter(c => c.author_id).forEach(c => {
-          sendSubmissionEmail({
-            userId: c.author_id!,
-            channelName: c.name,
-            status: 'approved',
-            country: c.country
-          });
+      // Submission review notifications are sent automatically by the backend trigger.
+      // Send email notifications
+      channelsToApprove.filter(c => c.author_id).forEach(c => {
+        sendSubmissionEmail({
+          userId: c.author_id!,
+          channelName: c.name,
+          status: 'approved',
+          country: c.country
         });
-      }
+      });
 
       toast({ title: `${selectedPending.size} channels approved` });
       setSelectedPending(new Set());
@@ -360,35 +341,16 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
 
       if (error) throw error;
 
-      // Send notifications to authors
-      const notifications = channelsToReject
-        .filter(c => c.author_id)
-        .map(c => ({
-          title: 'Submission Rejected',
-          message: `Your channel suggestion "${c.name}" was not approved. Please review our guidelines and try again.`,
-          type: 'submission_review',
-          target_role: 'member',
-          target_user_id: c.author_id,
-          channel_id: c.id,
-          created_by: user.id
-        }));
-
-      if (notifications.length > 0) {
-        const { error: notifError } = await supabase.from('notifications').insert(notifications);
-        if (notifError) {
-          console.error('Failed to send bulk rejection notifications:', notifError);
-        }
-        
-        // Send email notifications
-        channelsToReject.filter(c => c.author_id).forEach(c => {
-          sendSubmissionEmail({
-            userId: c.author_id!,
-            channelName: c.name,
-            status: 'rejected',
-            country: c.country
-          });
+      // Submission review notifications are sent automatically by the backend trigger.
+      // Send email notifications
+      channelsToReject.filter(c => c.author_id).forEach(c => {
+        sendSubmissionEmail({
+          userId: c.author_id!,
+          channelName: c.name,
+          status: 'rejected',
+          country: c.country
         });
-      }
+      });
 
       toast({ title: `${selectedPending.size} channels rejected` });
       setSelectedPending(new Set());
@@ -669,22 +631,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
       if (error) throw error;
 
       if (channelToReview.author_id) {
-        const { error: notifError } = await supabase
-          .from('notifications')
-          .insert({
-            title: reviewAction === 'approve' ? 'Submission Approved!' : 'Submission Rejected',
-            message: reviewAction === 'approve' 
-              ? `Your channel suggestion "${channelToReview.name}" has been approved and is now live in the visualization.`
-              : `Your channel suggestion "${channelToReview.name}" was not approved. Please review our guidelines and try again.`,
-            type: 'submission_review',
-            target_role: 'member',
-            target_user_id: channelToReview.author_id,
-            channel_id: channelToReview.id,
-            created_by: user.id
-          });
-        if (notifError) {
-          console.error('Failed to send review notification:', notifError);
-        }
+        // Submission review notification is sent automatically by the backend trigger.
         
         // Send email notification
         sendSubmissionEmail({

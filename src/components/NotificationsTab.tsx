@@ -34,7 +34,7 @@ interface NotificationsTabProps {
 }
 
 const NotificationsTab: React.FC<NotificationsTabProps> = ({ isActive = true }) => {
-  const { user } = useAuth();
+  const { user, isAdmin, isModerator } = useAuth();
   const { toast } = useToast();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
@@ -43,10 +43,26 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({ isActive = true }) 
     if (!user) return;
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('notifications')
         .select('*')
         .order('created_at', { ascending: false });
+
+      // IMPORTANT: Admins/Moderators have broad DB access; we still scope what we fetch
+      // so they don't see submission-review notifications they just created.
+      if (isAdmin) {
+        query = query.or(
+          `target_user_id.eq.${user.id},and(target_user_id.is.null,target_role.eq.admin)`
+        );
+      } else if (isModerator) {
+        query = query.or(
+          `target_user_id.eq.${user.id},and(target_user_id.is.null,target_role.eq.moderator)`
+        );
+      } else {
+        query = query.eq('target_user_id', user.id);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
@@ -90,7 +106,7 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({ isActive = true }) 
     } finally {
       setLoading(false);
     }
-  }, [user, toast]);
+  }, [user, isAdmin, isModerator, toast]);
 
   useEffect(() => {
     if (isActive) {

@@ -1485,18 +1485,8 @@ Format your response as JSON with this structure:
 
       if (error) throw error;
 
-      // Send notification to author
+      // Notification is sent automatically by the backend trigger on status change.
       if (selectedSubmission.author_id) {
-        await supabase.from('notifications').insert({
-          title: 'Submission Approved!',
-          message: `Your channel suggestion "${selectedSubmission.name}" has been approved and is now live.`,
-          type: 'submission_review',
-          target_user_id: selectedSubmission.author_id,
-          target_role: 'member',
-          channel_id: selectedSubmission.id,
-          created_by: user?.id
-        });
-        
         // Send email notification with AI analysis data
         sendSubmissionEmail({
           userId: selectedSubmission.author_id,
@@ -1758,34 +1748,16 @@ Format your response as JSON with this structure:
 
       if (error) throw error;
 
-      // Send notifications to authors
-      const notifications = subsToApprove
-        .filter(s => s.author_id)
-        .map(s => ({
-          title: 'Submission Approved!',
-          message: `Your channel submission "${s.name}" has been approved.`,
-          type: 'submission_review',
-          target_role: 'member',
-          target_user_id: s.author_id,
-          created_by: user.id
-        }));
-
-      if (notifications.length > 0) {
-        const { error: notifError } = await supabase.from('notifications').insert(notifications);
-        if (notifError) {
-          console.error('Failed to send bulk notifications:', notifError);
-        }
-        
-        // Send email notifications
-        subsToApprove.filter(s => s.author_id).forEach(s => {
-          sendSubmissionEmail({
-            userId: s.author_id!,
-            channelName: s.name,
-            status: 'approved',
-            country: s.country
-          });
+      // Submission review notifications are sent automatically by the backend trigger.
+      // Send email notifications
+      subsToApprove.filter(s => s.author_id).forEach(s => {
+        sendSubmissionEmail({
+          userId: s.author_id!,
+          channelName: s.name,
+          status: 'approved',
+          country: s.country
         });
-      }
+      });
 
       toast({ title: `${selectedSubmissions.size} submissions approved` });
       setSelectedSubmissions(new Set());
@@ -1811,34 +1783,16 @@ Format your response as JSON with this structure:
 
       if (error) throw error;
 
-      // Send notifications to authors
-      const notifications = subsToReject
-        .filter(s => s.author_id)
-        .map(s => ({
-          title: 'Submission Rejected',
-          message: `Your channel submission "${s.name}" was not approved.`,
-          type: 'submission_review',
-          target_role: 'member',
-          target_user_id: s.author_id,
-          created_by: user.id
-        }));
-
-      if (notifications.length > 0) {
-        const { error: notifError } = await supabase.from('notifications').insert(notifications);
-        if (notifError) {
-          console.error('Failed to send bulk rejection notifications:', notifError);
-        }
-        
-        // Send email notifications
-        subsToReject.filter(s => s.author_id).forEach(s => {
-          sendSubmissionEmail({
-            userId: s.author_id!,
-            channelName: s.name,
-            status: 'rejected',
-            country: s.country
-          });
+      // Submission review notifications are sent automatically by the backend trigger.
+      // Send email notifications
+      subsToReject.filter(s => s.author_id).forEach(s => {
+        sendSubmissionEmail({
+          userId: s.author_id!,
+          channelName: s.name,
+          status: 'rejected',
+          country: s.country
         });
-      }
+      });
 
       toast({ title: `${selectedSubmissions.size} submissions rejected` });
       setSelectedSubmissions(new Set());
