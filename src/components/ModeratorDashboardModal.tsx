@@ -47,6 +47,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { COUNTRIES } from '@/data/mediaData';
+import { sendSubmissionEmail } from '@/lib/sendSubmissionEmail';
 import { 
   Check,
   XCircle, 
@@ -314,6 +315,16 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
         if (notifError) {
           console.error('Failed to send bulk approval notifications:', notifError);
         }
+        
+        // Send email notifications
+        channelsToApprove.filter(c => c.author_id).forEach(c => {
+          sendSubmissionEmail({
+            userId: c.author_id!,
+            channelName: c.name,
+            status: 'approved',
+            country: c.country
+          });
+        });
       }
 
       toast({ title: `${selectedPending.size} channels approved` });
@@ -360,6 +371,16 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
         if (notifError) {
           console.error('Failed to send bulk rejection notifications:', notifError);
         }
+        
+        // Send email notifications
+        channelsToReject.filter(c => c.author_id).forEach(c => {
+          sendSubmissionEmail({
+            userId: c.author_id!,
+            channelName: c.name,
+            status: 'rejected',
+            country: c.country
+          });
+        });
       }
 
       toast({ title: `${selectedPending.size} channels rejected` });
@@ -657,6 +678,14 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
         if (notifError) {
           console.error('Failed to send review notification:', notifError);
         }
+        
+        // Send email notification
+        sendSubmissionEmail({
+          userId: channelToReview.author_id,
+          channelName: channelToReview.name,
+          status: reviewAction === 'approve' ? 'approved' : 'rejected',
+          country: channelToReview.country
+        });
       }
 
       toast({ 
@@ -763,6 +792,14 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
           target_role: 'member',
           channel_id: channelToReview.id,
           created_by: user?.id
+        });
+        
+        // Send email notification
+        sendSubmissionEmail({
+          userId: channelToReview.author_id,
+          channelName: channelToReview.name,
+          status: 'approved',
+          country: channelToReview.country
         });
       }
 

@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Database, MoreVertical, MessageCircle, BarChart3, Trophy, Flame, TrendingUp, Newspaper, ChevronDown, Bell, Loader2, Settings, Save } from 'lucide-react';
 import perplexityLogo from '@/assets/perplexity-color.svg';
+import { sendSubmissionEmail } from '@/lib/sendSubmissionEmail';
 import {
   Tooltip,
   TooltipContent,
@@ -1492,6 +1493,14 @@ Format your response as JSON with this structure:
           channel_id: selectedSubmission.id,
           created_by: user?.id
         });
+        
+        // Send email notification
+        sendSubmissionEmail({
+          userId: selectedSubmission.author_id,
+          channelName: selectedSubmission.name,
+          status: 'approved',
+          country: selectedSubmission.country
+        });
       }
 
       toast({ title: 'Estimation applied and submission approved' });
@@ -1757,6 +1766,16 @@ Format your response as JSON with this structure:
         if (notifError) {
           console.error('Failed to send bulk notifications:', notifError);
         }
+        
+        // Send email notifications
+        subsToApprove.filter(s => s.author_id).forEach(s => {
+          sendSubmissionEmail({
+            userId: s.author_id!,
+            channelName: s.name,
+            status: 'approved',
+            country: s.country
+          });
+        });
       }
 
       toast({ title: `${selectedSubmissions.size} submissions approved` });
@@ -1800,6 +1819,16 @@ Format your response as JSON with this structure:
         if (notifError) {
           console.error('Failed to send bulk rejection notifications:', notifError);
         }
+        
+        // Send email notifications
+        subsToReject.filter(s => s.author_id).forEach(s => {
+          sendSubmissionEmail({
+            userId: s.author_id!,
+            channelName: s.name,
+            status: 'rejected',
+            country: s.country
+          });
+        });
       }
 
       toast({ title: `${selectedSubmissions.size} submissions rejected` });
