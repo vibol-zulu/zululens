@@ -327,18 +327,30 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           
-          // White drop shadow
-          ctx.shadowColor = 'rgba(255, 255, 255, 1)';
-          ctx.shadowBlur = 8;
-          ctx.shadowOffsetX = 0;
-          ctx.shadowOffsetY = 0;
+          const metrics = ctx.measureText(labelText);
+          const bgH = 28;
+          const bgW = metrics.width + 16;
+          const bgX = textX - bgW / 2;
+          const bgY = textY - bgH / 2;
+          const radius = 6;
+          
+          // Draw rounded rectangle background
+          ctx.beginPath();
+          ctx.moveTo(bgX + radius, bgY);
+          ctx.lineTo(bgX + bgW - radius, bgY);
+          ctx.quadraticCurveTo(bgX + bgW, bgY, bgX + bgW, bgY + radius);
+          ctx.lineTo(bgX + bgW, bgY + bgH - radius);
+          ctx.quadraticCurveTo(bgX + bgW, bgY + bgH, bgX + bgW - radius, bgY + bgH);
+          ctx.lineTo(bgX + radius, bgY + bgH);
+          ctx.quadraticCurveTo(bgX, bgY + bgH, bgX, bgY + bgH - radius);
+          ctx.lineTo(bgX, bgY + radius);
+          ctx.quadraticCurveTo(bgX, bgY, bgX + radius, bgY);
+          ctx.closePath();
+          ctx.fillStyle = 'rgba(255,255,255,0.9)';
+          ctx.fill();
 
           ctx.fillStyle = '#555';
           ctx.fillText(labelText, textX, textY);
-          
-          // Reset shadow
-          ctx.shadowColor = 'transparent';
-          ctx.shadowBlur = 0;
         }
       }
       requestRef.current = requestAnimationFrame(render);
