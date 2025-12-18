@@ -112,24 +112,38 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   
   // Fetch unread notifications count
   const fetchUnreadCount = useCallback(async () => {
-    if (!user || !isAdmin) {
+    if (!user) {
       setUnreadNotificationsCount(0);
       return;
     }
-    
+
     try {
-      const { count, error } = await supabase
+      let query = supabase
         .from('notifications')
         .select('*', { count: 'exact', head: true })
         .eq('is_read', false);
-      
+
+      if (isAdmin) {
+        query = query.or(
+          `target_user_id.eq.${user.id},and(target_user_id.is.null,target_role.eq.admin)`
+        );
+      } else if (isModerator) {
+        query = query.or(
+          `target_user_id.eq.${user.id},and(target_user_id.is.null,target_role.eq.moderator)`
+        );
+      } else {
+        query = query.eq('target_user_id', user.id);
+      }
+
+      const { count, error } = await query;
+
       if (!error && count !== null) {
         setUnreadNotificationsCount(count);
       }
     } catch (err) {
       console.error('Error fetching unread notifications:', err);
     }
-  }, [user, isAdmin]);
+  }, [user, isAdmin, isModerator]);
 
   // Fetch pending submissions count for moderators/admins
   const fetchPendingSubmissionsCount = useCallback(async () => {
