@@ -56,6 +56,7 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
   const { toast } = useToast();
   const progressPercent = (stats.progressToContributor / 20) * 100;
   const [activeTab, setActiveTab] = React.useState('overview');
+  const [submissionsSearch, setSubmissionsSearch] = React.useState('');
 
   // Edit state
   const [editingSubmission, setEditingSubmission] = useState<ChannelSubmission | null>(null);
@@ -250,6 +251,14 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
 
             {/* Submissions Tab */}
             <TabsContent value="submissions" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
+              <div className="border-b p-4 shrink-0">
+                <Input
+                  placeholder="Search submissions..."
+                  value={submissionsSearch}
+                  onChange={(e) => setSubmissionsSearch(e.target.value)}
+                  className="w-full max-w-xs"
+                />
+              </div>
               <div className="flex-1 overflow-auto p-4">
                 {loading ? (
                   <div className="flex items-center justify-center py-12 text-muted-foreground text-sm">
@@ -277,7 +286,13 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {submissions.map((submission) => (
+                        {submissions
+                          .filter(s => !submissionsSearch || 
+                            s.name.toLowerCase().includes(submissionsSearch.toLowerCase()) ||
+                            s.country.toLowerCase().includes(submissionsSearch.toLowerCase()) ||
+                            s.status.toLowerCase().includes(submissionsSearch.toLowerCase())
+                          )
+                          .map((submission) => (
                           <TableRow key={submission.id}>
                             <TableCell className="font-medium">{submission.name}</TableCell>
                             <TableCell>{submission.country}</TableCell>

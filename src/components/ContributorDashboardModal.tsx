@@ -56,6 +56,8 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
   const { submissions, stats, loading: submissionsLoading, refetch: refetchSubmissions } = useMySubmissions();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('overview');
+  const [submissionsSearch, setSubmissionsSearch] = useState('');
+  const [leaderboardSearch, setLeaderboardSearch] = useState('');
 
   // Edit state
   const [editingSubmission, setEditingSubmission] = useState<ChannelSubmission | null>(null);
@@ -350,6 +352,14 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
 
               {/* Submissions Tab */}
               <TabsContent value="submissions" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
+                <div className="border-b p-4 shrink-0">
+                  <Input
+                    placeholder="Search submissions..."
+                    value={submissionsSearch}
+                    onChange={(e) => setSubmissionsSearch(e.target.value)}
+                    className="w-full max-w-xs"
+                  />
+                </div>
                 <div className="flex-1 overflow-auto p-4">
                   {submissions.length === 0 ? (
                     <div className="text-center py-12 text-muted-foreground">
@@ -369,7 +379,13 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {submissions.map((submission) => (
+                          {submissions
+                            .filter(s => !submissionsSearch || 
+                              s.name.toLowerCase().includes(submissionsSearch.toLowerCase()) ||
+                              s.country.toLowerCase().includes(submissionsSearch.toLowerCase()) ||
+                              s.status.toLowerCase().includes(submissionsSearch.toLowerCase())
+                            )
+                            .map((submission) => (
                             <TableRow key={submission.id}>
                               <TableCell className="font-medium">{submission.name}</TableCell>
                               <TableCell>{submission.country}</TableCell>
@@ -411,6 +427,14 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
 
               {/* Leaderboard Tab */}
               <TabsContent value="leaderboard" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
+                <div className="border-b p-4 shrink-0">
+                  <Input
+                    placeholder="Search contributors..."
+                    value={leaderboardSearch}
+                    onChange={(e) => setLeaderboardSearch(e.target.value)}
+                    className="w-full max-w-xs"
+                  />
+                </div>
                 <div className="flex-1 overflow-auto p-4">
                   {leaderboard.length === 0 ? (
                     <div className="text-center py-12 text-muted-foreground">
@@ -429,7 +453,12 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {leaderboard.map((entry) => (
+                          {leaderboard
+                            .filter(entry => !leaderboardSearch ||
+                              entry.user_name?.toLowerCase().includes(leaderboardSearch.toLowerCase()) ||
+                              entry.user_email?.toLowerCase().includes(leaderboardSearch.toLowerCase())
+                            )
+                            .map((entry) => (
                             <TableRow 
                               key={entry.user_id}
                               className={entry.user_id === userRank?.toString() ? 'bg-primary/5' : ''}

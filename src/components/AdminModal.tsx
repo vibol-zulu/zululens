@@ -207,6 +207,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   const [usersLoading, setUsersLoading] = useState(false);
   const [userToDelete, setUserToDelete] = useState<UserProfile | null>(null);
   const [showDeleteUserDialog, setShowDeleteUserDialog] = useState(false);
+  const [userSearch, setUserSearch] = useState('');
 
   // Submissions state
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -214,6 +215,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [showSubmissionDialog, setShowSubmissionDialog] = useState(false);
   const [submissionsStatusFilter, setSubmissionsStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
+  const [submissionSearch, setSubmissionSearch] = useState('');
   
   // AI Estimation state
   const [isEstimating, setIsEstimating] = useState(false);
@@ -261,6 +263,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   const [commentsCountry, setCommentsCountry] = useState('United States');
   const [commentToDelete, setCommentToDelete] = useState<AdminComment | null>(null);
   const [showDeleteCommentDialog, setShowDeleteCommentDialog] = useState(false);
+  const [commentSearch, setCommentSearch] = useState('');
 
   // Password confirmation state for delete actions
   const [deletePassword, setDeletePassword] = useState('');
@@ -2138,6 +2141,13 @@ Format your response as JSON with this structure:
               {/* Users Tab */}
               <TabsContent value="users" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
                 <div className="border-b p-4 flex items-center gap-2 flex-wrap">
+                  <Input
+                    placeholder="Search users..."
+                    value={userSearch}
+                    onChange={(e) => setUserSearch(e.target.value)}
+                    className="w-[180px]"
+                  />
+                  
                   {selectedUsers.size > 0 && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -2192,7 +2202,12 @@ Format your response as JSON with this structure:
                               </TableCell>
                             </TableRow>
                           ) : (
-                            users.map(u => (
+                            users
+                              .filter(u => !userSearch || 
+                                u.email.toLowerCase().includes(userSearch.toLowerCase()) ||
+                                u.full_name?.toLowerCase().includes(userSearch.toLowerCase())
+                              )
+                              .map(u => (
                               <TableRow key={u.id}>
                                 <TableCell>
                                   <Checkbox
@@ -2259,6 +2274,13 @@ Format your response as JSON with this structure:
                     {pendingSubmissionsCount} pending submission{pendingSubmissionsCount !== 1 ? 's' : ''}
                   </span>
                   
+                  <Input
+                    placeholder="Search submissions..."
+                    value={submissionSearch}
+                    onChange={(e) => setSubmissionSearch(e.target.value)}
+                    className="w-[180px]"
+                  />
+                  
                   {selectedSubmissions.size > 0 && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -2320,7 +2342,12 @@ Format your response as JSON with this structure:
                               </TableCell>
                             </TableRow>
                           ) : (
-                            submissions.map(sub => (
+                            submissions
+                              .filter(sub => !submissionSearch || 
+                                sub.name.toLowerCase().includes(submissionSearch.toLowerCase()) ||
+                                sub.author_name?.toLowerCase().includes(submissionSearch.toLowerCase())
+                              )
+                              .map(sub => (
                               <TableRow key={sub.id}>
                                 <TableCell>
                                   <Checkbox

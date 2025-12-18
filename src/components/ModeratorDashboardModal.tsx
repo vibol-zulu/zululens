@@ -119,6 +119,13 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('suggestions');
   
+  // Search states
+  const [pendingSearch, setPendingSearch] = useState('');
+  const [myChannelsSearch, setMyChannelsSearch] = useState('');
+  const [allChannelsSearch, setAllChannelsSearch] = useState('');
+  const [commentsSearch, setCommentsSearch] = useState('');
+  const [newsSearch, setNewsSearch] = useState('');
+  
   // Pending suggestions state
   const [pendingChannels, setPendingChannels] = useState<ChannelEntry[]>([]);
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
@@ -1201,6 +1208,13 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                   </SelectContent>
                 </Select>
                 
+                <Input
+                  placeholder="Search channels..."
+                  value={pendingSearch}
+                  onChange={(e) => setPendingSearch(e.target.value)}
+                  className="w-[180px]"
+                />
+                
                 {selectedPending.size > 0 && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -1254,7 +1268,13 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {pendingChannels.map((channel) => (
+                        {pendingChannels
+                          .filter(channel => !pendingSearch || 
+                            channel.name.toLowerCase().includes(pendingSearch.toLowerCase()) ||
+                            channel.author_name?.toLowerCase().includes(pendingSearch.toLowerCase()) ||
+                            channel.author_email?.toLowerCase().includes(pendingSearch.toLowerCase())
+                          )
+                          .map((channel) => (
                           <TableRow key={channel.id}>
                             <TableCell>
                               <Checkbox
@@ -1312,6 +1332,14 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
 
             {/* My Suggestions Tab */}
             <TabsContent value="my-suggestions" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
+              <div className="border-b p-4 shrink-0">
+                <Input
+                  placeholder="Search my submissions..."
+                  value={myChannelsSearch}
+                  onChange={(e) => setMyChannelsSearch(e.target.value)}
+                  className="w-full max-w-xs"
+                />
+              </div>
               <div className="flex-1 overflow-auto p-4">
                 {myChannelsLoading ? (
                   <div className="flex items-center justify-center py-12">
@@ -1336,7 +1364,12 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {myChannels.map((channel) => (
+                        {myChannels
+                          .filter(channel => !myChannelsSearch || 
+                            channel.name.toLowerCase().includes(myChannelsSearch.toLowerCase()) ||
+                            channel.country.toLowerCase().includes(myChannelsSearch.toLowerCase())
+                          )
+                          .map((channel) => (
                           <TableRow key={channel.id}>
                             <TableCell className="font-medium">{channel.name}</TableCell>
                             <TableCell>
@@ -1393,6 +1426,13 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                     ))}
                   </SelectContent>
                 </Select>
+                
+                <Input
+                  placeholder="Search channels..."
+                  value={allChannelsSearch}
+                  onChange={(e) => setAllChannelsSearch(e.target.value)}
+                  className="w-[180px]"
+                />
               </div>
 
               <div className="flex-1 overflow-auto p-4">
@@ -1419,7 +1459,12 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {allChannels.map((channel) => (
+                        {allChannels
+                          .filter(channel => !allChannelsSearch || 
+                            channel.name.toLowerCase().includes(allChannelsSearch.toLowerCase()) ||
+                            channel.author_name?.toLowerCase().includes(allChannelsSearch.toLowerCase())
+                          )
+                          .map((channel) => (
                           <TableRow key={channel.id}>
                             <TableCell className="font-medium">{channel.name}</TableCell>
                             <TableCell>
@@ -1466,6 +1511,13 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                     ))}
                   </SelectContent>
                 </Select>
+                
+                <Input
+                  placeholder="Search comments..."
+                  value={commentsSearch}
+                  onChange={(e) => setCommentsSearch(e.target.value)}
+                  className="w-[180px]"
+                />
                 
                 {selectedComments.size > 0 && (
                   <DropdownMenu>
@@ -1514,7 +1566,12 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {comments.map((comment) => (
+                        {comments
+                          .filter(comment => !commentsSearch || 
+                            comment.content.toLowerCase().includes(commentsSearch.toLowerCase()) ||
+                            comment.user_name?.toLowerCase().includes(commentsSearch.toLowerCase())
+                          )
+                          .map((comment) => (
                           <TableRow key={comment.id}>
                             <TableCell>
                               <Checkbox
@@ -1572,6 +1629,13 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
             {/* News Tab */}
             <TabsContent value="news" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
               <div className="border-b p-4 flex items-center gap-2 shrink-0 flex-wrap">
+                <Input
+                  placeholder="Search news..."
+                  value={newsSearch}
+                  onChange={(e) => setNewsSearch(e.target.value)}
+                  className="w-[180px]"
+                />
+                
                 {selectedNews.size > 0 && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -1618,7 +1682,12 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {news.map((item) => (
+                        {news
+                          .filter(item => !newsSearch || 
+                            item.title.toLowerCase().includes(newsSearch.toLowerCase()) ||
+                            item.category.toLowerCase().includes(newsSearch.toLowerCase())
+                          )
+                          .map((item) => (
                           <TableRow key={item.id}>
                             <TableCell>
                               <Checkbox
