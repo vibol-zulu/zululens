@@ -467,7 +467,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               <DropdownMenuItem onClick={() => setShowMission(true)}>
                 Mission
               </DropdownMenuItem>
-              {isMobile && viewMode === 'compass' && (
+              {(isMobile || isTablet) && viewMode === 'compass' && (
                 <DropdownMenuItem onClick={() => setShowSpectrumInput(true)}>
                   My Political Position
                 </DropdownMenuItem>
@@ -533,7 +533,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
           
           {/* Spectrum Mode Button */}
           {viewMode === 'compass' && (
-            <div className="hidden md:block absolute md:bottom-24 left-1/2 -translate-x-1/2 z-10">
+            <div className="hidden lg:block absolute lg:bottom-24 left-1/2 -translate-x-1/2 z-10">
               <Button
                 onClick={() => setShowSpectrumInput(true)}
                 variant="outline"
