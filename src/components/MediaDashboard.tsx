@@ -528,7 +528,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
           
           {/* Spectrum Mode Button */}
           {viewMode === 'compass' && (
-            <div className="absolute bottom-36 md:bottom-24 left-1/2 -translate-x-1/2 z-10">
+            <div className="absolute top-[45%] md:top-auto md:bottom-24 left-1/2 -translate-x-1/2 z-10">
               <Button
                 onClick={() => setShowSpectrumInput(true)}
                 variant="outline"
