@@ -26,12 +26,25 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Menu } from 'lucide-react';
+import { Menu, Check, ChevronsUpDown } from 'lucide-react';
 import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
 import { COLORS } from '@/types/media';
 import { useUserChannels } from '@/hooks/useUserChannels';
@@ -70,6 +83,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
+  const [countryOpen, setCountryOpen] = useState(false);
   
   const [showInsights, setShowInsights] = useState(false);
   const [showMethodology, setShowMethodology] = useState(false);
@@ -264,16 +278,44 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
           {/* Country Selector - Desktop only */}
           {!isMobile && (
             <div data-tour="country-year" className="flex items-center gap-1">
-              <Select value={country} onValueChange={handleCountryChange}>
-                <SelectTrigger className="w-[140px] h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {COUNTRIES.map(c => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={countryOpen} onOpenChange={setCountryOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={countryOpen}
+                    className="w-[160px] h-9 justify-between"
+                  >
+                    {country}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[200px] p-0">
+                  <Command>
+                    <CommandInput placeholder="Search country..." />
+                    <CommandList>
+                      <CommandEmpty>No country found.</CommandEmpty>
+                      <CommandGroup>
+                        {COUNTRIES.map((c) => (
+                          <CommandItem
+                            key={c}
+                            value={c}
+                            onSelect={() => {
+                              handleCountryChange(c);
+                              setCountryOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={`mr-2 h-4 w-4 ${country === c ? "opacity-100" : "opacity-0"}`}
+                            />
+                            {c}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
 
               {/* Year Selector */}
               <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
