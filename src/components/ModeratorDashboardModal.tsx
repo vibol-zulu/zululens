@@ -55,6 +55,7 @@ import {
   Loader2,
   Newspaper,
   MessageSquare,
+  Search,
   Database,
   FileText,
   Trash2,
@@ -1250,7 +1251,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                                   onClick={() => handleReviewChannel(channel, 'approve')}
                                   title="Review & Estimate"
                                 >
-                                  <MessageSquare className="h-4 w-4" />
+                                  <Search className="h-4 w-4" />
                                 </Button>
                                 <Button
                                   variant="ghost"
