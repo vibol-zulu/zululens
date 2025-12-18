@@ -90,6 +90,10 @@ export default {
   				DEFAULT: 'hsl(var(--independent))',
   				foreground: 'hsl(var(--independent-foreground))'
   			},
+  			'user-bubble': {
+  				DEFAULT: 'hsl(var(--user-bubble))',
+  				foreground: 'hsl(var(--user-bubble-foreground))'
+  			},
   			sidebar: {
   				DEFAULT: 'hsl(var(--sidebar-background))',
   				foreground: 'hsl(var(--sidebar-foreground))',

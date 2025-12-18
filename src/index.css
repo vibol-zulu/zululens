@@ -46,6 +46,8 @@
     --corporate-foreground: 15 75% 88%;
     --independent: 15 75% 88%;
     --independent-foreground: 170 100% 17%;
+    --user-bubble: 280 70% 50%;
+    --user-bubble-foreground: 0 0% 100%;
     --boundary: 0 0% 80%;
 
     --sidebar-background: 0 0% 98%;

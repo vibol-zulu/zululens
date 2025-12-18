@@ -24,6 +24,7 @@ export interface YearData {
 export const COLORS = {
   corporate: '#00564A',
   independent: '#F8D4C8',
+  userBubble: '#9333EA',
   boundary: '#cccccc',
   highlight: '#111111'
 };

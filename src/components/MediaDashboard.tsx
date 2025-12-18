@@ -16,6 +16,7 @@ import ContributorDashboardModal from '@/components/ContributorDashboardModal';
 import ModeratorDashboardModal from '@/components/ModeratorDashboardModal';
 import CommentsSection from '@/components/CommentsSection';
 import NewsModal from '@/components/NewsModal';
+import SpectrumInputModal from '@/components/SpectrumInputModal';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import {
@@ -100,8 +101,11 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
   const [pendingSubmissionsCount, setPendingSubmissionsCount] = useState(0);
   const [showContributorCelebration, setShowContributorCelebration] = useState(false);
+  
+  // Personalized spectrum state
+  const [showSpectrumInput, setShowSpectrumInput] = useState(false);
+  const [personalizedChannelIds, setPersonalizedChannelIds] = useState<string[] | null>(null);
 
-  // App settings
   const { settings: appSettings } = useAppSettings();
   
   // Guided tour state
@@ -360,7 +364,10 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
           {/* View Toggle */}
           <div data-tour="view-toggle" className="flex bg-muted rounded-full p-0.5">
             <button 
-              onClick={() => setViewMode('default')}
+              onClick={() => {
+                setViewMode('default');
+                setPersonalizedChannelIds(null);
+              }}
               className={`${isMobile ? 'px-2 text-xs' : 'px-4 text-sm'} py-1.5 rounded-full font-medium transition-all ${
                 viewMode === 'default' 
                   ? 'bg-card shadow-sm text-foreground' 
@@ -370,7 +377,11 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               {isMobile ? 'Micro' : 'Microscope'}
             </button>
             <button 
-              onClick={() => setViewMode('compass')}
+              onClick={() => {
+                if (viewMode !== 'compass') {
+                  setShowSpectrumInput(true);
+                }
+              }}
               className={`${isMobile ? 'px-2 text-xs' : 'px-4 text-sm'} py-1.5 rounded-full font-medium transition-all ${
                 viewMode === 'compass' 
                   ? 'bg-card shadow-sm text-foreground' 
@@ -515,6 +526,8 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
             onCircleClick={handleCircleClick}
             viewMode={viewMode}
             country={country}
+            personalizedChannelIds={personalizedChannelIds}
+            userName={user?.user_metadata?.full_name || visitorName || 'You'}
           />
         </div>
 
@@ -666,6 +679,17 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
         open={showContributorCelebration}
         onOpenChange={setShowContributorCelebration}
         userName={user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Member'}
+      />
+      <SpectrumInputModal
+        isOpen={showSpectrumInput}
+        onClose={() => setShowSpectrumInput(false)}
+        onSubmit={(channelIds) => {
+          setPersonalizedChannelIds(channelIds);
+          setViewMode('compass');
+          setShowSpectrumInput(false);
+        }}
+        allChannels={mergedData.brands}
+        userName={user?.user_metadata?.full_name || visitorName || 'You'}
       />
       
       {/* Comments Section - visible for all users */}
