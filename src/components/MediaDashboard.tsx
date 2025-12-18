@@ -528,13 +528,13 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
           
           {/* Spectrum Mode Button */}
           {viewMode === 'compass' && (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
+            <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-10">
               <Button
                 onClick={() => setShowSpectrumInput(true)}
                 variant="outline"
                 className="bg-card/90 backdrop-blur-sm shadow-lg hover:bg-card"
               >
-                {personalizedChannelIds ? 'Change My Channels' : 'Find My Position'}
+                My Political Position
               </Button>
             </div>
           )}
