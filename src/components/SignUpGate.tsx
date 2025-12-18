@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { registerTier1Visitor, useAnalytics } from "@/hooks/useAnalytics";
 import pinkFavicon from "@/assets/Pink_Favicon.png";
+import SignInModal from "@/components/SignInModal";
+
 interface SignUpGateProps {
   onJoin: (name: string, email: string) => void;
 }
@@ -12,6 +14,7 @@ const SignUpGate: React.FC<SignUpGateProps> = ({ onJoin }) => {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+  const [showSignIn, setShowSignIn] = useState(false);
   const { setVisitorId, initSession, trackEvent } = useAnalytics();
   const handleSubmit = (e: React.FormEvent) => {
     setError("");
@@ -152,6 +155,17 @@ const SignUpGate: React.FC<SignUpGateProps> = ({ onJoin }) => {
               {submitted ? "Unlocking..." : "Unlock Infographic"}
             </button>
           </form>
+
+          <p className="text-white/60 text-sm mt-6 text-center">
+            Have an account?{" "}
+            <button
+              type="button"
+              onClick={() => setShowSignIn(true)}
+              className="text-white/90 underline hover:text-white transition-colors"
+            >
+              Sign in here
+            </button>
+          </p>
         </div>
       </main>
 
@@ -163,6 +177,8 @@ const SignUpGate: React.FC<SignUpGateProps> = ({ onJoin }) => {
           ​<br />© 2026 Zulu Group Ltd. All rights reserved.
         </div>
       </footer>
+
+      <SignInModal open={showSignIn} onClose={() => setShowSignIn(false)} />
     </div>
   );
 };
