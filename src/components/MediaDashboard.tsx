@@ -364,7 +364,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               className={`${isMobile ? 'px-2 text-xs' : 'px-4 text-sm'} py-1.5 rounded-full font-medium transition-all ${
                 viewMode === 'default' 
                   ? 'bg-card shadow-sm text-foreground' 
-                  : 'text-muted-foreground hover:text-foreground'
+                  : 'shimmer-text hover:text-foreground'
               }`}
             >
               {isMobile ? 'Micro' : 'Microscope'}
@@ -374,7 +374,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               className={`${isMobile ? 'px-2 text-xs' : 'px-4 text-sm'} py-1.5 rounded-full font-medium transition-all ${
                 viewMode === 'compass' 
                   ? 'bg-card shadow-sm text-foreground' 
-                  : 'text-muted-foreground hover:text-foreground'
+                  : 'shimmer-text hover:text-foreground'
               }`}
             >
               {isMobile ? 'Spec' : 'Spectrum'}
