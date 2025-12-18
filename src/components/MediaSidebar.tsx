@@ -97,7 +97,7 @@ const BrandItem: React.FC<BrandItemProps> = ({
       />
       <label
         htmlFor={`cb-${brand.id}`}
-        className={cn("cursor-pointer leading-tight flex-1", isMobile ? "text-xs" : "text-sm")}
+        className={cn("cursor-pointer leading-tight flex-1 font-geist", isMobile ? "text-xs" : "text-sm")}
       >
         <span className={cn("font-medium", isSelected && "font-semibold")}>
           {brand.name}
@@ -136,7 +136,7 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-3">
       <CollapsibleTrigger className="flex items-center justify-between w-full py-2 px-2 bg-muted/50 rounded-md hover:bg-muted transition-colors">
-        <span className={cn("font-semibold", isMobile ? "text-xs" : "text-sm")}>{title}</span>
+        <span className={cn("font-semibold font-sans", isMobile ? "text-xs" : "text-sm")}>{title}</span>
         {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
       </CollapsibleTrigger>
       <CollapsibleContent className="pt-2">
@@ -237,7 +237,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           style={{ backgroundColor: headerBgColor, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
         >
           <h3 
-            className="font-semibold capitalize text-base text-center mb-2"
+            className="font-semibold capitalize text-base text-center mb-2 font-sans"
             style={{ color: headerTextColor }}
           >
             {category}
@@ -364,7 +364,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         style={{ backgroundColor: headerBgColor, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
       >
         <h3 
-          className="font-semibold capitalize text-center text-lg mb-2"
+          className="font-semibold capitalize text-center text-lg mb-2 font-sans"
           style={{ color: headerTextColor }}
         >
           {category}
