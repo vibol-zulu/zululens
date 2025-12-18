@@ -529,6 +529,19 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
             personalizedChannelIds={personalizedChannelIds}
             userName={user?.user_metadata?.full_name || visitorName || 'You'}
           />
+          
+          {/* Spectrum Mode Button */}
+          {viewMode === 'compass' && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
+              <Button
+                onClick={() => setShowSpectrumInput(true)}
+                variant="outline"
+                className="bg-card/90 backdrop-blur-sm shadow-lg hover:bg-card"
+              >
+                Change My Channels
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Mobile/Tablet Sidebars */}
