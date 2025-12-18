@@ -84,8 +84,16 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
       const cy = scaledHeight / 2;
       const boundaryRadius = yearData.totalRadiusPx || 385;
 
-      // Draw faint background grid
+      // Draw faint background grid (masked outside the circle)
       const gridSize = 20;
+      ctx.save();
+      
+      // Create a clipping path that excludes the circle area
+      ctx.beginPath();
+      ctx.rect(0, 0, scaledWidth, scaledHeight);
+      ctx.arc(cx, cy, boundaryRadius + 5, 0, Math.PI * 2, true); // true = counter-clockwise (cuts out)
+      ctx.clip();
+      
       ctx.strokeStyle = 'rgba(0, 0, 0, 0.04)';
       ctx.lineWidth = 1;
       
@@ -104,6 +112,8 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
         ctx.lineTo(scaledWidth, y);
         ctx.stroke();
       }
+      
+      ctx.restore();
 
       // Draw boundaries (Default mode only)
       if (viewMode === 'default') {
