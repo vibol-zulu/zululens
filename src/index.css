@@ -170,17 +170,17 @@
   .shimmer-text {
     background: linear-gradient(
       90deg,
-      hsl(350 80% 65%) 0%,
-      hsl(350 100% 85%) 25%,
+      hsl(0 0% 50%) 0%,
+      hsl(0 0% 50%) 35%,
       hsl(0 0% 100%) 50%,
-      hsl(350 100% 85%) 75%,
-      hsl(350 80% 65%) 100%
+      hsl(0 0% 50%) 65%,
+      hsl(0 0% 50%) 100%
     );
     background-size: 300% 100%;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    animation: shimmer 1.8s ease-in-out infinite;
+    animation: shimmer 3s ease-in-out infinite;
   }
 
   @keyframes shimmer {
