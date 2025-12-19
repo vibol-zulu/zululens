@@ -35,6 +35,8 @@ interface MediaCanvasProps {
   userPositionResult?: UserPositionResult | null; // Result with reasoning
   pxFactorGlobal?: number;
   pxFactorAllCountries?: number;
+  isAuthenticated?: boolean;
+  onSignUpClick?: () => void;
 }
 
 // Country-specific insights data
@@ -192,7 +194,9 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
   personalizedChannelIds = [],
   userPositionResult,
   pxFactorGlobal = 1.0,
-  pxFactorAllCountries = 2.24
+  pxFactorAllCountries = 2.24,
+  isAuthenticated = false,
+  onSignUpClick
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const circlesRef = useRef<BrandCircle[]>([]);
@@ -584,37 +588,59 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
           {countryInfoOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
         </CollapsibleTrigger>
         <CollapsibleContent className="mt-1 w-80 max-h-[60vh] overflow-y-auto p-3 bg-card/95 backdrop-blur-sm border border-border rounded-lg shadow-lg">
-          {/* Insights Section */}
-          {hasInsights && (
-            <div className="mb-3">
-              <h4 className="text-xs font-semibold text-foreground mb-2">Insights</h4>
-              <ul className="space-y-1.5">
-                {countryInfo.insights.map((insight, i) => (
-                  <li key={i} className="text-xs text-muted-foreground leading-relaxed flex gap-2">
-                    <span className="text-primary">•</span>
-                    <span>{insight}</span>
-                  </li>
-                ))}
-              </ul>
+          {/* Sign-up gate for tier 1 (unauthenticated) users */}
+          {!isAuthenticated ? (
+            <div className="text-center py-4">
+              <div className="mb-3">
+                <Info className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+                <h4 className="text-sm font-semibold text-foreground mb-1">Unlock Insights</h4>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Create a free account to access detailed country insights and methodology information.
+                </p>
+              </div>
+              <button
+                onClick={onSignUpClick}
+                className="px-4 py-2 text-xs font-medium text-white rounded-full transition-colors hover:opacity-90"
+                style={{ backgroundColor: '#00564A' }}
+              >
+                Sign Up Free
+              </button>
             </div>
+          ) : (
+            <>
+              {/* Insights Section */}
+              {hasInsights && (
+                <div className="mb-3">
+                  <h4 className="text-xs font-semibold text-foreground mb-2">Insights</h4>
+                  <ul className="space-y-1.5">
+                    {countryInfo.insights.map((insight, i) => (
+                      <li key={i} className="text-xs text-muted-foreground leading-relaxed flex gap-2">
+                        <span className="text-primary">•</span>
+                        <span>{insight}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {/* Global-specific scaling info */}
+              {country === 'Global' && (
+                <div className="mb-3 p-2 bg-muted/50 rounded-md">
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    <span className="font-medium">Scaling:</span> Bubble sizes are scaled to ~{Math.round((pxFactorGlobal || 1.0) / (pxFactorAllCountries || 2.24) * 100)}% of normal (radius factor: {pxFactorGlobal?.toFixed(2) || '1.00'} vs {pxFactorAllCountries?.toFixed(2) || '2.24'}).
+                  </p>
+                </div>
+              )}
+              
+              {/* Methodology Section - always shown */}
+              <div className={hasInsights ? 'pt-2 border-t border-border' : ''}>
+                <h4 className="text-xs font-semibold text-foreground mb-2">Methodology</h4>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {METHODOLOGY_TEXT}
+                </p>
+              </div>
+            </>
           )}
-          
-          {/* Global-specific scaling info */}
-          {country === 'Global' && (
-            <div className="mb-3 p-2 bg-muted/50 rounded-md">
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                <span className="font-medium">Scaling:</span> Bubble sizes are scaled to ~{Math.round((pxFactorGlobal || 1.0) / (pxFactorAllCountries || 2.24) * 100)}% of normal (radius factor: {pxFactorGlobal?.toFixed(2) || '1.00'} vs {pxFactorAllCountries?.toFixed(2) || '2.24'}).
-              </p>
-            </div>
-          )}
-          
-          {/* Methodology Section - always shown */}
-          <div className={hasInsights ? 'pt-2 border-t border-border' : ''}>
-            <h4 className="text-xs font-semibold text-foreground mb-2">Methodology</h4>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {METHODOLOGY_TEXT}
-            </p>
-          </div>
         </CollapsibleContent>
       </Collapsible>
       
