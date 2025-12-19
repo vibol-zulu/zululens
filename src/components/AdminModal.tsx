@@ -426,6 +426,8 @@ Format your response as JSON with this structure:
 
   const [mailchimpUrl, setMailchimpUrl] = useState('');
   const [guidedTourEnabled, setGuidedTourEnabled] = useState(false);
+  const [pxFactorGlobal, setPxFactorGlobal] = useState('1.0');
+  const [pxFactorAllCountries, setPxFactorAllCountries] = useState('2.24');
   const [audienceSystemPrompt, setAudienceSystemPrompt] = useState(DEFAULT_SYSTEM_PROMPT);
   const [audienceUserPrompt, setAudienceUserPrompt] = useState(DEFAULT_USER_PROMPT);
   
@@ -551,6 +553,12 @@ Return your analysis as JSON with this structure:
       if (settingsMap['political_user_prompt']) {
         setPoliticalUserPrompt(settingsMap['political_user_prompt']);
       }
+      if (settingsMap['px_factor_global']) {
+        setPxFactorGlobal(settingsMap['px_factor_global']);
+      }
+      if (settingsMap['px_factor_all_countries']) {
+        setPxFactorAllCountries(settingsMap['px_factor_all_countries']);
+      }
     } catch (error) {
       console.error('Error fetching settings:', error);
     } finally {
@@ -565,6 +573,8 @@ Return your analysis as JSON with this structure:
       const settingsToSave = [
         { key: 'mailchimp_url', value: mailchimpUrl },
         { key: 'guided_tour_enabled', value: guidedTourEnabled.toString() },
+        { key: 'px_factor_global', value: pxFactorGlobal },
+        { key: 'px_factor_all_countries', value: pxFactorAllCountries },
       ];
       
       // Only save prompts if they have content
@@ -3403,6 +3413,51 @@ Return your analysis as JSON with this structure:
                           checked={guidedTourEnabled}
                           onCheckedChange={(checked) => setGuidedTourEnabled(checked === true)}
                         />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Canvas Display Settings</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-xs text-muted-foreground mb-4">
+                        Adjust the pixel radius multiplier for bubble sizes. Higher values = larger bubbles.
+                      </p>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="px-factor-global">Global View PX Factor</Label>
+                          <Input
+                            id="px-factor-global"
+                            type="number"
+                            step="0.01"
+                            min="0.1"
+                            max="10"
+                            value={pxFactorGlobal}
+                            onChange={(e) => setPxFactorGlobal(e.target.value)}
+                            className="font-mono"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Used when viewing all countries combined
+                          </p>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="px-factor-all-countries">All Countries PX Factor</Label>
+                          <Input
+                            id="px-factor-all-countries"
+                            type="number"
+                            step="0.01"
+                            min="0.1"
+                            max="10"
+                            value={pxFactorAllCountries}
+                            onChange={(e) => setPxFactorAllCountries(e.target.value)}
+                            className="font-mono"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Used when viewing individual countries
+                          </p>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>

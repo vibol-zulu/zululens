@@ -33,6 +33,8 @@ interface MediaCanvasProps {
   userName?: string;
   personalizedChannelIds?: string[]; // Channels selected by user for their position
   userPositionResult?: UserPositionResult | null; // Result with reasoning
+  pxFactorGlobal?: number;
+  pxFactorAllCountries?: number;
 }
 
 // Reasoning Panel Component with expand/collapse
@@ -136,7 +138,9 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
   userPoliticalScore,
   userName = 'You',
   personalizedChannelIds = [],
-  userPositionResult
+  userPositionResult,
+  pxFactorGlobal = 1.0,
+  pxFactorAllCountries = 2.24
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const circlesRef = useRef<BrandCircle[]>([]);
@@ -526,7 +530,7 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
           </CollapsibleTrigger>
           <CollapsibleContent className="mt-1 w-72 p-3 bg-card/95 backdrop-blur-sm border border-border rounded-lg shadow-lg">
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Bubble sizes are scaled down to ~45% of normal (radius factor: 1.0 vs 2.24) to prevent visual clutter as more countries contribute data.
+              Bubble sizes are scaled down to ~{Math.round((pxFactorGlobal || 1.0) / (pxFactorAllCountries || 2.24) * 100)}% of normal (radius factor: {pxFactorGlobal?.toFixed(2) || '1.00'} vs {pxFactorAllCountries?.toFixed(2) || '2.24'}) to prevent visual clutter as more countries contribute data.
             </p>
           </CollapsibleContent>
         </Collapsible>

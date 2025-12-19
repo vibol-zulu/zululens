@@ -4,6 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 interface AppSettings {
   mailchimpUrl: string;
   guidedTourEnabled: boolean;
+  pxFactorGlobal: number;
+  pxFactorAllCountries: number;
 }
 
 // Decode HTML entities in URLs (e.g., &amp; -> &)
@@ -14,11 +16,15 @@ const decodeHtmlEntities = (str: string): string => {
 };
 
 const DEFAULT_MAILCHIMP_URL = 'https://group.us12.list-manage.com/subscribe/post?u=8cebbb69cb233fee8e96a59fe&id=de54a87f37&f_id=005e9fe0f0';
+const DEFAULT_PX_FACTOR_GLOBAL = 1.0;
+const DEFAULT_PX_FACTOR_ALL_COUNTRIES = 2.24;
 
 export const useAppSettings = () => {
   const [settings, setSettings] = useState<AppSettings>({
     mailchimpUrl: DEFAULT_MAILCHIMP_URL,
-    guidedTourEnabled: false
+    guidedTourEnabled: false,
+    pxFactorGlobal: DEFAULT_PX_FACTOR_GLOBAL,
+    pxFactorAllCountries: DEFAULT_PX_FACTOR_ALL_COUNTRIES
   });
   const [loading, setLoading] = useState(true);
 
@@ -39,7 +45,9 @@ export const useAppSettings = () => {
         const rawUrl = settingsMap['mailchimp_url'] || DEFAULT_MAILCHIMP_URL;
         setSettings({
           mailchimpUrl: decodeHtmlEntities(rawUrl),
-          guidedTourEnabled: settingsMap['guided_tour_enabled'] === 'true'
+          guidedTourEnabled: settingsMap['guided_tour_enabled'] === 'true',
+          pxFactorGlobal: settingsMap['px_factor_global'] ? parseFloat(settingsMap['px_factor_global']) : DEFAULT_PX_FACTOR_GLOBAL,
+          pxFactorAllCountries: settingsMap['px_factor_all_countries'] ? parseFloat(settingsMap['px_factor_all_countries']) : DEFAULT_PX_FACTOR_ALL_COUNTRIES
         });
       } catch (error) {
         console.error('Error fetching app settings:', error);
