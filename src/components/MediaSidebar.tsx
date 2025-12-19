@@ -183,10 +183,10 @@ const CountryGroup: React.FC<CountryGroupProps> = ({
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-2">
       <CollapsibleTrigger className="flex items-center justify-between w-full py-2 px-2 bg-muted/70 rounded-md hover:bg-muted transition-colors border border-border/50">
-        <div className="flex flex-col items-start">
+        <div className="flex items-center gap-1">
           <span className={cn("font-semibold font-sans", isMobile ? "text-xs" : "text-sm")}>{countryName}</span>
-          <span className={cn("text-muted-foreground", isMobile ? "text-[9px]" : "text-[10px]")}>
-            {sorted.length} {sorted.length === 1 ? 'channel' : 'channels'}
+          <span className={cn("text-muted-foreground", isMobile ? "text-[10px]" : "text-xs")}>
+            ({sorted.length})
           </span>
         </div>
         {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
