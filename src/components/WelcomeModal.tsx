@@ -1,25 +1,37 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Eye, MessageSquare, PenLine, Shield } from 'lucide-react';
+import { Eye } from 'lucide-react';
+import welcomeIllustration from '@/assets/welcome-illustration.jpg';
+
 interface WelcomeModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   userName: string;
   onStartExploring?: () => void;
+  onSignUpClick?: () => void;
 }
+
 const WelcomeModal: React.FC<WelcomeModalProps> = ({
   open,
   onOpenChange,
   userName,
-  onStartExploring
+  onStartExploring,
+  onSignUpClick
 }) => {
   const handleStartExploring = () => {
     onOpenChange(false);
     onStartExploring?.();
   };
-  return <Dialog open={open} onOpenChange={onOpenChange}>
+
+  const handleVisitorClick = () => {
+    onOpenChange(false);
+    onSignUpClick?.();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl sm:text-2xl flex items-center gap-2 flex-wrap">
@@ -29,47 +41,35 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
         </DialogHeader>
 
         <div className="space-y-5 py-2">
+          {/* Welcome Illustration */}
+          <div className="w-full">
+            <img 
+              src={welcomeIllustration} 
+              alt="People connecting and sharing ideas" 
+              className="w-full h-auto rounded-lg"
+            />
+          </div>
+
           {/* Mission */}
           <section>
             <h3 className="font-semibold text-sm mb-2 text-foreground">Our Mission</h3>
             <p className="text-sm text-muted-foreground">
-              We’re building a community-driven map of the global media landscape. 
+              We're building a community-driven map of the global media landscape. 
             </p>
           </section>
 
-          {/* Tier Progression */}
+          {/* Visitor Tier - Clickable */}
           <section>
-            <h3 className="font-semibold text-sm mb-3 text-foreground">Grow With Us</h3>
-            <div className="space-y-2.5">
-              <div className="flex items-start gap-3 p-2.5 rounded-md bg-muted/50 border border-border/50">
-                <Eye className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
-                <div>
-                  <p className="text-sm font-medium">Visitor (You)</p>
-                  <p className="text-xs text-muted-foreground">Explore the visualization freely. Create an account to become a Member.      </p>
-                </div>
+            <button
+              onClick={handleVisitorClick}
+              className="w-full flex items-start gap-3 p-2.5 rounded-md bg-muted/50 border border-border/50 hover:bg-muted hover:border-primary/30 transition-colors text-left group"
+            >
+              <Eye className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0 group-hover:text-primary transition-colors" />
+              <div>
+                <p className="text-sm font-medium group-hover:text-primary transition-colors">Visitor (You)</p>
+                <p className="text-xs text-muted-foreground">Explore the visualization freely. Create an account to become a Member.</p>
               </div>
-              <div className="flex items-start gap-3 p-2.5 rounded-md bg-background border border-border/50">
-                <MessageSquare className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
-                <div>
-                  <p className="text-sm font-medium">Member</p>
-                  <p className="text-xs text-muted-foreground"> Add channel suggestions, join discussions, and earn Contributor status with 10 approved suggestions.</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 p-2.5 rounded-md bg-background border border-border/50">
-                <PenLine className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
-                <div>
-                  <p className="text-sm font-medium">Contributor</p>
-                  <p className="text-xs text-muted-foreground"> The top contributors will be invited to become Moderators!</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 p-2.5 rounded-md bg-background border border-border/50">
-                <Shield className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
-                <div>
-                  <p className="text-sm font-medium">Moderator</p>
-                  <p className="text-xs text-muted-foreground">Help maintain quality and integrity by reviewing, verifying, and approving contributions from the community.</p>
-                </div>
-              </div>
-            </div>
+            </button>
           </section>
         </div>
 
@@ -77,6 +77,8 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
           Start Exploring
         </Button>
       </DialogContent>
-    </Dialog>;
+    </Dialog>
+  );
 };
+
 export default WelcomeModal;
