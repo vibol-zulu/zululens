@@ -112,6 +112,8 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
     description: string;
     diversityScore: string;
     diversityNote: string;
+    suggestedChannels?: Array<{ id: string; name: string; politicalLean: string; reason: string }>;
+    informationDiversityScore?: number;
   } | null>(null);
 
   const { settings: appSettings } = useAppSettings();
@@ -709,20 +711,41 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
       <SpectrumInputModal
         isOpen={showSpectrumInput}
         onClose={() => setShowSpectrumInput(false)}
-        onSubmit={(result) => {
+        onSubmit={async (result) => {
           setUserPoliticalScore(result.overallPosition.numericValue);
           setPersonalizedChannelIds(result.selectedChannelIds || []);
           setUserPositionResult({
             label: result.overallPosition.label,
             description: result.overallPosition.description,
             diversityScore: result.diversityScore,
-            diversityNote: result.diversityNote
+            diversityNote: result.diversityNote,
+            suggestedChannels: result.suggestedChannels,
+            informationDiversityScore: result.informationDiversityScore
           });
           setViewMode('compass');
           // Update selectedIds to only show the user's selected channels
           if (result.selectedChannelIds && result.selectedChannelIds.length > 0) {
             setSelectedIds(new Set(result.selectedChannelIds));
           }
+          
+          // Save analysis to database for admin analytics
+          if (user) {
+            try {
+              await supabase.from('user_position_analyses').insert([{
+                user_id: user.id,
+                country,
+                position_label: result.overallPosition.label,
+                numeric_value: result.overallPosition.numericValue,
+                diversity_score: result.diversityScore,
+                diversity_note: result.diversityNote,
+                selected_channels: JSON.stringify(result.channels),
+                suggested_channels: JSON.stringify(result.suggestedChannels)
+              }] as any);
+            } catch (err) {
+              console.error('Failed to save position analysis:', err);
+            }
+          }
+          
           setShowSpectrumInput(false);
         }}
         userName={user?.user_metadata?.full_name || visitorName || 'You'}

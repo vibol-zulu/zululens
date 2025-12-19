@@ -20,6 +20,13 @@ interface SpectrumInputModalProps {
   onRequestAddChannel?: () => void;
 }
 
+export interface ChannelSuggestion {
+  id: string;
+  name: string;
+  politicalLean: string;
+  reason: string;
+}
+
 export interface PoliticalLeanResult {
   channels: Array<{
     name: string;
@@ -34,6 +41,8 @@ export interface PoliticalLeanResult {
   diversityScore: string;
   diversityNote: string;
   selectedChannelIds: string[];
+  suggestedChannels: ChannelSuggestion[];
+  informationDiversityScore: number; // 0-100 percentage
 }
 
 // Map bin index (0-4) to numeric value (-100 to +100)
@@ -110,12 +119,15 @@ const SpectrumInputModal: React.FC<SpectrumInputModalProps> = ({
         overallPosition: { label: 'Center', numericValue: 0, description: '' },
         diversityScore: 'low',
         diversityNote: '',
-        selectedChannelIds: []
+        selectedChannelIds: [],
+        suggestedChannels: [],
+        informationDiversityScore: 0
       };
     }
 
     // Get bin indices for all selected channels
     const binIndices = selectedChannels.map(c => getSpectrumBinIndex(c.politicalLean));
+    const uniqueBins = new Set(binIndices);
     
     // Calculate average bin index
     const avgBinIndex = binIndices.reduce((sum, idx) => sum + idx, 0) / binIndices.length;
@@ -125,20 +137,58 @@ const SpectrumInputModal: React.FC<SpectrumInputModalProps> = ({
     const numericValue = binToNumericValue(avgBinIndex);
     const label = binToLabel(roundedBinIndex);
     
+    // Calculate Information Diversity Score (0-100)
+    // Based on: coverage of bins (0-4), number of sources, and spread
+    const binCoverage = uniqueBins.size / 5; // What percentage of spectrum is covered
+    const sourceBonus = Math.min(selectedChannels.length / 10, 1); // Bonus for more sources (max at 10)
+    const informationDiversityScore = Math.round((binCoverage * 70 + sourceBonus * 30));
+    
     // Calculate diversity based on spread of bin indices
-    const uniqueBins = new Set(binIndices);
     let diversityScore: 'low' | 'medium' | 'high' = 'low';
     let diversityNote = '';
     
     if (uniqueBins.size >= 4) {
       diversityScore = 'high';
-      diversityNote = 'You consume news from across the political spectrum.';
+      diversityNote = 'Excellent! You consume news from across the political spectrum.';
     } else if (uniqueBins.size >= 2) {
       diversityScore = 'medium';
       diversityNote = 'You have some diversity in your news sources.';
     } else {
       diversityScore = 'low';
       diversityNote = 'Your news sources are fairly homogeneous politically.';
+    }
+
+    // Find missing bins and suggest channels to improve diversity
+    const missingBins: number[] = [];
+    for (let i = 0; i <= 4; i++) {
+      if (!uniqueBins.has(i as 0 | 1 | 2 | 3 | 4)) {
+        missingBins.push(i);
+      }
+    }
+
+    // Generate suggestions for missing perspectives
+    const suggestedChannels: ChannelSuggestion[] = [];
+    for (const missingBin of missingBins) {
+      // Find channels from the available list that match this bin
+      const channelsInBin = availableChannels.filter(
+        c => getSpectrumBinIndex(c.politicalLean) === missingBin &&
+        !selectedChannels.some(sc => sc.id === c.id)
+      );
+      
+      if (channelsInBin.length > 0) {
+        // Pick up to 2 random channels from this bin
+        const shuffled = channelsInBin.sort(() => Math.random() - 0.5);
+        const selected = shuffled.slice(0, 2);
+        
+        for (const channel of selected) {
+          suggestedChannels.push({
+            id: channel.id,
+            name: channel.name,
+            politicalLean: channel.politicalLean,
+            reason: `Add ${binToLabel(missingBin)} perspective to your news diet`
+          });
+        }
+      }
     }
 
     return {
@@ -154,7 +204,9 @@ const SpectrumInputModal: React.FC<SpectrumInputModalProps> = ({
       },
       diversityScore,
       diversityNote,
-      selectedChannelIds: selectedChannels.map(c => c.id)
+      selectedChannelIds: selectedChannels.map(c => c.id),
+      suggestedChannels: suggestedChannels.slice(0, 5), // Limit to 5 suggestions
+      informationDiversityScore
     };
   };
 

@@ -425,6 +425,51 @@ export type Database = {
         }
         Relationships: []
       }
+      user_position_analyses: {
+        Row: {
+          country: string
+          created_at: string
+          diversity_note: string | null
+          diversity_score: string
+          id: string
+          numeric_value: number
+          position_label: string
+          selected_channels: Json
+          suggested_channels: Json | null
+          user_id: string | null
+          visitor_email: string | null
+          visitor_name: string | null
+        }
+        Insert: {
+          country?: string
+          created_at?: string
+          diversity_note?: string | null
+          diversity_score: string
+          id?: string
+          numeric_value: number
+          position_label: string
+          selected_channels?: Json
+          suggested_channels?: Json | null
+          user_id?: string | null
+          visitor_email?: string | null
+          visitor_name?: string | null
+        }
+        Update: {
+          country?: string
+          created_at?: string
+          diversity_note?: string | null
+          diversity_score?: string
+          id?: string
+          numeric_value?: number
+          position_label?: string
+          selected_channels?: Json
+          suggested_channels?: Json | null
+          user_id?: string | null
+          visitor_email?: string | null
+          visitor_name?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
