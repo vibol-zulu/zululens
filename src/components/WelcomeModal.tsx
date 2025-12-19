@@ -50,14 +50,6 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
             />
           </div>
 
-          {/* Mission */}
-          <section>
-            <h3 className="font-semibold text-sm mb-2 text-foreground">Our Mission</h3>
-            <p className="text-sm text-muted-foreground">
-              We're building a community-driven map of the global media landscape. 
-            </p>
-          </section>
-
           {/* Visitor Tier Info */}
           <section className="flex items-start gap-3 p-2.5 rounded-md bg-[#00564A]/10 border border-[#00564A]/30">
             <Eye className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
