@@ -38,6 +38,7 @@ interface MediaCanvasProps {
   isAuthenticated?: boolean;
   onSignUpClick?: () => void;
   onContributeClick?: () => void;
+  onMethodologyClick?: () => void;
 }
 
 // Country-specific insights data
@@ -198,7 +199,8 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
   pxFactorAllCountries = 2.24,
   isAuthenticated = false,
   onSignUpClick,
-  onContributeClick
+  onContributeClick,
+  onMethodologyClick
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const circlesRef = useRef<BrandCircle[]>([]);
@@ -649,12 +651,14 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
                 </div>
               )}
               
-              {/* Methodology Section - always shown */}
+              {/* Methodology Link */}
               <div className={hasInsights ? 'pt-2 border-t border-border' : ''}>
-                <h4 className="text-xs font-semibold text-foreground mb-2">Methodology</h4>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  {METHODOLOGY_TEXT}
-                </p>
+                <button
+                  onClick={onMethodologyClick}
+                  className="text-xs font-semibold text-primary hover:underline"
+                >
+                  Methodology →
+                </button>
               </div>
             </>
           )}
