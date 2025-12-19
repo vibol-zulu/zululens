@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { YearData, ViewMode, COLORS } from '@/types/media';
 import { BrandCircle, INNER_CONTAINER_RADIUS, SPECTRUM_BIN_WIDTH, SPECTRUM_BIN_HEIGHT, getSpectrumBinIndex } from '@/lib/BrandCircle';
 
@@ -32,6 +33,95 @@ interface MediaCanvasProps {
   personalizedChannelIds?: string[]; // Channels selected by user for their position
   userPositionResult?: UserPositionResult | null; // Result with reasoning
 }
+
+// Reasoning Panel Component with expand/collapse
+const ReasoningPanel: React.FC<{ userPositionResult: UserPositionResult; userName: string }> = ({ 
+  userPositionResult, 
+  userName 
+}) => {
+  const [isExpanded, setIsExpanded] = useState(true);
+
+  return (
+    <div className="absolute top-4 left-4 max-w-xs bg-card/95 backdrop-blur-sm rounded-lg shadow-lg border z-10">
+      {/* Header - always visible */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center justify-between p-3 hover:bg-muted/50 transition-colors rounded-t-lg"
+      >
+        <div className="flex items-center gap-2">
+          <div 
+            className="w-3 h-3 rounded-full" 
+            style={{ backgroundColor: COLORS.userBubble }}
+          />
+          <span className="font-semibold text-sm">{userName}</span>
+          <span className="text-xs text-muted-foreground">• {userPositionResult.label}</span>
+        </div>
+        {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+      </button>
+
+      {/* Collapsible content */}
+      {isExpanded && (
+        <div className="px-4 pb-4 pt-1">
+          <p className="text-sm text-muted-foreground mb-2">
+            {userPositionResult.description}
+          </p>
+          
+          {/* Information Diversity Score */}
+          {userPositionResult.informationDiversityScore !== undefined && (
+            <div className="mb-3">
+              <div className="flex items-center justify-between text-xs mb-1">
+                <span className="font-medium">Information Diversity Score</span>
+                <span className="font-bold">{userPositionResult.informationDiversityScore}%</span>
+              </div>
+              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                <div 
+                  className={`h-full rounded-full transition-all ${
+                    userPositionResult.informationDiversityScore >= 70 
+                      ? 'bg-green-500' 
+                      : userPositionResult.informationDiversityScore >= 40 
+                      ? 'bg-yellow-500' 
+                      : 'bg-red-500'
+                  }`}
+                  style={{ width: `${userPositionResult.informationDiversityScore}%` }}
+                />
+              </div>
+            </div>
+          )}
+          
+          <div className="flex items-center gap-1.5 text-xs mb-2">
+            <span className={`px-2 py-0.5 rounded-full ${
+              userPositionResult.diversityScore === 'high' 
+                ? 'bg-green-500/20 text-green-700 dark:text-green-400'
+                : userPositionResult.diversityScore === 'medium'
+                ? 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-400'
+                : 'bg-red-500/20 text-red-700 dark:text-red-400'
+            }`}>
+              {userPositionResult.diversityScore} diversity
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {userPositionResult.diversityNote}
+          </p>
+          
+          {/* Channel Suggestions */}
+          {userPositionResult.suggestedChannels && userPositionResult.suggestedChannels.length > 0 && (
+            <div className="mt-3 pt-3 border-t">
+              <p className="text-xs font-medium mb-2">Suggested to improve diversity:</p>
+              <div className="space-y-1.5">
+                {userPositionResult.suggestedChannels.slice(0, 3).map((suggestion, i) => (
+                  <div key={i} className="text-xs p-1.5 bg-muted/50 rounded">
+                    <span className="font-medium">{suggestion.name}</span>
+                    <span className="text-muted-foreground ml-1">({suggestion.politicalLean})</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const MediaCanvas: React.FC<MediaCanvasProps> = ({
   year,
@@ -425,73 +515,7 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
       
       {/* User Position Reasoning Panel */}
       {viewMode === 'compass' && userPositionResult && (
-        <div className="absolute top-4 left-4 max-w-xs bg-card/95 backdrop-blur-sm rounded-lg shadow-lg border p-4 z-10">
-          <div className="flex items-center gap-2 mb-2">
-            <div 
-              className="w-3 h-3 rounded-full" 
-              style={{ backgroundColor: COLORS.userBubble }}
-            />
-            <h3 className="font-semibold text-sm">{userName}</h3>
-          </div>
-          <p className="text-lg font-bold text-foreground mb-1">
-            {userPositionResult.label}
-          </p>
-          <p className="text-sm text-muted-foreground mb-2">
-            {userPositionResult.description}
-          </p>
-          
-          {/* Information Diversity Score */}
-          {userPositionResult.informationDiversityScore !== undefined && (
-            <div className="mb-3">
-              <div className="flex items-center justify-between text-xs mb-1">
-                <span className="font-medium">Information Diversity Score</span>
-                <span className="font-bold">{userPositionResult.informationDiversityScore}%</span>
-              </div>
-              <div className="h-2 bg-muted rounded-full overflow-hidden">
-                <div 
-                  className={`h-full rounded-full transition-all ${
-                    userPositionResult.informationDiversityScore >= 70 
-                      ? 'bg-green-500' 
-                      : userPositionResult.informationDiversityScore >= 40 
-                      ? 'bg-yellow-500' 
-                      : 'bg-red-500'
-                  }`}
-                  style={{ width: `${userPositionResult.informationDiversityScore}%` }}
-                />
-              </div>
-            </div>
-          )}
-          
-          <div className="flex items-center gap-1.5 text-xs mb-2">
-            <span className={`px-2 py-0.5 rounded-full ${
-              userPositionResult.diversityScore === 'high' 
-                ? 'bg-green-500/20 text-green-700 dark:text-green-400'
-                : userPositionResult.diversityScore === 'medium'
-                ? 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-400'
-                : 'bg-red-500/20 text-red-700 dark:text-red-400'
-            }`}>
-              {userPositionResult.diversityScore} diversity
-            </span>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            {userPositionResult.diversityNote}
-          </p>
-          
-          {/* Channel Suggestions */}
-          {userPositionResult.suggestedChannels && userPositionResult.suggestedChannels.length > 0 && (
-            <div className="mt-3 pt-3 border-t">
-              <p className="text-xs font-medium mb-2">Suggested to improve diversity:</p>
-              <div className="space-y-1.5">
-                {userPositionResult.suggestedChannels.slice(0, 3).map((suggestion, i) => (
-                  <div key={i} className="text-xs p-1.5 bg-muted/50 rounded">
-                    <span className="font-medium">{suggestion.name}</span>
-                    <span className="text-muted-foreground ml-1">({suggestion.politicalLean})</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+        <ReasoningPanel userPositionResult={userPositionResult} userName={userName} />
       )}
     </div>
   );
