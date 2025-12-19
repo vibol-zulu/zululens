@@ -1,8 +1,21 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+const allowedOrigins = [
+  'https://bfea1556-8e0d-4436-b3d2-3bbe58acc2f1.lovableproject.com',
+  'https://id-preview--bfea1556-8e0d-4436-b3d2-3bbe58acc2f1.lovable.app',
+  'https://zululens.lovable.app',
+  'http://localhost:5173',
+  'http://localhost:8080'
+];
+
+const getCorsHeaders = (origin: string | null) => {
+  const allowedOrigin = origin && allowedOrigins.some(o => origin.startsWith(o)) 
+    ? origin 
+    : allowedOrigins[0];
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  };
 };
 
 const NEWS_TOPICS = [
@@ -14,22 +27,16 @@ const NEWS_TOPICS = [
 ];
 
 Deno.serve(async (req) => {
+  const origin = req.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const perplexityApiKey = Deno.env.get('PERPLEXITY_API_KEY');
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-
-    if (!perplexityApiKey) {
-      console.error('PERPLEXITY_API_KEY not configured');
-      return new Response(
-        JSON.stringify({ success: false, error: 'Perplexity API key not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
 
     if (!supabaseUrl || !supabaseServiceKey) {
       console.error('Supabase credentials not configured');
@@ -39,10 +46,57 @@ Deno.serve(async (req) => {
       );
     }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Verify admin authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.log('No authorization header provided');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Authorization required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+
+    if (authError || !user) {
+      console.error('Authentication failed:', authError?.message);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid authentication' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Check if user is admin
+    const { data: isAdmin, error: roleError } = await supabaseAdmin.rpc('has_role', {
+      _user_id: user.id,
+      _role: 'admin'
+    });
+
+    if (roleError || !isAdmin) {
+      console.log('User is not admin:', user.id);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Admin access required' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('Admin authenticated:', user.email);
+
+    const perplexityApiKey = Deno.env.get('PERPLEXITY_API_KEY');
+
+    if (!perplexityApiKey) {
+      console.error('PERPLEXITY_API_KEY not configured');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Perplexity API key not configured' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Check how many unpublished articles exist
-    const { data: unpublishedNews, error: unpublishedError } = await supabase
+    const { data: unpublishedNews, error: unpublishedError } = await supabaseAdmin
       .from('news_updates')
       .select('id')
       .eq('is_published', false);
@@ -72,7 +126,7 @@ Deno.serve(async (req) => {
     }
 
     // Get existing article titles to avoid duplicates
-    const { data: existingNews } = await supabase
+    const { data: existingNews } = await supabaseAdmin
       .from('news_updates')
       .select('title')
       .order('created_at', { ascending: false })
@@ -170,10 +224,10 @@ Format your response as a JSON array with objects containing: title, summary, so
         category: article.category || 'industry',
         source_url: article.source_url || null,
         is_published: false, // Save as draft for admin review
-        created_by: null, // System-generated
+        created_by: user.id, // Track which admin triggered the fetch
       };
 
-      const { error: insertError } = await supabase
+      const { error: insertError } = await supabaseAdmin
         .from('news_updates')
         .insert(newsItem);
 
