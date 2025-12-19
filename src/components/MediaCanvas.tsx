@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { YearData, ViewMode, COLORS } from '@/types/media';
 import { BrandCircle, INNER_CONTAINER_RADIUS, SPECTRUM_BIN_WIDTH, SPECTRUM_BIN_HEIGHT, getSpectrumBinIndex } from '@/lib/BrandCircle';
 
@@ -502,6 +503,8 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
     setHoveredId(found);
   }, [setHoveredId]);
 
+  const [globalInfoOpen, setGlobalInfoOpen] = useState(false);
+
   return (
     <div className="relative w-full h-full">
       <canvas 
@@ -512,6 +515,22 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
         onMouseLeave={() => setHoveredId(null)}
         onClick={onCircleClick}
       />
+      
+      {/* Global View Info Box */}
+      {country === 'Global' && (
+        <Collapsible open={globalInfoOpen} onOpenChange={setGlobalInfoOpen} className="absolute top-4 left-4 z-10">
+          <CollapsibleTrigger className="flex items-center gap-1.5 px-3 py-2 text-xs bg-card/95 backdrop-blur-sm border border-border rounded-lg shadow-sm hover:bg-muted/50 transition-colors">
+            <Info className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="font-medium">Global View</span>
+            {globalInfoOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-1 w-72 p-3 bg-card/95 backdrop-blur-sm border border-border rounded-lg shadow-lg">
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Bubble sizes are scaled down to ~45% of normal (radius factor: 1.0 vs 2.24) to prevent visual clutter as more countries contribute data.
+            </p>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
       
       {/* User Position Reasoning Panel */}
       {viewMode === 'compass' && userPositionResult && (
