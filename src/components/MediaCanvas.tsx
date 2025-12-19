@@ -43,7 +43,7 @@ const ReasoningPanel: React.FC<{ userPositionResult: UserPositionResult; userNam
   const [isExpanded, setIsExpanded] = useState(true);
 
   return (
-    <div className="absolute top-4 left-4 max-w-xs bg-card/95 backdrop-blur-sm rounded-lg shadow-lg border z-10">
+    <div className="absolute top-4 right-4 max-w-xs bg-card/95 backdrop-blur-sm rounded-lg shadow-lg border z-10">
       {/* Header - always visible */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
@@ -518,7 +518,7 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
       
       {/* Global View Info Box */}
       {country === 'Global' && (
-        <Collapsible open={globalInfoOpen} onOpenChange={setGlobalInfoOpen} className="absolute top-4 right-4 z-10">
+        <Collapsible open={globalInfoOpen} onOpenChange={setGlobalInfoOpen} className="absolute top-4 left-4 z-10">
           <CollapsibleTrigger className="flex items-center gap-1.5 px-3 py-2 text-xs bg-card/95 backdrop-blur-sm border border-border rounded-lg shadow-sm hover:bg-muted/50 transition-colors">
             <Info className="h-3.5 w-3.5 text-muted-foreground" />
             <span className="font-medium">Global View</span>
