@@ -45,8 +45,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Menu, Check, ChevronsUpDown, Info, ChevronDown, ChevronUp } from 'lucide-react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Menu, Check, ChevronsUpDown } from 'lucide-react';
 import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
 import { COLORS } from '@/types/media';
 import { useUserChannels } from '@/hooks/useUserChannels';
@@ -87,7 +86,6 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
   const [countryOpen, setCountryOpen] = useState(false);
-  const [globalInfoOpen, setGlobalInfoOpen] = useState(false);
   
   const [showInsights, setShowInsights] = useState(false);
   const [showMethodology, setShowMethodology] = useState(false);
@@ -358,22 +356,6 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                 </SelectContent>
               </Select>
             </div>
-          )}
-
-          {/* Global View Info Box */}
-          {!isMobile && country === 'Global' && (
-            <Collapsible open={globalInfoOpen} onOpenChange={setGlobalInfoOpen}>
-              <CollapsibleTrigger className="flex items-center gap-1 px-2 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-muted/50">
-                <Info className="h-3.5 w-3.5" />
-                <span>Info</span>
-                {globalInfoOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-              </CollapsibleTrigger>
-              <CollapsibleContent className="absolute top-12 left-4 z-50 w-72 p-3 bg-card border border-border rounded-lg shadow-lg">
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  <strong className="text-foreground">Global View:</strong> Bubble sizes are scaled down to ~45% of normal (radius factor: 1.0 vs 2.24) to prevent visual clutter as more countries contribute data.
-                </p>
-              </CollapsibleContent>
-            </Collapsible>
           )}
 
           {/* Mobile Year Selector */}
