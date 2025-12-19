@@ -26,3 +26,9 @@ verify_jwt = false
 
 [functions.send-submission-email]
 verify_jwt = false
+
+[functions.generate-political-questions]
+verify_jwt = false
+
+[functions.analyze-political-lean]
+verify_jwt = false

@@ -1,57 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface PoliticalQuestion {
   id: string;
   text: string;
   category: 'economic' | 'social' | 'governance';
+  weight: number;
 }
 
-const POLITICAL_QUESTIONS: PoliticalQuestion[] = [
-  {
-    id: 'q1',
-    text: 'The government should play a larger role in regulating the economy.',
-    category: 'economic',
-  },
-  {
-    id: 'q2',
-    text: 'Traditional values and institutions are important to preserve.',
-    category: 'social',
-  },
-  {
-    id: 'q3',
-    text: 'Wealthy individuals and corporations should pay significantly higher taxes.',
-    category: 'economic',
-  },
-  {
-    id: 'q4',
-    text: 'Immigration policies should prioritize national security over openness.',
-    category: 'social',
-  },
-  {
-    id: 'q5',
-    text: 'Climate change requires immediate government intervention, even at economic cost.',
-    category: 'governance',
-  },
-  {
-    id: 'q6',
-    text: 'Free markets are generally more effective than government programs at solving problems.',
-    category: 'economic',
-  },
-  {
-    id: 'q7',
-    text: 'Social programs should be expanded to reduce inequality.',
-    category: 'social',
-  },
-  {
-    id: 'q8',
-    text: 'Strong national defense is more important than diplomatic solutions.',
-    category: 'governance',
-  },
+// Fallback questions if AI generation fails
+const FALLBACK_QUESTIONS: PoliticalQuestion[] = [
+  { id: 'q1', text: 'The government should play a larger role in regulating the economy.', category: 'economic', weight: 1 },
+  { id: 'q2', text: 'Traditional values and institutions are important to preserve.', category: 'social', weight: -1 },
+  { id: 'q3', text: 'Wealthy individuals and corporations should pay significantly higher taxes.', category: 'economic', weight: 1 },
+  { id: 'q4', text: 'Immigration policies should prioritize national security over openness.', category: 'social', weight: -1 },
+  { id: 'q5', text: 'Climate change requires immediate government intervention, even at economic cost.', category: 'governance', weight: 1 },
+  { id: 'q6', text: 'Free markets are generally more effective than government programs at solving problems.', category: 'economic', weight: -1 },
+  { id: 'q7', text: 'Social programs should be expanded to reduce inequality.', category: 'social', weight: 1 },
+  { id: 'q8', text: 'Strong national defense is more important than diplomatic solutions.', category: 'governance', weight: -1 },
 ];
 
-// Scale: -2 = Strongly Disagree, -1 = Disagree, 0 = Neutral, 1 = Agree, 2 = Strongly Agree
 const SCALE_OPTIONS = [
   { value: -2, label: 'Strongly Disagree' },
   { value: -1, label: 'Disagree' },
@@ -59,18 +30,6 @@ const SCALE_OPTIONS = [
   { value: 1, label: 'Agree' },
   { value: 2, label: 'Strongly Agree' },
 ];
-
-// Question weights: positive means left-leaning answer is "agree", negative means right-leaning answer is "agree"
-const QUESTION_WEIGHTS: Record<string, number> = {
-  q1: 1,   // Agree = more left
-  q2: -1,  // Agree = more right
-  q3: 1,   // Agree = more left
-  q4: -1,  // Agree = more right
-  q5: 1,   // Agree = more left
-  q6: -1,  // Agree = more right
-  q7: 1,   // Agree = more left
-  q8: -1,  // Agree = more right
-};
 
 interface RefinedResult {
   numericValue: number;
@@ -81,14 +40,15 @@ interface RefinedResult {
 
 function calculateRefinedPosition(
   answers: Record<string, number>,
+  questions: PoliticalQuestion[],
   originalScore: number
 ): RefinedResult {
   let totalScore = 0;
   let answeredCount = 0;
 
   Object.entries(answers).forEach(([questionId, answer]) => {
-    const weight = QUESTION_WEIGHTS[questionId] || 0;
-    // Apply the weight: positive weight means agree pushes left, negative weight means agree pushes right
+    const question = questions.find(q => q.id === questionId);
+    const weight = question?.weight || 0;
     totalScore += answer * weight;
     answeredCount++;
   });
@@ -103,15 +63,11 @@ function calculateRefinedPosition(
   }
 
   // Normalize the questionnaire score to -100 to +100 range
-  // Max possible score: 8 questions * 2 (max answer) * 1 (weight) = 16 (fully left)
-  // Min possible score: -16 (fully right)
-  const normalizedQuestionnaireScore = (totalScore / 16) * 100;
+  const maxPossibleScore = questions.length * 2;
+  const normalizedQuestionnaireScore = (totalScore / maxPossibleScore) * 100;
 
-  // Blend original channel-based score with questionnaire score
-  // Give 40% weight to original, 60% to questionnaire for refinement
+  // Blend original channel-based score with questionnaire score (40/60)
   const blendedScore = originalScore * 0.4 + normalizedQuestionnaireScore * 0.6;
-
-  // Clamp to valid range
   const finalScore = Math.max(-100, Math.min(100, blendedScore));
 
   // Determine confidence based on answer consistency
@@ -119,7 +75,6 @@ function calculateRefinedPosition(
   const confidence: 'high' | 'medium' | 'low' = 
     answerVariance >= 1.5 ? 'high' : answerVariance >= 0.8 ? 'medium' : 'low';
 
-  // Determine label based on final score
   let label: string;
   let description: string;
 
@@ -150,24 +105,58 @@ function calculateRefinedPosition(
 
 interface PoliticalQuestionnaireProps {
   originalScore: number;
+  country: string;
   onComplete: (result: RefinedResult) => void;
   onCancel: () => void;
 }
 
 const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
   originalScore,
+  country,
   onComplete,
   onCancel,
 }) => {
+  const [questions, setQuestions] = useState<PoliticalQuestion[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
 
-  const currentQuestion = POLITICAL_QUESTIONS[currentIndex];
-  const totalQuestions = POLITICAL_QUESTIONS.length;
-  const progress = ((currentIndex + 1) / totalQuestions) * 100;
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase.functions.invoke('generate-political-questions', {
+          body: { country }
+        });
+
+        if (error) throw error;
+
+        if (data?.questions && Array.isArray(data.questions)) {
+          setQuestions(data.questions);
+          console.log(`Loaded ${data.questions.length} AI-generated questions for ${country}`);
+        } else {
+          throw new Error('Invalid response format');
+        }
+      } catch (error) {
+        console.error('Failed to fetch AI questions, using fallback:', error);
+        toast.error('Using standard questions (AI generation unavailable)');
+        setQuestions(FALLBACK_QUESTIONS);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchQuestions();
+  }, [country]);
+
+  const currentQuestion = questions[currentIndex];
+  const totalQuestions = questions.length;
+  const progress = totalQuestions > 0 ? ((currentIndex + 1) / totalQuestions) * 100 : 0;
 
   const handleAnswer = (value: number) => {
-    setAnswers(prev => ({ ...prev, [currentQuestion.id]: value }));
+    if (currentQuestion) {
+      setAnswers(prev => ({ ...prev, [currentQuestion.id]: value }));
+    }
   };
 
   const handleNext = () => {
@@ -183,9 +172,31 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
   };
 
   const handleSubmit = () => {
-    const result = calculateRefinedPosition(answers, originalScore);
+    const result = calculateRefinedPosition(answers, questions, originalScore);
     onComplete(result);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-8 space-y-3">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <p className="text-sm text-muted-foreground">
+          Generating questions for {country}...
+        </p>
+      </div>
+    );
+  }
+
+  if (!currentQuestion) {
+    return (
+      <div className="text-center py-4">
+        <p className="text-sm text-muted-foreground">No questions available.</p>
+        <Button variant="ghost" size="sm" onClick={onCancel} className="mt-2">
+          Go Back
+        </Button>
+      </div>
+    );
+  }
 
   const currentAnswer = answers[currentQuestion.id];
   const isLastQuestion = currentIndex === totalQuestions - 1;
@@ -193,6 +204,11 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
 
   return (
     <div className="space-y-4">
+      {/* Region indicator */}
+      <div className="text-xs text-muted-foreground text-center">
+        Questions tailored for <span className="font-medium text-foreground">{country}</span>
+      </div>
+
       {/* Progress bar */}
       <div className="space-y-1">
         <div className="flex justify-between text-xs text-muted-foreground">
