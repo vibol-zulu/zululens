@@ -610,6 +610,21 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
             </div>
           ) : (
             <>
+              {/* Early stage note with call to action - at top */}
+              <div className="mb-3 p-2.5 bg-primary/5 border border-primary/20 rounded-md">
+                <p className="text-xs text-muted-foreground leading-relaxed mb-2">
+                  <span className="font-medium text-foreground">We're just getting started!</span>
+                  <br />
+                  Our insights are growing as we gather more data. Help us build a more complete picture of the media landscape.
+                </p>
+                <button
+                  onClick={onContributeClick}
+                  className="text-xs font-medium text-primary hover:underline"
+                >
+                  Find out more →
+                </button>
+              </div>
+              
               {/* Insights Section */}
               {hasInsights && (
                 <div className="mb-3">
@@ -624,19 +639,6 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
                   </ul>
                 </div>
               )}
-              
-              {/* Early stage note with call to action */}
-              <div className="mb-3 p-2.5 bg-primary/5 border border-primary/20 rounded-md">
-                <p className="text-xs text-muted-foreground leading-relaxed mb-2">
-                  <span className="font-medium text-foreground">We're just getting started!</span> Our insights are growing as we gather more data. Help us build a more complete picture of the media landscape.
-                </p>
-                <button
-                  onClick={onContributeClick}
-                  className="text-xs font-medium text-primary hover:underline"
-                >
-                  Become a contributor →
-                </button>
-              </div>
               
               {/* Global-specific scaling info */}
               {country === 'Global' && (
