@@ -37,6 +37,7 @@ interface MediaCanvasProps {
   pxFactorAllCountries?: number;
   isAuthenticated?: boolean;
   onSignUpClick?: () => void;
+  onContributeClick?: () => void;
 }
 
 // Country-specific insights data
@@ -196,7 +197,8 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
   pxFactorGlobal = 1.0,
   pxFactorAllCountries = 2.24,
   isAuthenticated = false,
-  onSignUpClick
+  onSignUpClick,
+  onContributeClick
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const circlesRef = useRef<BrandCircle[]>([]);
@@ -622,6 +624,19 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
                   </ul>
                 </div>
               )}
+              
+              {/* Early stage note with call to action */}
+              <div className="mb-3 p-2.5 bg-primary/5 border border-primary/20 rounded-md">
+                <p className="text-xs text-muted-foreground leading-relaxed mb-2">
+                  <span className="font-medium text-foreground">We're just getting started!</span> Our insights are growing as we gather more data. Help us build a more complete picture of the media landscape.
+                </p>
+                <button
+                  onClick={onContributeClick}
+                  className="text-xs font-medium text-primary hover:underline"
+                >
+                  Become a contributor →
+                </button>
+              </div>
               
               {/* Global-specific scaling info */}
               {country === 'Global' && (
