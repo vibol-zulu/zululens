@@ -716,6 +716,10 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
         onOpenChange={setShowWelcome} 
         userName={visitorName}
         onStartExploring={startTour}
+        onSignUpClick={() => {
+          setSignInDefaultTab('signup');
+          setShowSignIn(true);
+        }}
       />
       <ContributorCelebration
         open={showContributorCelebration}
