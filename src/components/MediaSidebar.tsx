@@ -157,6 +157,63 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   );
 };
 
+// Country grouping component for Global view
+interface CountryGroupProps {
+  countryName: string;
+  brands: BrandData[];
+  selectedIds: Set<string>;
+  onToggle: (id: string) => void;
+  isMobile?: boolean;
+  category: Category;
+}
+
+const CountryGroup: React.FC<CountryGroupProps> = ({
+  countryName,
+  brands,
+  selectedIds,
+  onToggle,
+  isMobile = false,
+  category
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const sorted = [...brands].sort((a, b) => b.valueMillions - a.valueMillions);
+  const selectedCount = sorted.filter(b => selectedIds.has(b.id)).length;
+
+  if (sorted.length === 0) return null;
+
+  return (
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-2">
+      <CollapsibleTrigger className="flex items-center justify-between w-full py-2 px-2 bg-primary/10 rounded-md hover:bg-primary/20 transition-colors border border-border/50">
+        <div className="flex items-center gap-2">
+          <span className={cn("font-semibold font-sans", isMobile ? "text-xs" : "text-sm")}>{countryName}</span>
+          <span className={cn("text-muted-foreground", isMobile ? "text-[10px]" : "text-xs")}>
+            ({sorted.length} {sorted.length === 1 ? 'channel' : 'channels'})
+          </span>
+          {selectedCount > 0 && (
+            <span className={cn("bg-primary text-primary-foreground rounded-full px-1.5", isMobile ? "text-[9px]" : "text-[10px]")}>
+              {selectedCount} selected
+            </span>
+          )}
+        </div>
+        {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+      </CollapsibleTrigger>
+      <CollapsibleContent className="pt-2">
+        <div className={cn("space-y-2 border-l-2 border-primary/20 ml-2", isMobile ? "pl-2" : "pl-3 space-y-3")}>
+          {sorted.map((b) => (
+            <BrandItem 
+              key={b.id} 
+              brand={b} 
+              isSelected={selectedIds.has(b.id)} 
+              onToggle={onToggle}
+              isMobile={isMobile}
+            />
+          ))}
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
+  );
+};
+
 const Sidebar: React.FC<SidebarProps> = ({
   category,
   brands,
@@ -206,6 +263,29 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   // For corporate category, split into Big 6 and Others (use filtered brands for search)
   const isCorporate = category === 'corporate';
+  const isGlobal = country === 'Global';
+  
+  // Group brands by country for Global view
+  const countriesMap = useMemo(() => {
+    if (!isGlobal) return new Map<string, BrandData[]>();
+    
+    const map = new Map<string, BrandData[]>();
+    filteredBrands.forEach(brand => {
+      const brandCountry = brand.country || 'Unknown';
+      if (!map.has(brandCountry)) {
+        map.set(brandCountry, []);
+      }
+      map.get(brandCountry)!.push(brand);
+    });
+    
+    // Sort countries alphabetically, but put "United States" first
+    return new Map([...map.entries()].sort((a, b) => {
+      if (a[0] === 'United States') return -1;
+      if (b[0] === 'United States') return 1;
+      return a[0].localeCompare(b[0]);
+    }));
+  }, [isGlobal, filteredBrands]);
+  
   const big6Brands = isCorporate ? filteredBrands.filter(b => BIG_6_NAMES.some(name => b.name.includes(name.split(' ')[0]) || name.includes(b.name.split(' ')[0]))) : [];
   const otherBrands = isCorporate ? filteredBrands.filter(b => !big6Brands.includes(b)) : [];
 
@@ -291,7 +371,22 @@ const Sidebar: React.FC<SidebarProps> = ({
                 No data available
               </p>
             )}
-            {isCorporate ? (
+            {isGlobal ? (
+              // Global view: show country dropdowns
+              <div className="space-y-2">
+                {Array.from(countriesMap.entries()).map(([countryName, countryBrands]) => (
+                  <CountryGroup
+                    key={countryName}
+                    countryName={countryName}
+                    brands={countryBrands}
+                    selectedIds={selectedIds}
+                    onToggle={onToggle}
+                    isMobile={true}
+                    category={category}
+                  />
+                ))}
+              </div>
+            ) : isCorporate ? (
               <>
                 <CollapsibleSection 
                   title="Big 6" 
@@ -414,7 +509,22 @@ const Sidebar: React.FC<SidebarProps> = ({
               No data available
             </p>
           )}
-          {isCorporate ? (
+          {isGlobal ? (
+            // Global view: show country dropdowns
+            <div className="space-y-2">
+              {Array.from(countriesMap.entries()).map(([countryName, countryBrands]) => (
+                <CountryGroup
+                  key={countryName}
+                  countryName={countryName}
+                  brands={countryBrands}
+                  selectedIds={selectedIds}
+                  onToggle={onToggle}
+                  isMobile={false}
+                  category={category}
+                />
+              ))}
+            </div>
+          ) : isCorporate ? (
             <>
               <CollapsibleSection 
                 title="Big 6" 

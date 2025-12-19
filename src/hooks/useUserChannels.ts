@@ -24,12 +24,19 @@ export const useUserChannels = (country: string, year: number) => {
     setLoading(true);
     try {
       // Only fetch approved channels for visualization
-      const { data, error } = await supabase
+      // For "Global", fetch all countries' data
+      let query = supabase
         .from('user_channels')
         .select('*')
-        .eq('country', country)
         .eq('year', year)
         .eq('status', 'approved');
+      
+      // Only filter by country if not "Global"
+      if (country !== 'Global') {
+        query = query.eq('country', country);
+      }
+      
+      const { data, error } = await query;
 
       if (error) {
         console.error('Error fetching user channels:', error);
@@ -46,7 +53,8 @@ export const useUserChannels = (country: string, year: number) => {
         startDate: channel.start_date,
         platform: channel.platform,
         contentType: channel.content_type,
-        politicalLean: channel.political_lean
+        politicalLean: channel.political_lean,
+        country: channel.country // Include country for Global view grouping
       }));
 
       setUserChannels(transformed);
