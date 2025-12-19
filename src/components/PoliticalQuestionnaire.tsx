@@ -7,20 +7,21 @@ import { toast } from 'sonner';
 interface PoliticalQuestion {
   id: string;
   text: string;
+  explanation: string;
   category: 'economic' | 'social' | 'governance';
   weight: number;
 }
 
 // Fallback questions if AI generation fails
 const FALLBACK_QUESTIONS: PoliticalQuestion[] = [
-  { id: 'q1', text: 'The government should play a larger role in regulating the economy.', category: 'economic', weight: 1 },
-  { id: 'q2', text: 'Traditional values and institutions are important to preserve.', category: 'social', weight: -1 },
-  { id: 'q3', text: 'Wealthy individuals and corporations should pay significantly higher taxes.', category: 'economic', weight: 1 },
-  { id: 'q4', text: 'Immigration policies should prioritize national security over openness.', category: 'social', weight: -1 },
-  { id: 'q5', text: 'Climate change requires immediate government intervention, even at economic cost.', category: 'governance', weight: 1 },
-  { id: 'q6', text: 'Free markets are generally more effective than government programs at solving problems.', category: 'economic', weight: -1 },
-  { id: 'q7', text: 'Social programs should be expanded to reduce inequality.', category: 'social', weight: 1 },
-  { id: 'q8', text: 'Strong national defense is more important than diplomatic solutions.', category: 'governance', weight: -1 },
+  { id: 'q1', text: 'The government should play a larger role in regulating the economy.', explanation: 'This asks whether you believe government oversight of businesses and markets leads to better outcomes than letting the free market operate independently.', category: 'economic', weight: 1 },
+  { id: 'q2', text: 'Traditional values and institutions are important to preserve.', explanation: 'This explores whether you prioritize maintaining established social norms and customs versus embracing progressive social changes.', category: 'social', weight: -1 },
+  { id: 'q3', text: 'Wealthy individuals and corporations should pay significantly higher taxes.', explanation: 'This addresses income redistribution—whether higher earners should contribute more to fund public services and reduce inequality.', category: 'economic', weight: 1 },
+  { id: 'q4', text: 'Immigration policies should prioritize national security over openness.', explanation: 'This weighs stricter border controls and vetting against more welcoming policies for migrants and refugees.', category: 'social', weight: -1 },
+  { id: 'q5', text: 'Climate change requires immediate government intervention, even at economic cost.', explanation: 'This asks if environmental protection should take precedence over short-term economic considerations like jobs and industry profits.', category: 'governance', weight: 1 },
+  { id: 'q6', text: 'Free markets are generally more effective than government programs at solving problems.', explanation: 'This tests your belief in private sector efficiency versus government-led solutions for societal challenges.', category: 'economic', weight: -1 },
+  { id: 'q7', text: 'Social programs should be expanded to reduce inequality.', explanation: 'This asks whether government should provide more support (healthcare, education, welfare) to create a more equal society.', category: 'social', weight: 1 },
+  { id: 'q8', text: 'Strong national defense is more important than diplomatic solutions.', explanation: 'This explores whether military strength or international cooperation should be the primary tool for national security.', category: 'governance', weight: -1 },
 ];
 
 const SCALE_OPTIONS = [
@@ -224,10 +225,15 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
       </div>
 
       {/* Question */}
-      <div className="py-3">
+      <div className="py-3 space-y-2">
         <p className="text-sm font-medium leading-relaxed">
           {currentQuestion.text}
         </p>
+        {currentQuestion.explanation && (
+          <p className="text-xs text-muted-foreground italic leading-relaxed">
+            {currentQuestion.explanation}
+          </p>
+        )}
       </div>
 
       {/* Scale options */}
