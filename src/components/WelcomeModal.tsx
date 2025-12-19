@@ -32,7 +32,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-sm sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl sm:text-2xl flex items-center gap-2 flex-wrap">
             Welcome, {userName}!
