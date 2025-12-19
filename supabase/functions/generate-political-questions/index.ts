@@ -33,12 +33,14 @@ Return ONLY a valid JSON array with this exact structure, no other text:
   {
     "id": "q1",
     "text": "The statement text here",
+    "explanation": "A brief 1-2 sentence explanation helping the user understand what this question is really asking about and why it matters politically.",
     "category": "economic|social|governance",
     "weight": 1 or -1
   }
 ]
 
 weight: 1 means agreeing leans left, -1 means agreeing leans right.
+explanation: Should clarify the political context or implications without being biased.
 
 Make sure questions are specific to ${country || 'the United States'}'s current political landscape.`;
 
