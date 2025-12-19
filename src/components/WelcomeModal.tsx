@@ -62,7 +62,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
           <section>
             <button
               onClick={handleVisitorClick}
-              className="w-full flex items-start gap-3 p-2.5 rounded-md bg-muted/50 border border-border/50 hover:bg-muted hover:border-primary/30 transition-colors text-left group"
+              className="w-full flex items-start gap-3 p-2.5 rounded-md bg-green-500/10 border border-green-500/30 hover:bg-green-500/20 hover:border-green-500/50 transition-colors text-left group"
             >
               <Eye className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0 group-hover:text-primary transition-colors" />
               <div>
