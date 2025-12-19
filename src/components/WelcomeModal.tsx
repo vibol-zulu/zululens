@@ -67,15 +67,11 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
               <Eye className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0 group-hover:text-primary transition-colors" />
               <div>
                 <p className="text-sm font-medium group-hover:text-primary transition-colors">Visitor (You)</p>
-                <p className="text-xs text-muted-foreground">Explore the visualization freely. Create an account to become a Member.</p>
+                <p className="text-xs text-muted-foreground">Explore the visualization freely. <span className="font-semibold">Create an account</span> to become a Member.</p>
               </div>
             </button>
           </section>
         </div>
-
-        <Button onClick={handleStartExploring} className="w-full mt-2">
-          Start Exploring
-        </Button>
       </DialogContent>
     </Dialog>
   );
