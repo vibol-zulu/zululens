@@ -159,8 +159,8 @@ const TermsOfService = () => {
               <h2 className="text-xl text-white font-medium mb-3">12. Contact Us</h2>
               <p>
                 If you have any questions about these Terms, please contact us at{" "}
-                <a href="mailto:legal@zulu.group" className="text-white underline hover:text-white/80">
-                  legal@zulu.group
+                <a href="mailto:hello@zulu.group" className="text-white underline hover:text-white/80">
+                  hello@zulu.group
                 </a>
               </p>
             </section>
