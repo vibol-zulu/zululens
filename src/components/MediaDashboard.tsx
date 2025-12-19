@@ -492,9 +492,11 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                   News & Updates
                 </DropdownMenuItem>
               )}
+              {/* Insights menu item - temporarily disabled
               <DropdownMenuItem onClick={() => setShowInsights(true)}>
                 Insights
               </DropdownMenuItem>
+              */}
               <DropdownMenuItem onClick={() => setShowMethodology(true)}>
                 Methodology
               </DropdownMenuItem>
