@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -2396,14 +2397,20 @@ Return your analysis as JSON with this structure:
                                     value={u.role || 'none'} 
                                     onValueChange={(v) => updateUserRole(u.id, v === 'none' ? null : v as 'admin' | 'contributor' | 'moderator')}
                                   >
-                                    <SelectTrigger className="w-[120px] h-8">
+                                    <SelectTrigger className={cn(
+                                      "w-[120px] h-8 text-xs font-medium",
+                                      u.role === 'admin' && "bg-red-500/10 border-red-500/30 text-red-600 dark:text-red-400",
+                                      u.role === 'moderator' && "bg-purple-500/10 border-purple-500/30 text-purple-600 dark:text-purple-400",
+                                      u.role === 'contributor' && "bg-blue-500/10 border-blue-500/30 text-blue-600 dark:text-blue-400",
+                                      !u.role && "bg-muted/50 text-muted-foreground"
+                                    )}>
                                       <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                      <SelectItem value="none">Member</SelectItem>
-                                      <SelectItem value="contributor">Contributor</SelectItem>
-                                      <SelectItem value="moderator">Moderator</SelectItem>
-                                      <SelectItem value="admin">Admin</SelectItem>
+                                      <SelectItem value="none" className="text-muted-foreground">Member</SelectItem>
+                                      <SelectItem value="contributor" className="text-blue-600 dark:text-blue-400">Contributor</SelectItem>
+                                      <SelectItem value="moderator" className="text-purple-600 dark:text-purple-400">Moderator</SelectItem>
+                                      <SelectItem value="admin" className="text-red-600 dark:text-red-400">Admin</SelectItem>
                                     </SelectContent>
                                   </Select>
                                 </TableCell>
