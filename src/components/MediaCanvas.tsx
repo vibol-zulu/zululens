@@ -37,6 +37,58 @@ interface MediaCanvasProps {
   pxFactorAllCountries?: number;
 }
 
+// Country-specific insights data
+interface CountryInfo {
+  insights: string[];
+}
+
+const COUNTRY_INSIGHTS: Record<string, CountryInfo> = {
+  'United States': {
+    insights: [
+      'The U.S. media landscape is dominated by a mix of legacy broadcast networks and digital-native platforms.',
+      'Cable news channels remain influential despite declining viewership, with strong partisan alignment.',
+      'Podcast and streaming platforms are rapidly growing, particularly among younger demographics.',
+    ],
+  },
+  'United Kingdom': {
+    insights: [
+      'The BBC remains the dominant public broadcaster with significant reach across demographics.',
+      'Tabloid newspapers continue to influence public discourse despite declining print circulation.',
+      'Streaming services are reshaping traditional TV viewing habits.',
+    ],
+  },
+  'Canada': {
+    insights: [
+      'CBC/Radio-Canada serves as the national public broadcaster in both English and French.',
+      'Media consumption patterns show strong regional variations between provinces.',
+      'Cross-border influence from U.S. media is significant but regulated.',
+    ],
+  },
+  'Australia': {
+    insights: [
+      'Media ownership is highly concentrated among a few major conglomerates.',
+      'The ABC (Australian Broadcasting Corporation) provides public broadcasting services.',
+      'Regional and metropolitan media markets show distinct characteristics.',
+    ],
+  },
+  'Global': {
+    insights: [
+      'This view aggregates media data from all available countries for a worldwide perspective.',
+      'Bubble sizes are scaled down to prevent visual clutter as more countries contribute data.',
+      'Cross-border media influence and international news organizations are represented.',
+    ],
+  },
+  'All Countries': {
+    insights: [
+      'This view combines all country-specific datasets into a single visualization.',
+      'Useful for comparing relative audience sizes across different national markets.',
+      'Some channels may appear multiple times if they operate in multiple countries.',
+    ],
+  },
+};
+
+const METHODOLOGY_TEXT = `Audience estimates are derived from multiple data sources including industry reports, public filings, and third-party analytics platforms. For digital platforms, we use Unique Monthly Audience (UMA) metrics where available. Traditional broadcast audiences are estimated using ratings data and demographic surveys. All figures represent estimated reach rather than exact viewership counts. Political lean classifications are based on content analysis, editorial positioning, and audience demographic studies. Circle sizes are proportional to the square root of audience size to maintain visual clarity.`;
+
 // Reasoning Panel Component with expand/collapse
 const ReasoningPanel: React.FC<{ userPositionResult: UserPositionResult; userName: string }> = ({ 
   userPositionResult, 
@@ -507,7 +559,11 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
     setHoveredId(found);
   }, [setHoveredId]);
 
-  const [globalInfoOpen, setGlobalInfoOpen] = useState(false);
+  const [countryInfoOpen, setCountryInfoOpen] = useState(false);
+
+  // Get country insights (empty array if no data for this country)
+  const countryInfo = COUNTRY_INSIGHTS[country];
+  const hasInsights = countryInfo && countryInfo.insights.length > 0;
 
   return (
     <div className="relative w-full h-full">
@@ -520,21 +576,47 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
         onClick={onCircleClick}
       />
       
-      {/* Global View Info Box */}
-      {country === 'Global' && (
-        <Collapsible open={globalInfoOpen} onOpenChange={setGlobalInfoOpen} className="absolute top-4 left-4 z-10">
-          <CollapsibleTrigger className="flex items-center gap-1.5 px-3 py-2 text-xs bg-card/95 backdrop-blur-sm border border-border rounded-lg shadow-sm hover:bg-muted/50 transition-colors">
-            <Info className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="font-medium">Global View</span>
-            {globalInfoOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-          </CollapsibleTrigger>
-          <CollapsibleContent className="mt-1 w-72 p-3 bg-card/95 backdrop-blur-sm border border-border rounded-lg shadow-lg">
+      {/* Country Info Box - shows for all countries */}
+      <Collapsible open={countryInfoOpen} onOpenChange={setCountryInfoOpen} className="absolute top-4 left-4 z-10">
+        <CollapsibleTrigger className="flex items-center gap-1.5 px-3 py-2 text-xs bg-card/95 backdrop-blur-sm border border-border rounded-lg shadow-sm hover:bg-muted/50 transition-colors">
+          <Info className="h-3.5 w-3.5 text-muted-foreground" />
+          <span className="font-medium">{country === 'Global' ? 'Global View' : country}</span>
+          {countryInfoOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+        </CollapsibleTrigger>
+        <CollapsibleContent className="mt-1 w-80 max-h-[60vh] overflow-y-auto p-3 bg-card/95 backdrop-blur-sm border border-border rounded-lg shadow-lg">
+          {/* Insights Section */}
+          {hasInsights && (
+            <div className="mb-3">
+              <h4 className="text-xs font-semibold text-foreground mb-2">Insights</h4>
+              <ul className="space-y-1.5">
+                {countryInfo.insights.map((insight, i) => (
+                  <li key={i} className="text-xs text-muted-foreground leading-relaxed flex gap-2">
+                    <span className="text-primary">•</span>
+                    <span>{insight}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          
+          {/* Global-specific scaling info */}
+          {country === 'Global' && (
+            <div className="mb-3 p-2 bg-muted/50 rounded-md">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                <span className="font-medium">Scaling:</span> Bubble sizes are scaled to ~{Math.round((pxFactorGlobal || 1.0) / (pxFactorAllCountries || 2.24) * 100)}% of normal (radius factor: {pxFactorGlobal?.toFixed(2) || '1.00'} vs {pxFactorAllCountries?.toFixed(2) || '2.24'}).
+              </p>
+            </div>
+          )}
+          
+          {/* Methodology Section - always shown */}
+          <div className={hasInsights ? 'pt-2 border-t border-border' : ''}>
+            <h4 className="text-xs font-semibold text-foreground mb-2">Methodology</h4>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Bubble sizes are scaled down to ~{Math.round((pxFactorGlobal || 1.0) / (pxFactorAllCountries || 2.24) * 100)}% of normal (radius factor: {pxFactorGlobal?.toFixed(2) || '1.00'} vs {pxFactorAllCountries?.toFixed(2) || '2.24'}) to prevent visual clutter as more countries contribute data.
+              {METHODOLOGY_TEXT}
             </p>
-          </CollapsibleContent>
-        </Collapsible>
-      )}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
       
       {/* User Position Reasoning Panel */}
       {viewMode === 'compass' && userPositionResult && (
