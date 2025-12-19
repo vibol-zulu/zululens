@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Search, X, Loader2 } from 'lucide-react';
+import { Search, X, Loader2, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { User } from '@supabase/supabase-js';
-import perplexityLogo from '@/assets/perplexity-color.svg';
+import { BrandData } from '@/types/media';
+import { getSpectrumBinIndex } from '@/lib/BrandCircle';
 
 interface SpectrumInputModalProps {
   isOpen: boolean;
@@ -15,6 +16,8 @@ interface SpectrumInputModalProps {
   onSubmit: (result: PoliticalLeanResult) => void;
   userName: string;
   user: User | null;
+  availableChannels: BrandData[];
+  onRequestAddChannel?: () => void;
 }
 
 export interface PoliticalLeanResult {
@@ -30,16 +33,41 @@ export interface PoliticalLeanResult {
   };
   diversityScore: string;
   diversityNote: string;
+  selectedChannelIds: string[];
 }
+
+// Map bin index (0-4) to numeric value (-100 to +100)
+const binToNumericValue = (binIndex: number): number => {
+  // bin 0 = Far Left = -100
+  // bin 1 = Left = -50
+  // bin 2 = Center = 0
+  // bin 3 = Right = +50
+  // bin 4 = Far Right = +100
+  return (binIndex - 2) * 50;
+};
+
+// Map bin index to label
+const binToLabel = (binIndex: number): string => {
+  switch (binIndex) {
+    case 0: return 'Far Left';
+    case 1: return 'Left / Progressive';
+    case 2: return 'Center';
+    case 3: return 'Right / Conservative';
+    case 4: return 'Far Right';
+    default: return 'Center';
+  }
+};
 
 const SpectrumInputModal: React.FC<SpectrumInputModalProps> = ({
   isOpen,
   onClose,
   onSubmit,
   userName,
-  user
+  user,
+  availableChannels,
+  onRequestAddChannel
 }) => {
-  const [selectedChannels, setSelectedChannels] = useState<string[]>([]);
+  const [selectedChannels, setSelectedChannels] = useState<BrandData[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   
@@ -50,50 +78,98 @@ const SpectrumInputModal: React.FC<SpectrumInputModalProps> = ({
   const [signUpFullName, setSignUpFullName] = useState('');
   const [isSigningUp, setIsSigningUp] = useState(false);
 
-  const addChannel = (channelName: string) => {
-    const trimmed = channelName.trim();
-    if (trimmed && !selectedChannels.includes(trimmed)) {
-      setSelectedChannels(prev => [...prev, trimmed]);
+  // Filter available channels based on search query (excluding already selected)
+  const filteredChannels = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    
+    const query = searchQuery.toLowerCase();
+    return availableChannels
+      .filter(channel => 
+        channel.name.toLowerCase().includes(query) &&
+        !selectedChannels.some(sc => sc.id === channel.id)
+      )
+      .slice(0, 10); // Limit to 10 results
+  }, [searchQuery, availableChannels, selectedChannels]);
+
+  const addChannel = (channel: BrandData) => {
+    if (!selectedChannels.some(c => c.id === channel.id)) {
+      setSelectedChannels(prev => [...prev, channel]);
     }
     setSearchQuery('');
   };
 
-  const removeChannel = (channelName: string) => {
-    setSelectedChannels(prev => prev.filter(c => c !== channelName));
+  const removeChannel = (channelId: string) => {
+    setSelectedChannels(prev => prev.filter(c => c.id !== channelId));
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && searchQuery.trim()) {
-      e.preventDefault();
-      addChannel(searchQuery);
+  // Calculate political position locally based on selected channels
+  const calculateLocalPosition = (): PoliticalLeanResult => {
+    if (selectedChannels.length === 0) {
+      return {
+        channels: [],
+        overallPosition: { label: 'Center', numericValue: 0, description: '' },
+        diversityScore: 'low',
+        diversityNote: '',
+        selectedChannelIds: []
+      };
     }
+
+    // Get bin indices for all selected channels
+    const binIndices = selectedChannels.map(c => getSpectrumBinIndex(c.politicalLean));
+    
+    // Calculate average bin index
+    const avgBinIndex = binIndices.reduce((sum, idx) => sum + idx, 0) / binIndices.length;
+    const roundedBinIndex = Math.round(avgBinIndex);
+    
+    // Convert to numeric value
+    const numericValue = binToNumericValue(avgBinIndex);
+    const label = binToLabel(roundedBinIndex);
+    
+    // Calculate diversity based on spread of bin indices
+    const uniqueBins = new Set(binIndices);
+    let diversityScore: 'low' | 'medium' | 'high' = 'low';
+    let diversityNote = '';
+    
+    if (uniqueBins.size >= 4) {
+      diversityScore = 'high';
+      diversityNote = 'You consume news from across the political spectrum.';
+    } else if (uniqueBins.size >= 2) {
+      diversityScore = 'medium';
+      diversityNote = 'You have some diversity in your news sources.';
+    } else {
+      diversityScore = 'low';
+      diversityNote = 'Your news sources are fairly homogeneous politically.';
+    }
+
+    return {
+      channels: selectedChannels.map(c => ({
+        name: c.name,
+        politicalLean: c.politicalLean,
+        reasoning: `Based on dataset classification: ${c.politicalLean}`
+      })),
+      overallPosition: {
+        label,
+        numericValue,
+        description: `Based on your ${selectedChannels.length} selected news source${selectedChannels.length !== 1 ? 's' : ''}, your media diet leans ${label.toLowerCase()}.`
+      },
+      diversityScore,
+      diversityNote,
+      selectedChannelIds: selectedChannels.map(c => c.id)
+    };
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (selectedChannels.length === 0) return;
 
     setIsAnalyzing(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('analyze-political-lean', {
-        body: { channels: selectedChannels }
-      });
-
-      if (error) {
-        throw new Error(error.message || 'Failed to analyze');
-      }
-
-      if (data?.analysis) {
-        onSubmit(data.analysis);
-        handleClose();
-      } else {
-        throw new Error('No analysis returned');
-      }
-    } catch (err) {
-      console.error('Error analyzing political lean:', err);
-      toast.error('Failed to analyze your news sources. Please try again.');
-    } finally {
+    
+    // Use local calculation instead of AI
+    setTimeout(() => {
+      const result = calculateLocalPosition();
+      onSubmit(result);
+      handleClose();
       setIsAnalyzing(false);
-    }
+    }, 500); // Small delay for UX
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -126,7 +202,6 @@ const SpectrumInputModal: React.FC<SpectrumInputModalProps> = ({
         toast.error(error.message);
       } else {
         toast.success('Account created! You can now analyze your political position.');
-        // Clear the sign-up form
         setSignUpEmail('');
         setSignUpPassword('');
         setSignUpConfirmPassword('');
@@ -151,6 +226,16 @@ const SpectrumInputModal: React.FC<SpectrumInputModalProps> = ({
     onClose();
   };
 
+  const handleAddChannelRequest = () => {
+    handleClose();
+    if (onRequestAddChannel) {
+      onRequestAddChannel();
+    }
+  };
+
+  // Check if search query matches no channels
+  const noMatchesFound = searchQuery.trim().length >= 2 && filteredChannels.length === 0;
+
   // Show sign-up gate for Tier 1 users
   if (!user) {
     return (
@@ -159,7 +244,7 @@ const SpectrumInputModal: React.FC<SpectrumInputModalProps> = ({
           <DialogHeader className="p-6 pb-4 border-b">
             <DialogTitle className="text-xl">Create an Account</DialogTitle>
             <DialogDescription>
-              Sign up to discover your political position on the media spectrum using AI analysis.
+              Sign up to discover your political position on the media spectrum.
             </DialogDescription>
           </DialogHeader>
 
@@ -235,7 +320,7 @@ const SpectrumInputModal: React.FC<SpectrumInputModalProps> = ({
         <DialogHeader className="p-6 pb-4 border-b">
           <DialogTitle className="text-xl">Where Do You Get Your News?</DialogTitle>
           <DialogDescription>
-            Type any news source, podcast, or channel you listen to regularly. We'll use AI to analyze your political position.
+            Select the news sources, podcasts, or channels you consume regularly from our dataset. Your position will be calculated based on your selections.
           </DialogDescription>
         </DialogHeader>
 
@@ -244,10 +329,9 @@ const SpectrumInputModal: React.FC<SpectrumInputModalProps> = ({
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Type a channel name and press Enter..."
+              placeholder="Search for a channel..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
               className="pl-9 pr-9"
               disabled={isAnalyzing}
             />
@@ -260,9 +344,42 @@ const SpectrumInputModal: React.FC<SpectrumInputModalProps> = ({
               </button>
             )}
           </div>
+
+          {/* Search Results Dropdown */}
+          {searchQuery.trim() && (
+            <div className="mt-2 border rounded-md bg-card shadow-md max-h-[200px] overflow-y-auto">
+              {filteredChannels.length > 0 ? (
+                filteredChannels.map(channel => (
+                  <button
+                    key={channel.id}
+                    onClick={() => addChannel(channel)}
+                    className="w-full px-3 py-2 text-left hover:bg-muted flex items-center justify-between text-sm"
+                  >
+                    <span>{channel.name}</span>
+                    <span className="text-xs text-muted-foreground">{channel.politicalLean}</span>
+                  </button>
+                ))
+              ) : noMatchesFound ? (
+                <div className="p-3 text-center">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    "{searchQuery}" is not in our dataset.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAddChannelRequest}
+                    className="gap-1"
+                  >
+                    <Plus className="h-3 w-3" />
+                    Submit this channel
+                  </Button>
+                </div>
+              ) : null}
+            </div>
+          )}
           
           <p className="text-xs text-muted-foreground mt-2">
-            Examples: CNN, Fox News, Joe Rogan, NYT, Breaking Points, Ben Shapiro, Rachel Maddow...
+            Only channels in our current dataset can be selected. If you don't see a channel, you can submit it for review.
           </p>
 
           {/* Selected Channels List */}
@@ -270,18 +387,21 @@ const SpectrumInputModal: React.FC<SpectrumInputModalProps> = ({
             <p className="text-sm text-muted-foreground mb-2">
               {selectedChannels.length === 0 
                 ? "Your channels will appear here" 
-                : `${selectedChannels.length} channel${selectedChannels.length !== 1 ? 's' : ''} added`}
+                : `${selectedChannels.length} channel${selectedChannels.length !== 1 ? 's' : ''} selected`}
             </p>
             <ScrollArea className="h-[180px]">
               <div className="space-y-2">
                 {selectedChannels.map(channel => (
                   <div 
-                    key={channel}
+                    key={channel.id}
                     className="flex items-center justify-between p-2 rounded-md bg-muted/50"
                   >
-                    <span className="text-sm">{channel}</span>
+                    <div className="flex flex-col">
+                      <span className="text-sm">{channel.name}</span>
+                      <span className="text-xs text-muted-foreground">{channel.politicalLean}</span>
+                    </div>
                     <button
-                      onClick={() => removeChannel(channel)}
+                      onClick={() => removeChannel(channel.id)}
                       className="text-muted-foreground hover:text-foreground p-1"
                       disabled={isAnalyzing}
                     >
@@ -301,19 +421,14 @@ const SpectrumInputModal: React.FC<SpectrumInputModalProps> = ({
           <Button 
             onClick={handleSubmit}
             disabled={selectedChannels.length === 0 || isAnalyzing}
-            variant="outline"
-            className="gap-2 text-foreground"
           >
             {isAnalyzing ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Analyzing...
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Calculating...
               </>
             ) : (
-              <>
-                <img src={perplexityLogo} alt="Perplexity" className="h-4 w-4" />
-                Show My Position
-              </>
+              'Show My Position'
             )}
           </Button>
         </div>

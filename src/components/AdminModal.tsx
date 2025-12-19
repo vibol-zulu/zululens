@@ -3125,12 +3125,16 @@ Return your analysis as JSON with this structure:
                     </CardContent>
                   </Card>
                   
-                  <Card>
+                  <Card className="opacity-60">
                     <CardHeader>
                       <CardTitle className="text-lg flex items-center gap-2">
                         <img src={perplexityLogo} alt="Perplexity" className="h-4 w-4" />
                         Political Position Analysis Prompts
+                        <Badge variant="secondary" className="text-xs">Inactive</Badge>
                       </CardTitle>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        AI analysis is currently disabled. Users select channels from the dataset and their position is calculated locally.
+                      </p>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="space-y-2">
@@ -3141,6 +3145,7 @@ Return your analysis as JSON with this structure:
                           onChange={(e) => setPoliticalSystemPrompt(e.target.value)}
                           placeholder="You are an expert media analyst specializing in political media classification..."
                           className="font-mono text-xs min-h-[150px]"
+                          disabled
                         />
                         <p className="text-xs text-muted-foreground">
                           Defines the AI's role for analyzing user's political position based on news sources.
@@ -3154,6 +3159,7 @@ Return your analysis as JSON with this structure:
                           onChange={(e) => setPoliticalUserPrompt(e.target.value)}
                           placeholder="A user has indicated they regularly consume news from the following sources..."
                           className="font-mono text-xs min-h-[200px]"
+                          disabled
                         />
                         <p className="text-xs text-muted-foreground">
                           Template for analyzing user's political position. Use {'{channels}'} placeholder for the list of channels.
