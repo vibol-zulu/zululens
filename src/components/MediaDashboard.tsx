@@ -555,6 +555,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               setSignInDefaultTab('signup');
               setShowSignIn(true);
             }}
+            onContributeClick={() => setShowMission(true)}
           />
           
           {/* Spectrum Mode Button */}
