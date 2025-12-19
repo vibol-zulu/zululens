@@ -548,6 +548,11 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
             userPositionResult={userPositionResult}
             pxFactorGlobal={appSettings.pxFactorGlobal}
             pxFactorAllCountries={appSettings.pxFactorAllCountries}
+            isAuthenticated={!!user}
+            onSignUpClick={() => {
+              setSignInDefaultTab('signup');
+              setShowSignIn(true);
+            }}
           />
           
           {/* Spectrum Mode Button */}
