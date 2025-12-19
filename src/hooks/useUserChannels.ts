@@ -44,12 +44,16 @@ export const useUserChannels = (country: string, year: number) => {
       }
 
       // Transform database records to BrandData format
+      // Use smaller radius for Global view to prevent overcrowding
+      const radiusFactor = country === 'Global' ? 1.0 : 2.24;
+      const calcRadiusWithFactor = (val: number) => Math.max(2, Math.round(val * radiusFactor));
+      
       const transformed: BrandData[] = (data as UserChannel[]).map(channel => ({
         id: `user_${channel.id}`,
         name: channel.name,
         category: channel.category as Category,
         valueMillions: Number(channel.value_millions),
-        radiusPx: calcRadius(Number(channel.value_millions)),
+        radiusPx: calcRadiusWithFactor(Number(channel.value_millions)),
         startDate: channel.start_date,
         platform: channel.platform,
         contentType: channel.content_type,
