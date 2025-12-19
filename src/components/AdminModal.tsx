@@ -323,6 +323,9 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
     user_email?: string;
   }>>([]);
   const [positionAnalysesLoading, setPositionAnalysesLoading] = useState(false);
+  const [positionAnalysisSearch, setPositionAnalysisSearch] = useState('');
+  const [positionAnalysisToDelete, setPositionAnalysisToDelete] = useState<{ id: string; user_email?: string; visitor_name?: string | null } | null>(null);
+  const [showDeletePositionAnalysisDialog, setShowDeletePositionAnalysisDialog] = useState(false);
 
   // Leaderboard state
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
@@ -796,7 +799,32 @@ Return your analysis as JSON with this structure:
     }
   };
 
-  // Password verification helper
+  // Delete position analysis
+  const deletePositionAnalysis = async () => {
+    if (!positionAnalysisToDelete) return;
+    
+    const verified = await verifyPassword();
+    if (!verified) return;
+    
+    try {
+      const { error } = await supabase
+        .from('user_position_analyses')
+        .delete()
+        .eq('id', positionAnalysisToDelete.id);
+
+      if (error) throw error;
+
+      setPositionAnalyses(prev => prev.filter(a => a.id !== positionAnalysisToDelete.id));
+      toast({ title: 'Position analysis deleted successfully' });
+      setShowDeletePositionAnalysisDialog(false);
+      resetDeleteState();
+    } catch (error) {
+      console.error('Error deleting position analysis:', error);
+      toast({ title: 'Failed to delete position analysis', variant: 'destructive' });
+    }
+  };
+
+
   const verifyPassword = async (): Promise<boolean> => {
     // For OAuth users without password, they need to create one first
     if (isOAuthUser && !oAuthHasPassword) {
@@ -2809,12 +2837,21 @@ Return your analysis as JSON with this structure:
 
               {/* Position Analytics Tab */}
               <TabsContent value="position-analytics" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
-                <div className="border-b p-4 flex items-center justify-between flex-wrap">
+                <div className="border-b p-4 flex items-center justify-between flex-wrap gap-4">
                   <div>
                     <h3 className="font-medium">Information Diversity Analytics</h3>
                     <p className="text-sm text-muted-foreground">User political position analyses and diversity scores</p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <div className="relative">
+                      <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search by user or country..."
+                        className="pl-8 h-9 w-64"
+                        value={positionAnalysisSearch}
+                        onChange={(e) => setPositionAnalysisSearch(e.target.value)}
+                      />
+                    </div>
                     <Button variant="outline" size="sm" onClick={fetchPositionAnalyses}>
                       <RefreshCw className="h-4 w-4 mr-1" />
                       Refresh
@@ -2885,23 +2922,40 @@ Return your analysis as JSON with this structure:
                           <TableHead>Channels</TableHead>
                           <TableHead>Suggestions</TableHead>
                           <TableHead>Date</TableHead>
+                          <TableHead className="w-16">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {positionAnalysesLoading ? (
                           <TableRow>
-                            <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                            <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                               Loading...
                             </TableCell>
                           </TableRow>
-                        ) : positionAnalyses.length === 0 ? (
-                          <TableRow>
-                            <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                              No position analyses yet
-                            </TableCell>
-                          </TableRow>
-                        ) : (
-                          positionAnalyses.map((analysis) => {
+                        ) : (() => {
+                          const filteredAnalyses = positionAnalyses.filter(analysis => {
+                            if (!positionAnalysisSearch) return true;
+                            const searchLower = positionAnalysisSearch.toLowerCase();
+                            return (
+                              (analysis.user_email && analysis.user_email.toLowerCase().includes(searchLower)) ||
+                              (analysis.visitor_name && analysis.visitor_name.toLowerCase().includes(searchLower)) ||
+                              (analysis.country && analysis.country.toLowerCase().includes(searchLower)) ||
+                              (analysis.position_label && analysis.position_label.toLowerCase().includes(searchLower)) ||
+                              (analysis.diversity_score && analysis.diversity_score.toLowerCase().includes(searchLower))
+                            );
+                          });
+
+                          if (filteredAnalyses.length === 0) {
+                            return (
+                              <TableRow>
+                                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                                  {positionAnalysisSearch ? 'No matching analyses found' : 'No position analyses yet'}
+                                </TableCell>
+                              </TableRow>
+                            );
+                          }
+
+                          return filteredAnalyses.map((analysis) => {
                             const channels = typeof analysis.selected_channels === 'string' 
                               ? JSON.parse(analysis.selected_channels) 
                               : analysis.selected_channels || [];
@@ -2981,10 +3035,27 @@ Return your analysis as JSON with this structure:
                                 <TableCell className="text-muted-foreground">
                                   {new Date(analysis.created_at).toLocaleDateString()}
                                 </TableCell>
+                                <TableCell>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                    onClick={() => {
+                                      setPositionAnalysisToDelete({
+                                        id: analysis.id,
+                                        user_email: analysis.user_email,
+                                        visitor_name: analysis.visitor_name
+                                      });
+                                      setShowDeletePositionAnalysisDialog(true);
+                                    }}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </TableCell>
                               </TableRow>
                             );
-                          })
-                        )}
+                          });
+                        })()}
                       </TableBody>
                     </Table>
                   </div>
@@ -3752,6 +3823,38 @@ Return your analysis as JSON with this structure:
             <AlertDialogFooter>
               <AlertDialogCancel onClick={resetDeleteState}>Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={deleteComment} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Delete Position Analysis Confirmation */}
+        <AlertDialog open={showDeletePositionAnalysisDialog} onOpenChange={(open) => { setShowDeletePositionAnalysisDialog(open); if (!open) resetDeleteState(); }}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Position Analysis</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete the position analysis for "{positionAnalysisToDelete?.user_email || positionAnalysisToDelete?.visitor_name || 'Anonymous'}"? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="py-4">
+              <Label htmlFor="delete-position-analysis-password">Enter your password to confirm</Label>
+              <Input
+                id="delete-position-analysis-password"
+                type="password"
+                value={deletePassword}
+                onChange={(e) => { setDeletePassword(e.target.value); setDeletePasswordError(''); }}
+                placeholder="Your password"
+                className="mt-2"
+              />
+              {deletePasswordError && (
+                <p className="text-sm text-destructive mt-1">{deletePasswordError}</p>
+              )}
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={resetDeleteState}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={deletePositionAnalysis} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                 Delete
               </AlertDialogAction>
             </AlertDialogFooter>
