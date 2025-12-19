@@ -177,23 +177,17 @@ const CountryGroup: React.FC<CountryGroupProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const sorted = [...brands].sort((a, b) => b.valueMillions - a.valueMillions);
-  const selectedCount = sorted.filter(b => selectedIds.has(b.id)).length;
 
   if (sorted.length === 0) return null;
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-2">
       <CollapsibleTrigger className="flex items-center justify-between w-full py-2 px-2 bg-primary/10 rounded-md hover:bg-primary/20 transition-colors border border-border/50">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col items-start">
           <span className={cn("font-semibold font-sans", isMobile ? "text-xs" : "text-sm")}>{countryName}</span>
-          <span className={cn("text-muted-foreground", isMobile ? "text-[10px]" : "text-xs")}>
-            ({sorted.length} {sorted.length === 1 ? 'channel' : 'channels'})
+          <span className={cn("text-muted-foreground", isMobile ? "text-[9px]" : "text-[10px]")}>
+            {sorted.length} {sorted.length === 1 ? 'channel' : 'channels'}
           </span>
-          {selectedCount > 0 && (
-            <span className={cn("bg-primary text-primary-foreground rounded-full px-1.5", isMobile ? "text-[9px]" : "text-[10px]")}>
-              {selectedCount} selected
-            </span>
-          )}
         </div>
         {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
       </CollapsibleTrigger>
