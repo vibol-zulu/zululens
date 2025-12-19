@@ -100,11 +100,13 @@ const ReasoningPanel: React.FC<{
   userPositionResult: UserPositionResult; 
   userName: string;
   originalScore: number;
+  country: string;
   onRefinedResult?: (result: RefinedResult) => void;
 }> = ({ 
   userPositionResult, 
   userName,
   originalScore,
+  country,
   onRefinedResult
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
@@ -148,6 +150,7 @@ const ReasoningPanel: React.FC<{
           {showQuestionnaire ? (
             <PoliticalQuestionnaire
               originalScore={originalScore}
+              country={country}
               onComplete={handleQuestionnaireComplete}
               onCancel={() => setShowQuestionnaire(false)}
             />
@@ -749,6 +752,7 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
           userPositionResult={userPositionResult} 
           userName={userName} 
           originalScore={userPoliticalScore ?? 0}
+          country={country}
         />
       )}
     </div>
