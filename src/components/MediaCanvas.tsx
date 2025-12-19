@@ -1,8 +1,10 @@
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
-import { ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { ChevronDown, ChevronUp, Info, RefreshCw } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Button } from '@/components/ui/button';
 import { YearData, ViewMode, COLORS } from '@/types/media';
 import { BrandCircle, INNER_CONTAINER_RADIUS, SPECTRUM_BIN_WIDTH, SPECTRUM_BIN_HEIGHT, getSpectrumBinIndex } from '@/lib/BrandCircle';
+import PoliticalQuestionnaire, { RefinedResult } from '@/components/PoliticalQuestionnaire';
 
 interface ChannelSuggestion {
   id: string;
@@ -93,12 +95,31 @@ const COUNTRY_INSIGHTS: Record<string, CountryInfo> = {
 
 const METHODOLOGY_TEXT = `Audience estimates are derived from multiple data sources including industry reports, public filings, and third-party analytics platforms. For digital platforms, we use Unique Monthly Audience (UMA) metrics where available. Traditional broadcast audiences are estimated using ratings data and demographic surveys. All figures represent estimated reach rather than exact viewership counts. Political lean classifications are based on content analysis, editorial positioning, and audience demographic studies. Circle sizes are proportional to the square root of audience size to maintain visual clarity.`;
 
-// Reasoning Panel Component with expand/collapse
-const ReasoningPanel: React.FC<{ userPositionResult: UserPositionResult; userName: string }> = ({ 
+// Reasoning Panel Component with expand/collapse and refinement questionnaire
+const ReasoningPanel: React.FC<{ 
+  userPositionResult: UserPositionResult; 
+  userName: string;
+  originalScore: number;
+  onRefinedResult?: (result: RefinedResult) => void;
+}> = ({ 
   userPositionResult, 
-  userName 
+  userName,
+  originalScore,
+  onRefinedResult
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [showQuestionnaire, setShowQuestionnaire] = useState(false);
+  const [refinedResult, setRefinedResult] = useState<RefinedResult | null>(null);
+
+  const handleQuestionnaireComplete = (result: RefinedResult) => {
+    setRefinedResult(result);
+    setShowQuestionnaire(false);
+    onRefinedResult?.(result);
+  };
+
+  const displayResult = refinedResult || userPositionResult;
+  const displayLabel = refinedResult ? refinedResult.label : userPositionResult.label;
+  const displayDescription = refinedResult ? refinedResult.description : userPositionResult.description;
 
   return (
     <div className="absolute top-4 right-4 max-w-xs bg-card/95 backdrop-blur-sm rounded-lg shadow-lg border z-10">
@@ -113,7 +134,10 @@ const ReasoningPanel: React.FC<{ userPositionResult: UserPositionResult; userNam
             style={{ backgroundColor: COLORS.userBubble }}
           />
           <span className="font-semibold text-sm">{userName}</span>
-          <span className="text-xs text-muted-foreground">• {userPositionResult.label}</span>
+          <span className="text-xs text-muted-foreground">• {displayLabel}</span>
+          {refinedResult && (
+            <span className="text-xs px-1.5 py-0.5 bg-primary/20 text-primary rounded">Refined</span>
+          )}
         </div>
         {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
       </button>
@@ -121,60 +145,114 @@ const ReasoningPanel: React.FC<{ userPositionResult: UserPositionResult; userNam
       {/* Collapsible content */}
       {isExpanded && (
         <div className="px-4 pb-4 pt-1">
-          <p className="text-sm text-muted-foreground mb-2">
-            {userPositionResult.description}
-          </p>
-          
-          {/* Information Diversity Score */}
-          {userPositionResult.informationDiversityScore !== undefined && (
-            <div className="mb-3">
-              <div className="flex items-center justify-between text-xs mb-1">
-                <span className="font-medium">Information Diversity Score</span>
-                <span className="font-bold">{userPositionResult.informationDiversityScore}%</span>
-              </div>
-              <div className="h-2 bg-muted rounded-full overflow-hidden">
-                <div 
-                  className={`h-full rounded-full transition-all ${
-                    userPositionResult.informationDiversityScore >= 70 
-                      ? 'bg-green-500' 
-                      : userPositionResult.informationDiversityScore >= 40 
-                      ? 'bg-yellow-500' 
-                      : 'bg-red-500'
-                  }`}
-                  style={{ width: `${userPositionResult.informationDiversityScore}%` }}
-                />
-              </div>
-            </div>
-          )}
-          
-          <div className="flex items-center gap-1.5 text-xs mb-2">
-            <span className={`px-2 py-0.5 rounded-full ${
-              userPositionResult.diversityScore === 'high' 
-                ? 'bg-green-500/20 text-green-700 dark:text-green-400'
-                : userPositionResult.diversityScore === 'medium'
-                ? 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-400'
-                : 'bg-red-500/20 text-red-700 dark:text-red-400'
-            }`}>
-              {userPositionResult.diversityScore} diversity
-            </span>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            {userPositionResult.diversityNote}
-          </p>
-          
-          {/* Channel Suggestions */}
-          {userPositionResult.suggestedChannels && userPositionResult.suggestedChannels.length > 0 && (
-            <div className="mt-3 pt-3 border-t">
-              <p className="text-xs font-medium mb-2">Suggested to improve diversity:</p>
-              <div className="space-y-1.5">
-                {userPositionResult.suggestedChannels.slice(0, 3).map((suggestion, i) => (
-                  <div key={i} className="text-xs p-1.5 bg-muted/50 rounded">
-                    <span className="font-medium">{suggestion.name}</span>
-                    <span className="text-muted-foreground ml-1">({suggestion.politicalLean})</span>
+          {showQuestionnaire ? (
+            <PoliticalQuestionnaire
+              originalScore={originalScore}
+              onComplete={handleQuestionnaireComplete}
+              onCancel={() => setShowQuestionnaire(false)}
+            />
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground mb-2">
+                {displayDescription}
+              </p>
+              
+              {/* Refined result confidence indicator */}
+              {refinedResult && (
+                <div className="mb-3 p-2 bg-primary/10 rounded-md">
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="font-medium">Confidence:</span>
+                    <span className={`px-2 py-0.5 rounded-full ${
+                      refinedResult.confidence === 'high' 
+                        ? 'bg-green-500/20 text-green-700 dark:text-green-400'
+                        : refinedResult.confidence === 'medium'
+                        ? 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-400'
+                        : 'bg-red-500/20 text-red-700 dark:text-red-400'
+                    }`}>
+                      {refinedResult.confidence}
+                    </span>
                   </div>
-                ))}
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Score: {refinedResult.numericValue > 0 ? '+' : ''}{refinedResult.numericValue}
+                  </p>
+                </div>
+              )}
+              
+              {/* Information Diversity Score - only show if not refined */}
+              {!refinedResult && userPositionResult.informationDiversityScore !== undefined && (
+                <div className="mb-3">
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="font-medium">Information Diversity Score</span>
+                    <span className="font-bold">{userPositionResult.informationDiversityScore}%</span>
+                  </div>
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full rounded-full transition-all ${
+                        userPositionResult.informationDiversityScore >= 70 
+                          ? 'bg-green-500' 
+                          : userPositionResult.informationDiversityScore >= 40 
+                          ? 'bg-yellow-500' 
+                          : 'bg-red-500'
+                      }`}
+                      style={{ width: `${userPositionResult.informationDiversityScore}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {!refinedResult && (
+                <div className="flex items-center gap-1.5 text-xs mb-2">
+                  <span className={`px-2 py-0.5 rounded-full ${
+                    userPositionResult.diversityScore === 'high' 
+                      ? 'bg-green-500/20 text-green-700 dark:text-green-400'
+                      : userPositionResult.diversityScore === 'medium'
+                      ? 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-400'
+                      : 'bg-red-500/20 text-red-700 dark:text-red-400'
+                  }`}>
+                    {userPositionResult.diversityScore} diversity
+                  </span>
+                </div>
+              )}
+              
+              {!refinedResult && (
+                <p className="text-xs text-muted-foreground">
+                  {userPositionResult.diversityNote}
+                </p>
+              )}
+              
+              {/* Channel Suggestions - only show if not refined */}
+              {!refinedResult && userPositionResult.suggestedChannels && userPositionResult.suggestedChannels.length > 0 && (
+                <div className="mt-3 pt-3 border-t">
+                  <p className="text-xs font-medium mb-2">Suggested to improve diversity:</p>
+                  <div className="space-y-1.5">
+                    {userPositionResult.suggestedChannels.slice(0, 3).map((suggestion, i) => (
+                      <div key={i} className="text-xs p-1.5 bg-muted/50 rounded">
+                        <span className="font-medium">{suggestion.name}</span>
+                        <span className="text-muted-foreground ml-1">({suggestion.politicalLean})</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Further Refine Button */}
+              <div className="mt-4 pt-3 border-t">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowQuestionnaire(true)}
+                  className="w-full text-xs"
+                >
+                  <RefreshCw className="h-3 w-3 mr-2" />
+                  {refinedResult ? 'Refine Again' : 'Further Refine'}
+                </Button>
+                <p className="text-xs text-muted-foreground mt-2 text-center">
+                  {refinedResult 
+                    ? 'Take the questionnaire again for a more accurate result.'
+                    : 'Not satisfied? Answer a few questions to refine your position.'}
+                </p>
               </div>
-            </div>
+            </>
           )}
         </div>
       )}
@@ -667,7 +745,11 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
       
       {/* User Position Reasoning Panel */}
       {viewMode === 'compass' && userPositionResult && (
-        <ReasoningPanel userPositionResult={userPositionResult} userName={userName} />
+        <ReasoningPanel 
+          userPositionResult={userPositionResult} 
+          userName={userName} 
+          originalScore={userPoliticalScore ?? 0}
+        />
       )}
     </div>
   );
