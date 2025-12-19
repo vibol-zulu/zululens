@@ -42,11 +42,11 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
 
         <div className="space-y-5 py-2">
           {/* Welcome Illustration */}
-          <div className="w-full">
+          <div className="w-full flex justify-center">
             <img 
               src={welcomeIllustration} 
               alt="People connecting and sharing ideas" 
-              className="w-full h-auto rounded-lg"
+              className="w-3/4 h-auto rounded-lg"
             />
           </div>
 
