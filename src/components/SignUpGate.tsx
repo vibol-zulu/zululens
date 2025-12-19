@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { registerTier1Visitor, useAnalytics } from "@/hooks/useAnalytics";
 import pinkFavicon from "@/assets/Pink_Favicon.png";
@@ -165,6 +166,24 @@ const SignUpGate: React.FC<SignUpGateProps> = ({ onJoin }) => {
             >
               Sign in here
             </button>
+          </p>
+
+          <p className="text-white/50 text-xs mt-4 text-center">
+            By signing up, you agree to our{" "}
+            <Link
+              to="/privacy"
+              className="text-white/70 underline hover:text-white transition-colors"
+            >
+              Privacy Policy
+            </Link>
+            {" "}and{" "}
+            <Link
+              to="/terms"
+              className="text-white/70 underline hover:text-white transition-colors"
+            >
+              Terms of Service
+            </Link>
+            .
           </p>
         </div>
       </main>
