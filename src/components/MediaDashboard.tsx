@@ -240,7 +240,10 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   };
 
   // Fetch user-added channels and merge with static data
-  const { getMergedData, refetch: refetchUserChannels } = useUserChannels(country, year);
+  const { getMergedData, refetch: refetchUserChannels } = useUserChannels(country, year, {
+    pxFactorGlobal: appSettings.pxFactorGlobal,
+    pxFactorAllCountries: appSettings.pxFactorAllCountries
+  });
   
   // Get merged data for current year (static + user-added)
   const mergedData = useMemo(() => getMergedData(), [getMergedData]);
@@ -543,6 +546,8 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
             userName={user?.user_metadata?.full_name || visitorName || 'You'}
             personalizedChannelIds={personalizedChannelIds}
             userPositionResult={userPositionResult}
+            pxFactorGlobal={appSettings.pxFactorGlobal}
+            pxFactorAllCountries={appSettings.pxFactorAllCountries}
           />
           
           {/* Spectrum Mode Button */}

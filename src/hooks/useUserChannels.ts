@@ -16,7 +16,16 @@ interface UserChannel {
   year: number;
 }
 
-export const useUserChannels = (country: string, year: number) => {
+interface PxFactorSettings {
+  pxFactorGlobal: number;
+  pxFactorAllCountries: number;
+}
+
+export const useUserChannels = (
+  country: string, 
+  year: number, 
+  pxFactors: PxFactorSettings = { pxFactorGlobal: 1.0, pxFactorAllCountries: 2.24 }
+) => {
   const [userChannels, setUserChannels] = useState<BrandData[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -44,8 +53,8 @@ export const useUserChannels = (country: string, year: number) => {
       }
 
       // Transform database records to BrandData format
-      // Use smaller radius for Global view to prevent overcrowding
-      const radiusFactor = country === 'Global' ? 1.0 : 2.24;
+      // Use configurable radius factors from settings
+      const radiusFactor = country === 'Global' ? pxFactors.pxFactorGlobal : pxFactors.pxFactorAllCountries;
       const calcRadiusWithFactor = (val: number) => Math.max(2, Math.round(val * radiusFactor));
       
       const transformed: BrandData[] = (data as UserChannel[]).map(channel => ({
@@ -67,7 +76,7 @@ export const useUserChannels = (country: string, year: number) => {
     } finally {
       setLoading(false);
     }
-  }, [country, year]);
+  }, [country, year, pxFactors.pxFactorGlobal, pxFactors.pxFactorAllCountries]);
 
   useEffect(() => {
     fetchUserChannels();
