@@ -11,8 +11,9 @@ interface MediaCanvasProps {
   onCircleClick: () => void;
   viewMode: ViewMode;
   country: string;
-  userPoliticalScore?: number | null; // -100 to +100 from AI analysis
+  userPoliticalScore?: number | null; // -100 to +100 from analysis
   userName?: string;
+  personalizedChannelIds?: string[]; // Channels selected by user for their position
 }
 
 const MediaCanvas: React.FC<MediaCanvasProps> = ({
@@ -25,7 +26,8 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
   viewMode,
   country,
   userPoliticalScore,
-  userName = 'You'
+  userName = 'You',
+  personalizedChannelIds = []
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const circlesRef = useRef<BrandCircle[]>([]);
@@ -69,9 +71,13 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
     
     const boundaryRadius = yearData.totalRadiusPx || 385;
     
-    // Use all brands - personalized mode just shows user position without filtering
-    circlesRef.current = yearData.brands.map(b => new BrandCircle(b, boundaryRadius));
-  }, [year, yearData]);
+    // Filter brands if in personalized mode (user has selected specific channels)
+    const brandsToShow = personalizedChannelIds.length > 0
+      ? yearData.brands.filter(b => personalizedChannelIds.includes(b.id))
+      : yearData.brands;
+    
+    circlesRef.current = brandsToShow.map(b => new BrandCircle(b, boundaryRadius));
+  }, [year, yearData, personalizedChannelIds]);
 
   // Animation loop
   useEffect(() => {

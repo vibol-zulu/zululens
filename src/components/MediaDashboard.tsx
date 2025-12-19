@@ -53,6 +53,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAppSettings } from '@/hooks/useAppSettings';
 import { supabase } from '@/integrations/supabase/client';
 import { useTour } from '@/components/GuidedTour';
+import { toast } from 'sonner';
 
 import WelcomeModal from '@/components/WelcomeModal';
 import ContributorCelebration from '@/components/ContributorCelebration';
@@ -105,6 +106,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   // Personalized spectrum state
   const [showSpectrumInput, setShowSpectrumInput] = useState(false);
   const [userPoliticalScore, setUserPoliticalScore] = useState<number | null>(null);
+  const [personalizedChannelIds, setPersonalizedChannelIds] = useState<string[]>([]);
 
   const { settings: appSettings } = useAppSettings();
   
@@ -367,6 +369,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               onClick={() => {
                 setViewMode('default');
                 setUserPoliticalScore(null);
+                setPersonalizedChannelIds([]);
               }}
               className={`${isMobile ? 'px-2 text-xs' : 'px-4 text-sm'} py-1.5 rounded-full font-medium transition-all ${
                 viewMode === 'default' 
@@ -529,6 +532,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
             country={country}
             userPoliticalScore={userPoliticalScore}
             userName={user?.user_metadata?.full_name || visitorName || 'You'}
+            personalizedChannelIds={personalizedChannelIds}
           />
           
           {/* Spectrum Mode Button */}
@@ -699,11 +703,22 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
         onClose={() => setShowSpectrumInput(false)}
         onSubmit={(result) => {
           setUserPoliticalScore(result.overallPosition.numericValue);
+          setPersonalizedChannelIds(result.selectedChannelIds || []);
           setViewMode('compass');
+          // Update selectedIds to only show the user's selected channels
+          if (result.selectedChannelIds && result.selectedChannelIds.length > 0) {
+            setSelectedIds(new Set(result.selectedChannelIds));
+          }
           setShowSpectrumInput(false);
         }}
         userName={user?.user_metadata?.full_name || visitorName || 'You'}
         user={user}
+        availableChannels={mergedData.brands}
+        onRequestAddChannel={() => {
+          // Close spectrum modal and open add channel modal via sidebar
+          // For now, show a toast directing user to use the sidebar
+          toast.info('Use the "Add Channel" button in the sidebar to submit a new channel.');
+        }}
       />
       
       {/* Comments Section - visible for all users */}
