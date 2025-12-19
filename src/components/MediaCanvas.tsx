@@ -35,15 +35,16 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
   const scaleRef = useRef<number>(1);
   const userBubbleRef = useRef<{ x: number; y: number; vx: number; vy: number; binIndex: number } | null>(null);
 
-  // Convert user's political score (-100 to +100) to bin index (0-8)
+  // Convert user's political score (-100 to +100) to bin index (0-4)
   const userPoliticalPosition = useMemo(() => {
     if (userPoliticalScore === null || userPoliticalScore === undefined) return null;
     
-    // Map -100 to +100 to bin index 0-8
+    // Map -100 to +100 to bin index 0-4
     // -100 = Far Left = bin 0
-    // +100 = Far Right = bin 8
+    // 0 = Center = bin 2
+    // +100 = Far Right = bin 4
     const normalized = (userPoliticalScore + 100) / 200; // 0 to 1
-    return Math.round(normalized * 8);
+    return Math.round(normalized * 4); // 0-4 to match spectrum bins
   }, [userPoliticalScore]);
 
   // Initialize user bubble position when personalized mode activates
