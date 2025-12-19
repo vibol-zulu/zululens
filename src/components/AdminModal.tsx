@@ -307,6 +307,23 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [analyticsUserType, setAnalyticsUserType] = useState<'all' | 'tier1' | 'tier2' | 'contributor' | 'moderator'>('all');
 
+  // Position Analytics state
+  const [positionAnalyses, setPositionAnalyses] = useState<Array<{
+    id: string;
+    user_id: string | null;
+    visitor_name: string | null;
+    country: string;
+    position_label: string;
+    numeric_value: number;
+    diversity_score: string;
+    diversity_note: string | null;
+    selected_channels: any;
+    suggested_channels: any;
+    created_at: string;
+    user_email?: string;
+  }>>([]);
+  const [positionAnalysesLoading, setPositionAnalysesLoading] = useState(false);
+
   // Leaderboard state
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
@@ -733,6 +750,49 @@ Return your analysis as JSON with this structure:
       toast({ title: 'Failed to load comments', variant: 'destructive' });
     } finally {
       setCommentsLoading(false);
+    }
+  };
+
+  // Fetch position analyses for admin
+  const fetchPositionAnalyses = async () => {
+    if (!isAdmin) return;
+    
+    setPositionAnalysesLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('user_position_analyses')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (error) throw error;
+
+      // Get user emails for analyses
+      const userIds = [...new Set((data || []).filter(d => d.user_id).map(d => d.user_id))];
+      let profiles: { id: string; email: string }[] = [];
+      
+      if (userIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, email')
+          .in('id', userIds);
+        profiles = profilesData || [];
+      }
+
+      const analysesWithEmails = (data || []).map(analysis => {
+        const profile = profiles.find(p => p.id === analysis.user_id);
+        return {
+          ...analysis,
+          user_email: profile?.email
+        };
+      });
+
+      setPositionAnalyses(analysesWithEmails);
+    } catch (error) {
+      console.error('Error fetching position analyses:', error);
+      toast({ title: 'Failed to load position analyses', variant: 'destructive' });
+    } finally {
+      setPositionAnalysesLoading(false);
     }
   };
 
@@ -2020,6 +2080,10 @@ Return your analysis as JSON with this structure:
                         <BarChart3 className="h-4 w-4" />
                         Analytics
                       </TabsTrigger>
+                      <TabsTrigger value="position-analytics" className="gap-2" onClick={() => fetchPositionAnalyses()}>
+                        <TrendingUp className="h-4 w-4" />
+                        Diversity
+                      </TabsTrigger>
                       <TabsTrigger value="leaderboard" className="gap-2">
                         <Trophy className="h-4 w-4" />
                         Leaderboard
@@ -2736,6 +2800,190 @@ Return your analysis as JSON with this structure:
                                 </TableRow>
                               );
                             })
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              </TabsContent>
+
+              {/* Position Analytics Tab */}
+              <TabsContent value="position-analytics" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
+                <div className="border-b p-4 flex items-center justify-between flex-wrap">
+                  <div>
+                    <h3 className="font-medium">Information Diversity Analytics</h3>
+                    <p className="text-sm text-muted-foreground">User political position analyses and diversity scores</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={fetchPositionAnalyses}>
+                      <RefreshCw className="h-4 w-4 mr-1" />
+                      Refresh
+                    </Button>
+                    <span className="text-sm text-muted-foreground">{positionAnalyses.length} analyses</span>
+                  </div>
+                </div>
+
+                {/* Summary Cards */}
+                <div className="p-4 grid grid-cols-2 md:grid-cols-4 gap-4 border-b">
+                  {(() => {
+                    const highDiversity = positionAnalyses.filter(p => p.diversity_score === 'high').length;
+                    const mediumDiversity = positionAnalyses.filter(p => p.diversity_score === 'medium').length;
+                    const lowDiversity = positionAnalyses.filter(p => p.diversity_score === 'low').length;
+                    const avgPosition = positionAnalyses.length > 0 
+                      ? Math.round(positionAnalyses.reduce((acc, p) => acc + Number(p.numeric_value), 0) / positionAnalyses.length)
+                      : 0;
+                    
+                    return (
+                      <>
+                        <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">High Diversity</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold text-green-600">{highDiversity}</div>
+                          </CardContent>
+                        </Card>
+                        <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">Medium Diversity</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold text-yellow-600">{mediumDiversity}</div>
+                          </CardContent>
+                        </Card>
+                        <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">Low Diversity</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold text-red-600">{lowDiversity}</div>
+                          </CardContent>
+                        </Card>
+                        <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">Avg Position</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold">{avgPosition > 0 ? '+' : ''}{avgPosition}</div>
+                            <p className="text-xs text-muted-foreground">-100 (Left) to +100 (Right)</p>
+                          </CardContent>
+                        </Card>
+                      </>
+                    );
+                  })()}
+                </div>
+
+                <div className="flex-1 overflow-auto p-4">
+                  <div className="rounded-md border overflow-x-auto">
+                    <Table className="min-w-[800px] text-xs">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>User</TableHead>
+                          <TableHead>Position</TableHead>
+                          <TableHead>Score</TableHead>
+                          <TableHead>Diversity</TableHead>
+                          <TableHead>Channels</TableHead>
+                          <TableHead>Suggestions</TableHead>
+                          <TableHead>Date</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {positionAnalysesLoading ? (
+                          <TableRow>
+                            <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                              Loading...
+                            </TableCell>
+                          </TableRow>
+                        ) : positionAnalyses.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                              No position analyses yet
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          positionAnalyses.map((analysis) => {
+                            const channels = typeof analysis.selected_channels === 'string' 
+                              ? JSON.parse(analysis.selected_channels) 
+                              : analysis.selected_channels || [];
+                            const suggestions = typeof analysis.suggested_channels === 'string'
+                              ? JSON.parse(analysis.suggested_channels)
+                              : analysis.suggested_channels || [];
+                            
+                            return (
+                              <TableRow key={analysis.id}>
+                                <TableCell>
+                                  <div className="font-medium">{analysis.user_email || analysis.visitor_name || 'Anonymous'}</div>
+                                  <div className="text-muted-foreground">{analysis.country}</div>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge variant="outline">{analysis.position_label}</Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <span className={Number(analysis.numeric_value) < 0 ? 'text-blue-600' : Number(analysis.numeric_value) > 0 ? 'text-red-600' : ''}>
+                                    {Number(analysis.numeric_value) > 0 ? '+' : ''}{Number(analysis.numeric_value)}
+                                  </span>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge className={
+                                    analysis.diversity_score === 'high' 
+                                      ? 'bg-green-500/20 text-green-700' 
+                                      : analysis.diversity_score === 'medium'
+                                      ? 'bg-yellow-500/20 text-yellow-700'
+                                      : 'bg-red-500/20 text-red-700'
+                                  }>
+                                    {analysis.diversity_score}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger>
+                                        <span className="cursor-help underline decoration-dotted">
+                                          {channels.length} selected
+                                        </span>
+                                      </TooltipTrigger>
+                                      <TooltipContent className="max-w-xs">
+                                        <div className="space-y-1">
+                                          {channels.map((ch: any, i: number) => (
+                                            <div key={i} className="text-xs">
+                                              {ch.name} ({ch.politicalLean})
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                </TableCell>
+                                <TableCell>
+                                  {suggestions.length > 0 ? (
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger>
+                                          <span className="cursor-help underline decoration-dotted">
+                                            {suggestions.length} suggested
+                                          </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent className="max-w-xs">
+                                          <div className="space-y-1">
+                                            {suggestions.map((s: any, i: number) => (
+                                              <div key={i} className="text-xs">
+                                                {s.name} - {s.reason}
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+                                  ) : (
+                                    <span className="text-muted-foreground">-</span>
+                                  )}
+                                </TableCell>
+                                <TableCell className="text-muted-foreground">
+                                  {new Date(analysis.created_at).toLocaleDateString()}
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })
                         )}
                       </TableBody>
                     </Table>
