@@ -2,6 +2,13 @@ import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react'
 import { YearData, ViewMode, COLORS } from '@/types/media';
 import { BrandCircle, INNER_CONTAINER_RADIUS, SPECTRUM_BIN_WIDTH, SPECTRUM_BIN_HEIGHT, getSpectrumBinIndex } from '@/lib/BrandCircle';
 
+interface UserPositionResult {
+  label: string;
+  description: string;
+  diversityScore: string;
+  diversityNote: string;
+}
+
 interface MediaCanvasProps {
   year: number;
   yearData: YearData;
@@ -14,6 +21,7 @@ interface MediaCanvasProps {
   userPoliticalScore?: number | null; // -100 to +100 from analysis
   userName?: string;
   personalizedChannelIds?: string[]; // Channels selected by user for their position
+  userPositionResult?: UserPositionResult | null; // Result with reasoning
 }
 
 const MediaCanvas: React.FC<MediaCanvasProps> = ({
@@ -27,7 +35,8 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
   country,
   userPoliticalScore,
   userName = 'You',
-  personalizedChannelIds = []
+  personalizedChannelIds = [],
+  userPositionResult
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const circlesRef = useRef<BrandCircle[]>([]);
@@ -395,14 +404,49 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
   }, [setHoveredId]);
 
   return (
-    <canvas 
-      ref={canvasRef} 
-      className="w-full h-full"
-      style={{ cursor: hoveredId ? 'pointer' : 'default' }}
-      onMouseMove={handleCanvasMouseMove}
-      onMouseLeave={() => setHoveredId(null)}
-      onClick={onCircleClick}
-    />
+    <div className="relative w-full h-full">
+      <canvas 
+        ref={canvasRef} 
+        className="w-full h-full"
+        style={{ cursor: hoveredId ? 'pointer' : 'default' }}
+        onMouseMove={handleCanvasMouseMove}
+        onMouseLeave={() => setHoveredId(null)}
+        onClick={onCircleClick}
+      />
+      
+      {/* User Position Reasoning Panel */}
+      {viewMode === 'compass' && userPositionResult && (
+        <div className="absolute top-4 left-4 max-w-xs bg-card/95 backdrop-blur-sm rounded-lg shadow-lg border p-4 z-10">
+          <div className="flex items-center gap-2 mb-2">
+            <div 
+              className="w-3 h-3 rounded-full" 
+              style={{ backgroundColor: COLORS.userBubble }}
+            />
+            <h3 className="font-semibold text-sm">{userName}</h3>
+          </div>
+          <p className="text-lg font-bold text-foreground mb-1">
+            {userPositionResult.label}
+          </p>
+          <p className="text-sm text-muted-foreground mb-2">
+            {userPositionResult.description}
+          </p>
+          <div className="flex items-center gap-1.5 text-xs">
+            <span className={`px-2 py-0.5 rounded-full ${
+              userPositionResult.diversityScore === 'high' 
+                ? 'bg-green-500/20 text-green-700 dark:text-green-400'
+                : userPositionResult.diversityScore === 'medium'
+                ? 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-400'
+                : 'bg-red-500/20 text-red-700 dark:text-red-400'
+            }`}>
+              {userPositionResult.diversityScore} diversity
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1.5">
+            {userPositionResult.diversityNote}
+          </p>
+        </div>
+      )}
+    </div>
   );
 };
 

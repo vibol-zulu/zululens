@@ -107,6 +107,12 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   const [showSpectrumInput, setShowSpectrumInput] = useState(false);
   const [userPoliticalScore, setUserPoliticalScore] = useState<number | null>(null);
   const [personalizedChannelIds, setPersonalizedChannelIds] = useState<string[]>([]);
+  const [userPositionResult, setUserPositionResult] = useState<{
+    label: string;
+    description: string;
+    diversityScore: string;
+    diversityNote: string;
+  } | null>(null);
 
   const { settings: appSettings } = useAppSettings();
   
@@ -370,6 +376,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                 setViewMode('default');
                 setUserPoliticalScore(null);
                 setPersonalizedChannelIds([]);
+                setUserPositionResult(null);
               }}
               className={`${isMobile ? 'px-2 text-xs' : 'px-4 text-sm'} py-1.5 rounded-full font-medium transition-all ${
                 viewMode === 'default' 
@@ -533,6 +540,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
             userPoliticalScore={userPoliticalScore}
             userName={user?.user_metadata?.full_name || visitorName || 'You'}
             personalizedChannelIds={personalizedChannelIds}
+            userPositionResult={userPositionResult}
           />
           
           {/* Spectrum Mode Button */}
@@ -704,6 +712,12 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
         onSubmit={(result) => {
           setUserPoliticalScore(result.overallPosition.numericValue);
           setPersonalizedChannelIds(result.selectedChannelIds || []);
+          setUserPositionResult({
+            label: result.overallPosition.label,
+            description: result.overallPosition.description,
+            diversityScore: result.diversityScore,
+            diversityNote: result.diversityNote
+          });
           setViewMode('compass');
           // Update selectedIds to only show the user's selected channels
           if (result.selectedChannelIds && result.selectedChannelIds.length > 0) {
