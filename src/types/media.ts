@@ -11,6 +11,7 @@ export interface BrandData {
   platform: string;
   contentType: string;
   politicalLean: string;
+  country?: string;
 }
 
 export interface YearData {
