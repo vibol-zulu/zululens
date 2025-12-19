@@ -46,7 +46,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
             <img 
               src={welcomeIllustration} 
               alt="People connecting and sharing ideas" 
-              className="w-3/4 h-auto rounded-lg"
+              className="w-[90%] h-auto rounded-lg"
             />
           </div>
 
