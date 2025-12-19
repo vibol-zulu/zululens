@@ -487,6 +487,7 @@ Return your analysis as JSON with this structure:
   const [politicalUserPrompt, setPoliticalUserPrompt] = useState(DEFAULT_POLITICAL_USER_PROMPT);
   const [settingsLoading, setSettingsLoading] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
+  const [savingCanvasSettings, setSavingCanvasSettings] = useState(false);
 
   const isAuthenticated = user && isAdmin;
 
@@ -610,6 +611,37 @@ Return your analysis as JSON with this structure:
       toast({ title: 'Failed to save settings', variant: 'destructive' });
     } finally {
       setSavingSettings(false);
+    }
+  };
+
+  // Save canvas display settings only
+  const handleSaveCanvasSettings = async () => {
+    setSavingCanvasSettings(true);
+    try {
+      const settingsToSave = [
+        { key: 'px_factor_global', value: pxFactorGlobal },
+        { key: 'px_factor_all_countries', value: pxFactorAllCountries },
+      ];
+      
+      for (const setting of settingsToSave) {
+        const { error } = await supabase
+          .from('app_settings')
+          .upsert({ 
+            key: setting.key, 
+            value: setting.value,
+            updated_at: new Date().toISOString(),
+            updated_by: user?.id 
+          }, { onConflict: 'key' });
+
+        if (error) throw error;
+      }
+      
+      toast({ title: 'Canvas settings updated. Refresh the page to see changes on the canvas.' });
+    } catch (error) {
+      console.error('Error saving canvas settings:', error);
+      toast({ title: 'Failed to save canvas settings', variant: 'destructive' });
+    } finally {
+      setSavingCanvasSettings(false);
     }
   };
 
@@ -3458,6 +3490,25 @@ Return your analysis as JSON with this structure:
                             Used when viewing individual countries
                           </p>
                         </div>
+                      </div>
+                      <div className="pt-2">
+                        <Button 
+                          onClick={handleSaveCanvasSettings} 
+                          disabled={savingCanvasSettings}
+                          size="sm"
+                        >
+                          {savingCanvasSettings ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Updating...
+                            </>
+                          ) : (
+                            <>
+                              <Save className="h-4 w-4 mr-2" />
+                              Update Canvas Settings
+                            </>
+                          )}
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
