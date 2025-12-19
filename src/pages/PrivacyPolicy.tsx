@@ -146,8 +146,8 @@ const PrivacyPolicy = () => {
               <h2 className="text-xl text-white font-medium mb-3">10. Contact Us</h2>
               <p>
                 If you have any questions about this Privacy Policy, please contact us at{" "}
-                <a href="mailto:privacy@zulu.group" className="text-white underline hover:text-white/80">
-                  privacy@zulu.group
+                <a href="mailto:hello@zulu.group" className="text-white underline hover:text-white/80">
+                  hello@zulu.group
                 </a>
               </p>
             </section>
