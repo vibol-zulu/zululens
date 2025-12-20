@@ -376,7 +376,8 @@ const SpectrumInputModal: React.FC<SpectrumInputModalProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="px-6 py-4">
+        <ScrollArea className="max-h-[calc(85vh-200px)] px-6 py-4">
+          <div className="space-y-4">
           {/* Search Input */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -432,11 +433,11 @@ const SpectrumInputModal: React.FC<SpectrumInputModalProps> = ({
 
           {/* Selected Channels */}
           {selectedChannels.length > 0 && (
-            <div className="mt-4 p-3 border rounded-md bg-muted/30">
+            <div className="p-3 border rounded-md bg-muted/30">
               <p className="text-sm font-medium mb-2">
                 {selectedChannels.length} channel{selectedChannels.length !== 1 ? 's' : ''} selected
               </p>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 max-h-[100px] overflow-y-auto">
                 {selectedChannels.map(channel => (
                   <div 
                     key={channel.id}
@@ -457,12 +458,12 @@ const SpectrumInputModal: React.FC<SpectrumInputModalProps> = ({
           )}
 
           {/* Available Channels List */}
-          <div className="mt-4">
+          <div>
             <p className="text-sm font-medium mb-2">Available Channels</p>
             <p className="text-xs text-muted-foreground mb-2">
               Click on a channel to add it to your selection
             </p>
-            <ScrollArea className="h-[200px] border rounded-md">
+            <ScrollArea className="h-[150px] border rounded-md">
               <div className="p-2 space-y-1">
                 {availableChannels
                   .filter(channel => !selectedChannels.some(sc => sc.id === channel.id))
@@ -484,7 +485,8 @@ const SpectrumInputModal: React.FC<SpectrumInputModalProps> = ({
               Don't see a channel? Use the search above or submit it for review.
             </p>
           </div>
-        </div>
+          </div>
+        </ScrollArea>
 
         <div className="p-6 border-t bg-muted/30 flex items-center justify-between">
           <Button variant="outline" onClick={handleClose} disabled={isAnalyzing}>
