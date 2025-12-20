@@ -503,7 +503,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               </DropdownMenuItem>
               {(isMobile || isTablet) && viewMode === 'compass' && (
                 <DropdownMenuItem onClick={() => setShowSpectrumInput(true)}>
-                  My Political Position
+                  Find your Political Position
                 </DropdownMenuItem>
               )}
               {isMobile && (
@@ -588,7 +588,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                 className="shadow-lg font-medium"
                 style={{ backgroundColor: '#00564A', color: '#F8D4C8' }}
               >
-                My Political Position
+                Find your Political Position
               </Button>
             </div>
           )}
