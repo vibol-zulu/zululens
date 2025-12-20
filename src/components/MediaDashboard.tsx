@@ -583,7 +583,8 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
             <div className="hidden lg:block absolute lg:bottom-24 left-1/2 -translate-x-1/2 z-10">
               <Button
                 onClick={() => setShowSpectrumInput(true)}
-                className="bg-green-600 text-pink-400 hover:bg-green-700 shadow-lg font-medium"
+                className="shadow-lg font-medium"
+                style={{ backgroundColor: '#00564A', color: '#F8D4C8' }}
               >
                 My Political Position
               </Button>
