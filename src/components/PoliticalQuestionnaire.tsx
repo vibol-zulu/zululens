@@ -331,55 +331,53 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
 
   // Result reveal screen
   if (showResult && calculatedResult) {
+    const confidenceTitle = `${calculatedResult.confidence.charAt(0).toUpperCase() + calculatedResult.confidence.slice(1)} Confidence`;
+    const confidenceDescription = calculatedResult.confidence === 'high' 
+      ? 'Strong opinions on most questions give high confidence in this result.'
+      : calculatedResult.confidence === 'medium'
+      ? 'A mix of strong and moderate opinions gives medium confidence in this result.'
+      : 'Mostly neutral answers result in lower confidence in this result.';
+
     return (
       <div className="py-4 space-y-4 animate-fade-in">
-        {/* Result badge with confidence tooltip */}
+        {/* Header with confidence info */}
+        <div className="space-y-1.5 text-center">
+          <h2 className="text-lg font-semibold leading-none tracking-tight">{confidenceTitle}</h2>
+          <p className="text-sm text-muted-foreground">{confidenceDescription}</p>
+        </div>
+
+        {/* Result badge */}
         <div className="text-center">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="inline-block cursor-help">
-                  <div className={`relative px-6 py-3 rounded-full overflow-hidden ${
-                    calculatedResult.confidence === 'high' 
-                      ? 'bg-green-500/20 border border-green-500/30'
-                      : calculatedResult.confidence === 'medium'
-                      ? 'bg-yellow-500/20 border border-yellow-500/30'
-                      : 'bg-red-500/20 border border-red-500/30'
-                  }`}>
-                    {/* Shimmer effect */}
-                    <span 
-                      className="absolute inset-0 -translate-x-full animate-[shimmer-slide_2s_infinite]"
-                      style={{
-                        background: calculatedResult.confidence === 'high'
-                          ? 'linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.3), transparent)'
-                          : calculatedResult.confidence === 'medium'
-                          ? 'linear-gradient(90deg, transparent, rgba(234, 179, 8, 0.3), transparent)'
-                          : 'linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.3), transparent)',
-                      }}
-                    />
-                    <span className={`relative z-10 text-lg font-bold ${
-                      calculatedResult.confidence === 'high' 
-                        ? 'text-green-700 dark:text-green-400'
-                        : calculatedResult.confidence === 'medium'
-                        ? 'text-yellow-700 dark:text-yellow-400'
-                        : 'text-red-700 dark:text-red-400'
-                    }`}>
-                      {calculatedResult.label}
-                    </span>
-                  </div>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="max-w-xs text-center">
-                <p className="text-xs">
-                  <strong>Confidence: {calculatedResult.confidence.charAt(0).toUpperCase() + calculatedResult.confidence.slice(1)}</strong>
-                  <br />
-                  {calculatedResult.confidence === 'high' && 'Strong opinions on most questions give high confidence in this result.'}
-                  {calculatedResult.confidence === 'medium' && 'A mix of strong and moderate opinions gives medium confidence in this result.'}
-                  {calculatedResult.confidence === 'low' && 'Mostly neutral answers result in lower confidence in this result.'}
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <div className="inline-block">
+            <div className={`relative px-6 py-3 rounded-full overflow-hidden ${
+              calculatedResult.confidence === 'high' 
+                ? 'bg-green-500/20 border border-green-500/30'
+                : calculatedResult.confidence === 'medium'
+                ? 'bg-yellow-500/20 border border-yellow-500/30'
+                : 'bg-red-500/20 border border-red-500/30'
+            }`}>
+              {/* Shimmer effect */}
+              <span 
+                className="absolute inset-0 -translate-x-full animate-[shimmer-slide_2s_infinite]"
+                style={{
+                  background: calculatedResult.confidence === 'high'
+                    ? 'linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.3), transparent)'
+                    : calculatedResult.confidence === 'medium'
+                    ? 'linear-gradient(90deg, transparent, rgba(234, 179, 8, 0.3), transparent)'
+                    : 'linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.3), transparent)',
+                }}
+              />
+              <span className={`relative z-10 text-lg font-bold ${
+                calculatedResult.confidence === 'high' 
+                  ? 'text-green-700 dark:text-green-400'
+                  : calculatedResult.confidence === 'medium'
+                  ? 'text-yellow-700 dark:text-yellow-400'
+                  : 'text-red-700 dark:text-red-400'
+              }`}>
+                {calculatedResult.label}
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Description */}
@@ -424,6 +422,12 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
 
   return (
     <div className="space-y-4">
+      {/* Header */}
+      <div className="space-y-1.5 text-center">
+        <h2 className="text-lg font-semibold leading-none tracking-tight">Refine Your Political Position</h2>
+        <p className="text-sm text-muted-foreground">Answer these questions to get a more accurate assessment of your political position.</p>
+      </div>
+
       {/* Region indicator */}
       <div className="text-xs text-muted-foreground text-center">
         Questions tailored for <span className="font-medium text-foreground">{country}</span>
