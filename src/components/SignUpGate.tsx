@@ -57,7 +57,7 @@ const SignUpGate: React.FC<SignUpGateProps> = ({ onJoin }) => {
     <div
       className="min-h-screen flex flex-col"
       style={{
-        background: "linear-gradient(135deg, hsla(180 25% 25% / 0.8) 0%, hsla(170 30% 18% / 0.8) 50%, hsla(200 20% 30% / 0.8) 100%)",
+        background: "linear-gradient(135deg, hsla(180 25% 25% / 0.95) 0%, hsla(170 30% 18% / 0.95) 50%, hsla(200 20% 30% / 0.95) 100%)",
       }}
     >
       {/* Header */}
