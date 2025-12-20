@@ -578,6 +578,14 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
             onContributeClick={() => setShowMission(true)}
             onMethodologyClick={() => setShowMethodology(true)}
             onReasoningPanelExpandedChange={setReasoningPanelExpanded}
+            onRefinedResult={(result) => {
+              setUserPoliticalScore(result.numericValue);
+              setUserPositionResult(prev => prev ? {
+                ...prev,
+                label: result.label,
+                description: result.description
+              } : null);
+            }}
           />
           
           {/* Spectrum Mode Button - hidden when reasoning panel is expanded */}

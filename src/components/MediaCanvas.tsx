@@ -44,6 +44,7 @@ interface MediaCanvasProps {
   onContributeClick?: () => void;
   onMethodologyClick?: () => void;
   onReasoningPanelExpandedChange?: (expanded: boolean) => void;
+  onRefinedResult?: (result: RefinedResult) => void;
 }
 
 // Country-specific insights data
@@ -312,7 +313,8 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
   onSignUpClick,
   onContributeClick,
   onMethodologyClick,
-  onReasoningPanelExpandedChange
+  onReasoningPanelExpandedChange,
+  onRefinedResult
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const circlesRef = useRef<BrandCircle[]>([]);
@@ -786,6 +788,7 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
           originalScore={userPoliticalScore ?? 0}
           country={country}
           onExpandedChange={onReasoningPanelExpandedChange}
+          onRefinedResult={onRefinedResult}
         />
       )}
     </div>
