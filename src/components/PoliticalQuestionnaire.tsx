@@ -269,17 +269,10 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
   if (showResult && calculatedResult) {
     return (
       <div className="py-4 space-y-4 animate-fade-in">
-        {/* Result badge with glow effect */}
+        {/* Result badge */}
         <div className="text-center space-y-3">
-          <div className="inline-block relative">
-            <div 
-              className="absolute inset-0 blur-xl opacity-50 rounded-full"
-              style={{
-                background: `linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.5) 100%)`,
-              }}
-            />
-            <div className="relative px-6 py-3 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-full border border-primary/30">
-              <Sparkles className="h-4 w-4 text-primary absolute -top-1 -right-1 animate-pulse" />
+          <div className="inline-block">
+            <div className="px-6 py-3 bg-primary/20 rounded-full border border-primary/30">
               <span className="text-lg font-bold text-primary">
                 {calculatedResult.label}
               </span>
@@ -288,7 +281,7 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
           
           {/* Score reveal with animation */}
           <div 
-            className="text-3xl font-bold bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent"
+            className="text-3xl font-bold text-primary"
             style={{
               animation: 'scale-in 0.5s ease-out 0.2s both',
             }}
