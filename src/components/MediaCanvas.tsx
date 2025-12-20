@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react'
 import { ChevronDown, ChevronUp, Info, RefreshCw } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { YearData, ViewMode, COLORS } from '@/types/media';
 import { BrandCircle, INNER_CONTAINER_RADIUS, SPECTRUM_BIN_WIDTH, SPECTRUM_BIN_HEIGHT, getSpectrumBinIndex } from '@/lib/BrandCircle';
@@ -154,7 +155,12 @@ const ReasoningPanel: React.FC<{
               style={{ backgroundColor: COLORS.userBubble }}
             />
             <span className="font-semibold text-sm">{userName}</span>
-            <span className="text-xs text-muted-foreground">• {displayLabel}</span>
+            <Badge 
+              variant="secondary" 
+              className="text-xs bg-primary/20 text-primary border-primary/30"
+            >
+              {displayLabel}
+            </Badge>
             {refinedResult && (
               <span className="text-xs px-1.5 py-0.5 bg-primary/20 text-primary rounded">Refined</span>
             )}
@@ -254,7 +260,7 @@ const ReasoningPanel: React.FC<{
                 variant="outline"
                 size="sm"
                 onClick={() => setShowQuestionnaire(true)}
-                className="w-full text-xs"
+                className="w-full text-xs border-pink-400 bg-pink-500/10 hover:bg-pink-500/20 text-pink-600 dark:text-pink-400 dark:border-pink-500/50"
               >
                 <RefreshCw className="h-3 w-3 mr-2" />
                 {refinedResult ? 'Refine Again' : 'Further Refine'}
