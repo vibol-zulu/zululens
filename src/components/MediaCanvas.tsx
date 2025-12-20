@@ -278,12 +278,6 @@ const ReasoningPanel: React.FC<{
       {/* Questionnaire Modal */}
       <Dialog open={showQuestionnaire} onOpenChange={setShowQuestionnaire}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Refine Your Political Position</DialogTitle>
-            <DialogDescription>
-              Answer these questions to get a more accurate assessment of your political position.
-            </DialogDescription>
-          </DialogHeader>
           <PoliticalQuestionnaire
             originalScore={originalScore}
             country={country}
