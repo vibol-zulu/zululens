@@ -311,11 +311,19 @@ const Sidebar: React.FC<SidebarProps> = ({
           style={{ backgroundColor: headerBgColor, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
         >
           <h3 
-            className="font-semibold capitalize text-base text-center mb-2 font-sans"
+            className="font-semibold capitalize text-base text-center mb-1 font-sans"
             style={{ color: headerTextColor }}
           >
             {category}
           </h3>
+          <p 
+            className="text-[10px] text-center mb-2 opacity-80 leading-tight"
+            style={{ color: headerTextColor }}
+          >
+            {category === 'corporate' 
+              ? 'Large media conglomerates owned by major corporations'
+              : 'Creator-driven outlets operating outside traditional ownership'}
+          </p>
           <div className="flex gap-1 mb-2">
             <Button 
               data-tour={side === 'left' ? "select-all" : undefined}
@@ -453,11 +461,19 @@ const Sidebar: React.FC<SidebarProps> = ({
         style={{ backgroundColor: headerBgColor, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
       >
         <h3 
-          className="font-semibold capitalize text-center text-lg mb-2 font-sans"
+          className="font-semibold capitalize text-center text-lg mb-1 font-sans"
           style={{ color: headerTextColor }}
         >
           {category}
         </h3>
+        <p 
+          className="text-xs text-center mb-2 opacity-80 leading-tight"
+          style={{ color: headerTextColor }}
+        >
+          {category === 'corporate' 
+            ? 'Large media conglomerates owned by major corporations'
+            : 'Creator-driven outlets operating outside traditional ownership'}
+        </p>
         <div className="flex gap-1.5 mb-2">
           <button 
             data-tour={side === 'left' ? "select-all" : undefined}
