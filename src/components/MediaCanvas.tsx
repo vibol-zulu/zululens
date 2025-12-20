@@ -42,6 +42,7 @@ interface MediaCanvasProps {
   onSignUpClick?: () => void;
   onContributeClick?: () => void;
   onMethodologyClick?: () => void;
+  onReasoningPanelExpandedChange?: (expanded: boolean) => void;
 }
 
 // Country-specific insights data
@@ -104,17 +105,30 @@ const ReasoningPanel: React.FC<{
   originalScore: number;
   country: string;
   onRefinedResult?: (result: RefinedResult) => void;
+  onExpandedChange?: (expanded: boolean) => void;
 }> = ({ 
   userPositionResult, 
   userName,
   visitorEmail,
   originalScore,
   country,
-  onRefinedResult
+  onRefinedResult,
+  onExpandedChange
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const [refinedResult, setRefinedResult] = useState<RefinedResult | null>(null);
+
+  // Notify parent of initial expanded state
+  useEffect(() => {
+    onExpandedChange?.(true);
+  }, []);
+
+  const handleToggleExpanded = () => {
+    const newExpanded = !isExpanded;
+    setIsExpanded(newExpanded);
+    onExpandedChange?.(newExpanded);
+  };
 
   const handleQuestionnaireComplete = (result: RefinedResult) => {
     setRefinedResult(result);
@@ -130,7 +144,7 @@ const ReasoningPanel: React.FC<{
     <div className={`absolute top-4 right-4 bg-card/95 backdrop-blur-sm rounded-lg shadow-lg border z-10 transition-all ${isExpanded ? 'max-w-4xl' : 'max-w-xs'}`}>
       {/* Header - always visible */}
       <button
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={handleToggleExpanded}
         className="w-full flex items-center justify-between p-3 hover:bg-muted/50 transition-colors rounded-t-lg"
       >
         <div className="flex items-center gap-2">
@@ -290,7 +304,8 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
   isAuthenticated = false,
   onSignUpClick,
   onContributeClick,
-  onMethodologyClick
+  onMethodologyClick,
+  onReasoningPanelExpandedChange
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const circlesRef = useRef<BrandCircle[]>([]);
@@ -763,6 +778,7 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
           visitorEmail={visitorEmail}
           originalScore={userPoliticalScore ?? 0}
           country={country}
+          onExpandedChange={onReasoningPanelExpandedChange}
         />
       )}
     </div>

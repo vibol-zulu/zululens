@@ -108,6 +108,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   const [showSpectrumInput, setShowSpectrumInput] = useState(false);
   const [userPoliticalScore, setUserPoliticalScore] = useState<number | null>(null);
   const [personalizedChannelIds, setPersonalizedChannelIds] = useState<string[]>([]);
+  const [reasoningPanelExpanded, setReasoningPanelExpanded] = useState(false);
   const [userPositionResult, setUserPositionResult] = useState<{
     label: string;
     description: string;
@@ -576,10 +577,11 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
             }}
             onContributeClick={() => setShowMission(true)}
             onMethodologyClick={() => setShowMethodology(true)}
+            onReasoningPanelExpandedChange={setReasoningPanelExpanded}
           />
           
-          {/* Spectrum Mode Button */}
-          {viewMode === 'compass' && (
+          {/* Spectrum Mode Button - hidden when reasoning panel is expanded */}
+          {viewMode === 'compass' && !(userPositionResult && reasoningPanelExpanded) && (
             <div className="hidden lg:block absolute lg:bottom-24 left-1/2 -translate-x-1/2 z-10">
               <Button
                 onClick={() => setShowSpectrumInput(true)}
