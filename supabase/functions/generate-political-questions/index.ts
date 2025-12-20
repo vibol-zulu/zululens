@@ -18,15 +18,33 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
+    // Generate a random seed to encourage question variety
+    const randomSeed = Math.random().toString(36).substring(2, 10);
+    const topicVariants = [
+      'healthcare, taxation, immigration',
+      'education, climate policy, trade',
+      'criminal justice, housing, labor rights',
+      'technology regulation, foreign policy, welfare',
+      'gun policy, civil liberties, infrastructure',
+      'media freedom, electoral reform, military spending'
+    ];
+    const selectedTopics = topicVariants[Math.floor(Math.random() * topicVariants.length)];
+
     const systemPrompt = `You are a political analyst expert. Generate exactly 8 politically relevant questions for someone in ${country || 'the United States'}.
+
+IMPORTANT: Generate UNIQUE and VARIED questions each time. Do not repeat common generic questions. Focus on specific, nuanced policy topics.
+
+For this generation, prioritize topics related to: ${selectedTopics}
+Random seed for variety: ${randomSeed}
 
 The questions should:
 1. Be relevant to current political topics and debates in that specific region
-2. Cover economic, social, and governance categories
+2. Cover economic, social, and governance categories (aim for variety)
 3. Be phrased as statements that someone can agree or disagree with
 4. Be balanced - some should lean left when agreed with, some should lean right
 5. Avoid extremely polarizing or offensive topics
 6. Be neutral in tone
+7. Be DIFFERENT from typical generic political questions - get creative and specific!
 
 Return ONLY a valid JSON array with this exact structure, no other text:
 [
@@ -42,7 +60,7 @@ Return ONLY a valid JSON array with this exact structure, no other text:
 weight: 1 means agreeing leans left, -1 means agreeing leans right.
 explanation: Should clarify the political context or implications without being biased.
 
-Make sure questions are specific to ${country || 'the United States'}'s current political landscape.`;
+Make sure questions are specific to ${country || 'the United States'}'s current political landscape and are UNIQUE to this session.`;
 
     console.log(`Generating questions for country: ${country}`);
 
