@@ -45,12 +45,12 @@ const CALCULATING_MESSAGES = [
   'Finalizing results...',
 ];
 
-// Add shimmer keyframe to document if not already present
-if (typeof document !== 'undefined' && !document.getElementById('shimmer-keyframes')) {
+// Add shimmer-slide keyframe to document if not already present (named differently to avoid conflict with shimmer-text)
+if (typeof document !== 'undefined' && !document.getElementById('shimmer-slide-keyframes')) {
   const style = document.createElement('style');
-  style.id = 'shimmer-keyframes';
+  style.id = 'shimmer-slide-keyframes';
   style.textContent = `
-    @keyframes shimmer {
+    @keyframes shimmer-slide {
       0% { transform: translateX(-100%); }
       100% { transform: translateX(100%); }
     }
@@ -364,7 +364,7 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
                     }`}>
                       {/* Shimmer effect */}
                       <span 
-                        className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite]"
+                        className="absolute inset-0 -translate-x-full animate-[shimmer-slide_2s_infinite]"
                         style={{
                           background: calculatedResult.confidence === 'high'
                             ? 'linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.3), transparent)'
