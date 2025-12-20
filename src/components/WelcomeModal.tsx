@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Globe, Compass, Target, UserPlus, ChevronRight, ChevronLeft } from 'lucide-react';
-import welcomeIllustration from '@/assets/welcome-illustration.jpg';
+import { Globe, UserPlus, ChevronRight, ChevronLeft } from 'lucide-react';
 
 interface WelcomeModalProps {
   open: boolean;
@@ -16,25 +15,13 @@ interface OnboardingStep {
   icon: React.ReactNode;
   title: string;
   description: string;
-  image?: string;
 }
 
 const onboardingSteps: OnboardingStep[] = [
   {
     icon: <Globe className="h-8 w-8" />,
     title: "Map the Media Landscape",
-    description: "Discover how media channels position themselves politically across countries. Our community-driven visualization helps you understand the news you consume.",
-    image: welcomeIllustration,
-  },
-  {
-    icon: <Compass className="h-8 w-8" />,
-    title: "Explore by Country & Year",
-    description: "Navigate media landscapes from different countries and track how they've evolved over time. Filter by content type, platform, and political lean.",
-  },
-  {
-    icon: <Target className="h-8 w-8" />,
-    title: "Find Your Position",
-    description: "Take our questionnaire to discover where you sit on the political spectrum, then see which channels align with or challenge your perspective.",
+    description: "Discover how media channels position themselves politically across countries. Compare audience sizes and explore the spectrum of news sources.",
   },
   {
     icon: <UserPlus className="h-8 w-8" />,
@@ -67,11 +54,6 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
     if (!isFirstStep) {
       setCurrentStep(prev => prev - 1);
     }
-  };
-
-  const handleSkip = () => {
-    onOpenChange(false);
-    onStartExploring?.();
   };
 
   const currentStepData = onboardingSteps[currentStep];
@@ -107,17 +89,6 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
               </div>
             </div>
 
-            {/* Image (only on first step) */}
-            {currentStepData.image && (
-              <div className="w-full flex justify-center">
-                <img 
-                  src={currentStepData.image} 
-                  alt="Onboarding illustration" 
-                  className="w-full max-w-[280px] h-auto rounded-lg"
-                />
-              </div>
-            )}
-
             {/* Title & Description */}
             <div className="text-center space-y-2">
               <h2 className="text-xl sm:text-2xl font-semibold">
@@ -135,7 +106,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
           </div>
 
           {/* Navigation */}
-          <div className="p-6 pt-0 space-y-3">
+          <div className="p-6 pt-0">
             <div className="flex gap-3">
               {!isFirstStep && (
                 <Button 
@@ -164,15 +135,6 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
                 )}
               </Button>
             </div>
-            
-            <Button 
-              variant="ghost" 
-              onClick={handleSkip}
-              className="w-full text-muted-foreground hover:text-foreground"
-              size="sm"
-            >
-              {isLastStep ? "Skip for now" : "Skip intro"}
-            </Button>
           </div>
         </div>
       </DialogContent>
