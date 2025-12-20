@@ -6,6 +6,7 @@ interface AppSettings {
   guidedTourEnabled: boolean;
   pxFactorGlobal: number;
   pxFactorAllCountries: number;
+  defaultViewMode: 'default' | 'compass';
 }
 
 // Decode HTML entities in URLs (e.g., &amp; -> &)
@@ -24,7 +25,8 @@ export const useAppSettings = () => {
     mailchimpUrl: DEFAULT_MAILCHIMP_URL,
     guidedTourEnabled: false,
     pxFactorGlobal: DEFAULT_PX_FACTOR_GLOBAL,
-    pxFactorAllCountries: DEFAULT_PX_FACTOR_ALL_COUNTRIES
+    pxFactorAllCountries: DEFAULT_PX_FACTOR_ALL_COUNTRIES,
+    defaultViewMode: 'compass'
   });
   const [loading, setLoading] = useState(true);
 
@@ -47,7 +49,8 @@ export const useAppSettings = () => {
           mailchimpUrl: decodeHtmlEntities(rawUrl),
           guidedTourEnabled: settingsMap['guided_tour_enabled'] === 'true',
           pxFactorGlobal: settingsMap['px_factor_global'] ? parseFloat(settingsMap['px_factor_global']) : DEFAULT_PX_FACTOR_GLOBAL,
-          pxFactorAllCountries: settingsMap['px_factor_all_countries'] ? parseFloat(settingsMap['px_factor_all_countries']) : DEFAULT_PX_FACTOR_ALL_COUNTRIES
+          pxFactorAllCountries: settingsMap['px_factor_all_countries'] ? parseFloat(settingsMap['px_factor_all_countries']) : DEFAULT_PX_FACTOR_ALL_COUNTRIES,
+          defaultViewMode: (settingsMap['default_view_mode'] as 'default' | 'compass') || 'compass'
         });
       } catch (error) {
         console.error('Error fetching app settings:', error);

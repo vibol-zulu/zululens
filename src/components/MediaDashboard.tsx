@@ -80,12 +80,13 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   
   const [year, setYear] = useState<number>(2025);
   const [country, setCountry] = useState<string>('United States');
-  const [viewMode, setViewMode] = useState<ViewMode>('compass');
+  const [viewMode, setViewMode] = useState<ViewMode | null>(null); // null until settings load
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
   const [countryOpen, setCountryOpen] = useState(false);
+  const [viewModeInitialized, setViewModeInitialized] = useState(false);
   
   const [showInsights, setShowInsights] = useState(false);
   const [showMethodology, setShowMethodology] = useState(false);
@@ -116,7 +117,15 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
     informationDiversityScore?: number;
   } | null>(null);
 
-  const { settings: appSettings } = useAppSettings();
+  const { settings: appSettings, loading: appSettingsLoading } = useAppSettings();
+  
+  // Initialize viewMode from app settings once loaded
+  useEffect(() => {
+    if (!appSettingsLoading && !viewModeInitialized) {
+      setViewMode(appSettings.defaultViewMode);
+      setViewModeInitialized(true);
+    }
+  }, [appSettingsLoading, appSettings.defaultViewMode, viewModeInitialized]);
   
   // Guided tour state
   const { currentStep, startTour, nextStep, closeTour, dontShowAgain, setDontShowAgain, TourCard } = useTour(appSettings.guidedTourEnabled);
@@ -297,6 +306,15 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
       setSelectedIds(newSet);
     }
   };
+
+  // Show loading state while settings are being loaded
+  if (!viewModeInitialized || viewMode === null) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-background">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">

@@ -427,6 +427,7 @@ Format your response as JSON with this structure:
 
   const [mailchimpUrl, setMailchimpUrl] = useState('');
   const [guidedTourEnabled, setGuidedTourEnabled] = useState(false);
+  const [defaultViewMode, setDefaultViewMode] = useState<'default' | 'compass'>('compass');
   const [pxFactorGlobal, setPxFactorGlobal] = useState('1.0');
   const [pxFactorAllCountries, setPxFactorAllCountries] = useState('2.24');
   const [audienceSystemPrompt, setAudienceSystemPrompt] = useState(DEFAULT_SYSTEM_PROMPT);
@@ -561,6 +562,9 @@ Return your analysis as JSON with this structure:
       if (settingsMap['px_factor_all_countries']) {
         setPxFactorAllCountries(settingsMap['px_factor_all_countries']);
       }
+      if (settingsMap['default_view_mode']) {
+        setDefaultViewMode(settingsMap['default_view_mode'] as 'default' | 'compass');
+      }
     } catch (error) {
       console.error('Error fetching settings:', error);
     } finally {
@@ -575,6 +579,7 @@ Return your analysis as JSON with this structure:
       const settingsToSave = [
         { key: 'mailchimp_url', value: mailchimpUrl },
         { key: 'guided_tour_enabled', value: guidedTourEnabled.toString() },
+        { key: 'default_view_mode', value: defaultViewMode },
         { key: 'px_factor_global', value: pxFactorGlobal },
         { key: 'px_factor_all_countries', value: pxFactorAllCountries },
       ];
@@ -3453,12 +3458,32 @@ Return your analysis as JSON with this structure:
                           onCheckedChange={(checked) => setGuidedTourEnabled(checked === true)}
                         />
                       </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label htmlFor="default-view-mode">Default View Mode</Label>
+                          <p className="text-xs text-muted-foreground">
+                            The view mode shown when visitors first load the app
+                          </p>
+                        </div>
+                        <Select
+                          value={defaultViewMode}
+                          onValueChange={(value: 'default' | 'compass') => setDefaultViewMode(value)}
+                        >
+                          <SelectTrigger className="w-36">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="default">Microscope</SelectItem>
+                            <SelectItem value="compass">Spectrum</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </CardContent>
                   </Card>
 
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-lg">Canvas Display Settings</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <p className="text-xs text-muted-foreground mb-4">
