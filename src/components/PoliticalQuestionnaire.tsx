@@ -114,6 +114,8 @@ function calculateRefinedPosition(
 interface PoliticalQuestionnaireProps {
   originalScore: number;
   country: string;
+  visitorName?: string;
+  visitorEmail?: string;
   onComplete: (result: RefinedResult) => void;
   onCancel: () => void;
 }
@@ -121,6 +123,8 @@ interface PoliticalQuestionnaireProps {
 const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
   originalScore,
   country,
+  visitorName,
+  visitorEmail,
   onComplete,
   onCancel,
 }) => {
@@ -132,6 +136,7 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
   const [calculatingStep, setCalculatingStep] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [calculatedResult, setCalculatedResult] = useState<RefinedResult | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -206,9 +211,49 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
     setCalculatingStep(0);
   };
 
-  const handleRevealComplete = () => {
-    if (calculatedResult) {
-      onComplete(calculatedResult);
+  const handleRevealComplete = async () => {
+    if (calculatedResult && !isSaving) {
+      setIsSaving(true);
+      try {
+        // Get current user if authenticated
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        // Save questionnaire response to database
+        const responseData: any = {
+          country,
+          questions: JSON.stringify(questions.map(q => ({ id: q.id, text: q.text, category: q.category, weight: q.weight }))),
+          answers: JSON.stringify(answers),
+          original_score: originalScore,
+          refined_score: calculatedResult.numericValue,
+          position_label: calculatedResult.label,
+          confidence: calculatedResult.confidence,
+        };
+        
+        if (user) {
+          responseData.user_id = user.id;
+        } else if (visitorEmail) {
+          responseData.visitor_name = visitorName || 'Anonymous';
+          responseData.visitor_email = visitorEmail;
+        }
+        
+        // Only save if we have either a user or visitor email
+        if (user || visitorEmail) {
+          const { error } = await supabase
+            .from('questionnaire_responses')
+            .insert([responseData]);
+          
+          if (error) {
+            console.error('Failed to save questionnaire response:', error);
+          } else {
+            console.log('Questionnaire response saved successfully');
+          }
+        }
+      } catch (err) {
+        console.error('Error saving questionnaire response:', err);
+      } finally {
+        setIsSaving(false);
+        onComplete(calculatedResult);
+      }
     }
   };
 

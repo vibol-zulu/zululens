@@ -273,6 +273,51 @@ export type Database = {
         }
         Relationships: []
       }
+      questionnaire_responses: {
+        Row: {
+          answers: Json
+          confidence: string
+          country: string
+          created_at: string
+          id: string
+          original_score: number
+          position_label: string
+          questions: Json
+          refined_score: number
+          user_id: string | null
+          visitor_email: string | null
+          visitor_name: string | null
+        }
+        Insert: {
+          answers?: Json
+          confidence?: string
+          country?: string
+          created_at?: string
+          id?: string
+          original_score: number
+          position_label: string
+          questions?: Json
+          refined_score: number
+          user_id?: string | null
+          visitor_email?: string | null
+          visitor_name?: string | null
+        }
+        Update: {
+          answers?: Json
+          confidence?: string
+          country?: string
+          created_at?: string
+          id?: string
+          original_score?: number
+          position_label?: string
+          questions?: Json
+          refined_score?: number
+          user_id?: string | null
+          visitor_email?: string | null
+          visitor_name?: string | null
+        }
+        Relationships: []
+      }
       rate_limits: {
         Row: {
           action: string

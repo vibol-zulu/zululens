@@ -33,6 +33,7 @@ interface MediaCanvasProps {
   country: string;
   userPoliticalScore?: number | null; // -100 to +100 from analysis
   userName?: string;
+  visitorEmail?: string;
   personalizedChannelIds?: string[]; // Channels selected by user for their position
   userPositionResult?: UserPositionResult | null; // Result with reasoning
   pxFactorGlobal?: number;
@@ -99,12 +100,14 @@ const METHODOLOGY_TEXT = `Audience estimates are derived from multiple data sour
 const ReasoningPanel: React.FC<{ 
   userPositionResult: UserPositionResult; 
   userName: string;
+  visitorEmail?: string;
   originalScore: number;
   country: string;
   onRefinedResult?: (result: RefinedResult) => void;
 }> = ({ 
   userPositionResult, 
   userName,
+  visitorEmail,
   originalScore,
   country,
   onRefinedResult
@@ -151,6 +154,8 @@ const ReasoningPanel: React.FC<{
             <PoliticalQuestionnaire
               originalScore={originalScore}
               country={country}
+              visitorName={userName}
+              visitorEmail={visitorEmail}
               onComplete={handleQuestionnaireComplete}
               onCancel={() => setShowQuestionnaire(false)}
             />
@@ -274,6 +279,7 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
   country,
   userPoliticalScore,
   userName = 'You',
+  visitorEmail,
   personalizedChannelIds = [],
   userPositionResult,
   pxFactorGlobal = 1.0,
@@ -751,6 +757,7 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
         <ReasoningPanel 
           userPositionResult={userPositionResult} 
           userName={userName} 
+          visitorEmail={visitorEmail}
           originalScore={userPoliticalScore ?? 0}
           country={country}
         />
