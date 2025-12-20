@@ -61,7 +61,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="max-w-sm sm:max-w-md min-h-[430px] max-h-[90vh] overflow-y-auto p-0 bg-background/80 backdrop-blur-sm" 
+        className="max-w-sm sm:max-w-md min-h-[430px] max-h-[90vh] overflow-y-auto p-0 bg-background/90 backdrop-blur-sm" 
         hideCloseButton
         overlayClassName="bg-black/20"
       >
