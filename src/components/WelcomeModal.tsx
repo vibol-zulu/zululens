@@ -60,7 +60,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm sm:max-w-md max-h-[90vh] overflow-y-auto p-0" hideCloseButton>
+      <DialogContent className="max-w-sm sm:max-w-md min-h-[430px] max-h-[90vh] overflow-y-auto p-0" hideCloseButton>
         <div className="flex flex-col">
           {/* Progress Indicators */}
           <div className="flex justify-center gap-2 pt-6 px-6">
@@ -81,7 +81,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
           </div>
 
           {/* Content */}
-          <div className="p-6 space-y-5 min-h-[220px]">
+          <div className="p-6 space-y-5 flex-1">
             {/* Icon */}
             <div className="flex justify-center">
               <div className="p-4 rounded-full bg-primary/10 text-primary">
