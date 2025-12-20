@@ -429,40 +429,60 @@ const SpectrumInputModal: React.FC<SpectrumInputModalProps> = ({
               ) : null}
             </div>
           )}
-          
-          <p className="text-xs text-muted-foreground mt-2">
-            Only channels in our current dataset can be selected. If you don't see a channel, you can submit it for review.
-          </p>
 
-          {/* Selected Channels List */}
-          <div className="mt-4">
-            <p className="text-sm text-muted-foreground mb-2">
-              {selectedChannels.length === 0 
-                ? "Your channels will appear here" 
-                : `${selectedChannels.length} channel${selectedChannels.length !== 1 ? 's' : ''} selected`}
-            </p>
-            <ScrollArea className="h-[180px]">
-              <div className="space-y-2">
+          {/* Selected Channels */}
+          {selectedChannels.length > 0 && (
+            <div className="mt-4 p-3 border rounded-md bg-muted/30">
+              <p className="text-sm font-medium mb-2">
+                {selectedChannels.length} channel{selectedChannels.length !== 1 ? 's' : ''} selected
+              </p>
+              <div className="flex flex-wrap gap-2">
                 {selectedChannels.map(channel => (
                   <div 
                     key={channel.id}
-                    className="flex items-center justify-between p-2 rounded-md bg-muted/50"
+                    className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 text-sm"
                   >
-                    <div className="flex flex-col">
-                      <span className="text-sm">{channel.name}</span>
-                      <span className="text-xs text-muted-foreground">{channel.politicalLean}</span>
-                    </div>
+                    <span>{channel.name}</span>
                     <button
                       onClick={() => removeChannel(channel.id)}
-                      className="text-muted-foreground hover:text-foreground p-1"
+                      className="text-muted-foreground hover:text-foreground"
                       disabled={isAnalyzing}
                     >
-                      <X className="h-4 w-4" />
+                      <X className="h-3 w-3" />
                     </button>
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Available Channels List */}
+          <div className="mt-4">
+            <p className="text-sm font-medium mb-2">Available Channels</p>
+            <p className="text-xs text-muted-foreground mb-2">
+              Click on a channel to add it to your selection
+            </p>
+            <ScrollArea className="h-[200px] border rounded-md">
+              <div className="p-2 space-y-1">
+                {availableChannels
+                  .filter(channel => !selectedChannels.some(sc => sc.id === channel.id))
+                  .sort((a, b) => a.name.localeCompare(b.name))
+                  .map(channel => (
+                    <button
+                      key={channel.id}
+                      onClick={() => addChannel(channel)}
+                      className="w-full px-3 py-2 text-left hover:bg-muted rounded-md flex items-center justify-between text-sm transition-colors"
+                      disabled={isAnalyzing}
+                    >
+                      <span>{channel.name}</span>
+                      <span className="text-xs text-muted-foreground">{channel.politicalLean}</span>
+                    </button>
+                  ))}
+              </div>
             </ScrollArea>
+            <p className="text-xs text-muted-foreground mt-2">
+              Don't see a channel? Use the search above or submit it for review.
+            </p>
           </div>
         </div>
 
