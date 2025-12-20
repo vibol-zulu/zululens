@@ -336,9 +336,9 @@ const Sidebar: React.FC<SidebarProps> = ({
                     variant="outline" 
                     size="sm" 
                     onClick={handleAddClick}
-                    className="px-2 shrink-0 bg-background/90 hover:bg-background"
+                    className="px-2 shrink-0 bg-background/90 hover:bg-background text-xs"
                   >
-                    <Plus className="h-3 w-3" style={{ color: buttonTextColor }} />
+                    <span style={{ color: buttonTextColor }}>Add Channel</span>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -474,9 +474,9 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <button 
                   data-tour={side === 'left' ? "add-button" : undefined}
                   onClick={handleAddClick}
-                  className="px-2 py-1 rounded bg-background/80 hover:bg-background/95 transition-colors"
+                  className="px-2 py-1 rounded bg-background/80 hover:bg-background/95 transition-colors text-xs"
                 >
-                  <Plus className="h-3.5 w-3.5" style={{ color: buttonTextColor }} />
+                  <span style={{ color: buttonTextColor }}>Add Channel</span>
                 </button>
               </TooltipTrigger>
               <TooltipContent>
