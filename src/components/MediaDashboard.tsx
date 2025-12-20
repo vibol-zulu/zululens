@@ -80,7 +80,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   
   const [year, setYear] = useState<number>(2025);
   const [country, setCountry] = useState<string>('United States');
-  const [viewMode, setViewMode] = useState<ViewMode>('default');
+  const [viewMode, setViewMode] = useState<ViewMode>('compass');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
