@@ -51,6 +51,12 @@ const CONTENT_TYPES = [
   'Other'
 ];
 
+const AVAILABLE_COUNTRIES = [
+  'United States',
+  'United Kingdom',
+  'Canada',
+  'Australia'
+];
 
 const AddChannelModal: React.FC<AddChannelModalProps> = ({
   isOpen,
@@ -66,11 +72,16 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPendingDialog, setShowPendingDialog] = useState(false);
   const [pendingChannelName, setPendingChannelName] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState(country === 'Global' ? '' : country);
   const [formData, setFormData] = useState({
     name: '',
     platform: '',
     contentType: ''
   });
+
+  // Determine the actual country to use for submission
+  const effectiveCountry = country === 'Global' ? selectedCountry : country;
+  const isGlobalView = country === 'Global';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,6 +95,16 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
       return;
     }
 
+    // Require country selection when in Global view
+    if (isGlobalView && !selectedCountry) {
+      toast({
+        title: "Country required",
+        description: "Please select a country for this channel",
+        variant: "destructive"
+      });
+      return;
+    }
+
     // Check for duplicate channel name in database (any status)
     const trimmedName = formData.name.trim();
     
@@ -91,7 +112,7 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
       .from('user_channels')
       .select('id, name, status, country, year')
       .ilike('name', trimmedName)
-      .eq('country', country)
+      .eq('country', effectiveCountry)
       .eq('year', year)
       .maybeSingle();
     
@@ -108,7 +129,7 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
       
       toast({
         title: "Channel already submitted",
-        description: `"${existingChannel.name}" ${statusText} for ${country} (${year}).`,
+        description: `"${existingChannel.name}" ${statusText} for ${effectiveCountry} (${year}).`,
         variant: "destructive"
       });
       return;
@@ -130,7 +151,7 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
           platform: formData.platform,
           content_type: formData.contentType,
           political_lean: 'TBD', // To be analyzed by AI
-          country,
+          country: effectiveCountry,
           year,
           author_id: user?.id,
           status: canAutoApprove ? 'approved' : 'pending',
@@ -159,6 +180,10 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
         platform: '',
         contentType: ''
       });
+      // Reset country selection for next submission
+      if (isGlobalView) {
+        setSelectedCountry('');
+      }
       
       onChannelAdded();
       onClose();
@@ -232,9 +257,28 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
               </Select>
             </div>
 
+            {/* Country selector shown only when in Global view */}
+            {isGlobalView && (
+              <div className="space-y-2">
+                <Label>Country *</Label>
+                <Select 
+                  value={selectedCountry} 
+                  onValueChange={setSelectedCountry}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select country for this channel" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {AVAILABLE_COUNTRIES.map(c => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <div className="text-xs text-muted-foreground">
-              Adding to: {country} ({year}) - {category}
+              Adding to: {effectiveCountry || 'Select a country'} ({year}) - {category}
             </div>
 
             <div className="flex gap-3 pt-4">
