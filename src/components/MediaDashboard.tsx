@@ -580,7 +580,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
           
           {/* Spectrum Mode Button */}
           {viewMode === 'compass' && (
-            <div className="hidden lg:block absolute lg:bottom-24 left-1/2 -translate-x-1/2 z-10">
+            <div className="hidden lg:block absolute top-4 left-1/2 -translate-x-1/2 z-10">
               <Button
                 onClick={() => setShowSpectrumInput(true)}
                 className="shadow-lg font-medium"
