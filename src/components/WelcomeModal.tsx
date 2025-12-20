@@ -60,7 +60,11 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm sm:max-w-md min-h-[430px] max-h-[90vh] overflow-y-auto p-0" hideCloseButton>
+      <DialogContent 
+        className="max-w-sm sm:max-w-md min-h-[430px] max-h-[90vh] overflow-y-auto p-0 bg-background/80 backdrop-blur-sm" 
+        hideCloseButton
+        overlayClassName="bg-black/20"
+      >
         <div className="flex flex-col">
           {/* Progress Indicators */}
           <div className="flex justify-center gap-2 pt-6 px-6">
