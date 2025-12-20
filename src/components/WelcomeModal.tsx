@@ -17,11 +17,11 @@ interface OnboardingStep {
   description: string;
 }
 
-const onboardingSteps: OnboardingStep[] = [
+const getOnboardingSteps = (userName: string): OnboardingStep[] => [
   {
     icon: <Globe className="h-8 w-8" />,
-    title: "Zulu Digital Microscope",
-    description: "An interactive visualization mapping the media landscape, starting with the U.S. It grows as new data and members join, helping make our information networks visible and improvable.",
+    title: `Welcome, ${userName}`,
+    description: "You now have access to the Zulu Digital Microscope — an interactive visualization mapping the media landscape, starting with the U.S. It grows as new data and members join, helping make our information networks visible and improvable.",
   },
   {
     icon: <UserPlus className="h-8 w-8" />,
@@ -38,6 +38,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
   onSignUpClick
 }) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const onboardingSteps = getOnboardingSteps(userName);
   const isLastStep = currentStep === onboardingSteps.length - 1;
   const isFirstStep = currentStep === 0;
 
