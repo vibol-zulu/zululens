@@ -72,25 +72,28 @@ Random seed for variety: ${randomSeed}
 The questions should:
 1. Be relevant to current political topics and debates in that specific region
 2. Cover economic, social, and governance categories (aim for variety)
-3. Be phrased as statements that someone can agree or disagree with
+3. Be phrased as SHORT, SIMPLE statements (under 15 words) that someone can agree or disagree with
 4. Be balanced - some should lean left when agreed with, some should lean right
 5. Avoid extremely polarizing or offensive topics
 6. Be neutral in tone
 7. Be DIFFERENT from typical generic political questions - get creative and specific!
 
+CRITICAL FORMAT REQUIREMENTS:
+- "text" must be a SHORT, SIMPLE statement (under 15 words) - easy to read at a glance
+- "explanation" provides the DETAILED context (2-4 sentences) explaining what the statement means, why it matters politically, and the different perspectives on the issue
+
 Return ONLY a valid JSON array with this exact structure, no other text:
 [
   {
     "id": "q1",
-    "text": "The statement text here",
-    "explanation": "A brief 1-2 sentence explanation helping the user understand what this question is really asking about and why it matters politically.",
+    "text": "Short simple statement here",
+    "explanation": "Detailed 2-4 sentence explanation providing context about what this statement really means, why it's politically significant, and the different viewpoints people hold on this issue.",
     "category": "economic|social|governance",
     "weight": 1 or -1
   }
 ]
 
 weight: 1 means agreeing leans left, -1 means agreeing leans right.
-explanation: Should clarify the political context or implications without being biased.
 
 Make sure questions are specific to ${country || 'the United States'}'s current political landscape and are UNIQUE to this session.`;
     }
