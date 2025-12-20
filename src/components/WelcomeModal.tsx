@@ -81,7 +81,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
           </div>
 
           {/* Content */}
-          <div className="p-6 space-y-5">
+          <div className="p-6 space-y-5 min-h-[200px]">
             {/* Icon */}
             <div className="flex justify-center">
               <div className="p-4 rounded-full bg-primary/10 text-primary">
