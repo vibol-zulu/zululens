@@ -181,14 +181,28 @@ const Index = () => {
     );
   }
 
-  // Show sign-up gate for unauthenticated visitors
+  // Show sign-up gate as overlay over the app for unauthenticated visitors
   return (
     <>
       <Helmet>
         <title>Zulu Digital Microscope | US Media Landscape 2000-2025</title>
         <meta name="description" content="Explore how the US media landscape has transformed from 2000 to 2025. Visualize corporate vs independent media audiences interactively." />
       </Helmet>
-      <SignUpGate onJoin={handleJoin} />
+      <div className="relative min-h-screen">
+        {/* App preview behind the gate */}
+        <div className="pointer-events-none select-none" aria-hidden="true">
+          <MediaDashboard 
+            visitorName="Guest" 
+            visitorEmail=""
+            data={data}
+            showWelcomeModal={false}
+          />
+        </div>
+        {/* SignUpGate overlay */}
+        <div className="fixed inset-0 z-50">
+          <SignUpGate onJoin={handleJoin} />
+        </div>
+      </div>
     </>
   );
 };
