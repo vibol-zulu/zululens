@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowRight, Check, Loader2, Sparkles, HelpCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Loader2, Sparkles, HelpCircle, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import QuestionnaireChat from './QuestionnaireChat';
@@ -10,6 +10,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 interface PoliticalQuestion {
   id: string;
   text: string;
@@ -20,14 +25,14 @@ interface PoliticalQuestion {
 
 // Fallback questions if AI generation fails
 const FALLBACK_QUESTIONS: PoliticalQuestion[] = [
-  { id: 'q1', text: 'The government should play a larger role in regulating the economy.', explanation: 'This asks whether you believe government oversight of businesses and markets leads to better outcomes than letting the free market operate independently.', category: 'economic', weight: 1 },
-  { id: 'q2', text: 'Traditional values and institutions are important to preserve.', explanation: 'This explores whether you prioritize maintaining established social norms and customs versus embracing progressive social changes.', category: 'social', weight: -1 },
-  { id: 'q3', text: 'Wealthy individuals and corporations should pay significantly higher taxes.', explanation: 'This addresses income redistribution—whether higher earners should contribute more to fund public services and reduce inequality.', category: 'economic', weight: 1 },
-  { id: 'q4', text: 'Immigration policies should prioritize national security over openness.', explanation: 'This weighs stricter border controls and vetting against more welcoming policies for migrants and refugees.', category: 'social', weight: -1 },
-  { id: 'q5', text: 'Climate change requires immediate government intervention, even at economic cost.', explanation: 'This asks if environmental protection should take precedence over short-term economic considerations like jobs and industry profits.', category: 'governance', weight: 1 },
-  { id: 'q6', text: 'Free markets are generally more effective than government programs at solving problems.', explanation: 'This tests your belief in private sector efficiency versus government-led solutions for societal challenges.', category: 'economic', weight: -1 },
-  { id: 'q7', text: 'Social programs should be expanded to reduce inequality.', explanation: 'This asks whether government should provide more support (healthcare, education, welfare) to create a more equal society.', category: 'social', weight: 1 },
-  { id: 'q8', text: 'Strong national defense is more important than diplomatic solutions.', explanation: 'This explores whether military strength or international cooperation should be the primary tool for national security.', category: 'governance', weight: -1 },
+  { id: 'q1', text: 'Government should regulate the economy more.', explanation: 'This asks whether you believe government oversight of businesses and markets leads to better outcomes than letting the free market operate independently. Those on the left typically support more regulation while conservatives prefer less government involvement.', category: 'economic', weight: 1 },
+  { id: 'q2', text: 'Traditional values should be preserved.', explanation: 'This explores whether you prioritize maintaining established social norms, customs, and institutions versus embracing progressive social changes. Conservatives typically value tradition while progressives favor reform.', category: 'social', weight: -1 },
+  { id: 'q3', text: 'The wealthy should pay much higher taxes.', explanation: 'This addresses income redistribution—whether higher earners should contribute more to fund public services and reduce inequality. Left-leaning views typically support higher taxes on wealth while right-leaning views oppose them.', category: 'economic', weight: 1 },
+  { id: 'q4', text: 'Immigration needs stricter controls.', explanation: 'This weighs stricter border controls and vetting against more welcoming policies for migrants and refugees. Conservative positions typically favor tighter restrictions while progressive positions favor more open policies.', category: 'social', weight: -1 },
+  { id: 'q5', text: 'Climate action is worth economic costs.', explanation: 'This asks if environmental protection should take precedence over short-term economic considerations like jobs and industry profits. Left-leaning positions typically prioritize climate action while right-leaning positions emphasize economic concerns.', category: 'governance', weight: 1 },
+  { id: 'q6', text: 'Free markets solve problems better than government.', explanation: 'This tests your belief in private sector efficiency versus government-led solutions for societal challenges. Conservative and libertarian views favor market solutions while progressive views prefer government intervention.', category: 'economic', weight: -1 },
+  { id: 'q7', text: 'Social programs should be expanded.', explanation: 'This asks whether government should provide more support through healthcare, education, and welfare to create a more equal society. Left-leaning positions favor expansion while right-leaning positions prefer limiting government programs.', category: 'social', weight: 1 },
+  { id: 'q8', text: 'Military strength matters more than diplomacy.', explanation: 'This explores whether military strength or international cooperation should be the primary tool for national security. Conservative positions typically favor strong defense while progressive positions emphasize diplomacy.', category: 'governance', weight: -1 },
 ];
 
 const SCALE_OPTIONS = [
@@ -452,10 +457,20 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
         <p className="text-sm font-medium leading-relaxed">
           {currentQuestion.text}
         </p>
+        
+        {/* Expandable explanation */}
         {currentQuestion.explanation && (
-          <p className="text-xs text-muted-foreground italic leading-relaxed">
-            {currentQuestion.explanation}
-          </p>
+          <Collapsible>
+            <CollapsibleTrigger className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors group">
+              <ChevronRight className="h-3 w-3 transition-transform group-data-[state=open]:rotate-90" />
+              <span>Learn more</span>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pt-2">
+              <p className="text-xs text-muted-foreground leading-relaxed pl-4 border-l-2 border-muted">
+                {currentQuestion.explanation}
+              </p>
+            </CollapsibleContent>
+          </Collapsible>
         )}
         
         {/* AI Chat Helper */}
