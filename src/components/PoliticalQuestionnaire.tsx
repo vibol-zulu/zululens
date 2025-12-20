@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight, Check, Loader2, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-
+import QuestionnaireChat from './QuestionnaireChat';
 interface PoliticalQuestion {
   id: string;
   text: string;
@@ -415,6 +415,13 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
             {currentQuestion.explanation}
           </p>
         )}
+        
+        {/* AI Chat Helper */}
+        <QuestionnaireChat
+          question={currentQuestion.text}
+          explanation={currentQuestion.explanation}
+          category={currentQuestion.category}
+        />
       </div>
 
       {/* Scale options */}
