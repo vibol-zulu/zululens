@@ -21,7 +21,7 @@ const onboardingSteps: OnboardingStep[] = [
   {
     icon: <Globe className="h-8 w-8" />,
     title: "Zulu Digital Microscope",
-    description: "An interactive visualization mapping the media landscape, starting with the U.S. It grows as new data and members join—helping make our information networks visible and improvable.",
+    description: "An interactive visualization mapping the media landscape, starting with the U.S. It grows as new data and members join, helping make our information networks visible and improvable.",
   },
   {
     icon: <UserPlus className="h-8 w-8" />,
