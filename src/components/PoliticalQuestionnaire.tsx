@@ -333,64 +333,53 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
   if (showResult && calculatedResult) {
     return (
       <div className="py-4 space-y-4 animate-fade-in">
-        {/* Result badge */}
-        <div className="text-center space-y-4">
-          <div className="inline-block">
-            <div className="px-6 py-3 bg-primary/20 rounded-full border border-primary/30">
-              <span className="text-lg font-bold text-primary">
-                {calculatedResult.label}
-              </span>
-            </div>
-          </div>
-
-          {/* Confidence badge - positioned below */}
-          <div 
-            className="flex flex-col items-center gap-2"
-            style={{
-              animation: 'fade-in 0.5s ease-out 0.4s both',
-            }}
-          >
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="inline-flex items-center gap-2 cursor-help">
-                    <span className="text-xs text-muted-foreground">Confidence:</span>
-                    <span className={`relative text-xs px-3 py-1.5 rounded-full font-medium overflow-hidden ${
+        {/* Result badge with confidence tooltip */}
+        <div className="text-center">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="inline-block cursor-help">
+                  <div className={`relative px-6 py-3 rounded-full overflow-hidden ${
+                    calculatedResult.confidence === 'high' 
+                      ? 'bg-green-500/20 border border-green-500/30'
+                      : calculatedResult.confidence === 'medium'
+                      ? 'bg-yellow-500/20 border border-yellow-500/30'
+                      : 'bg-red-500/20 border border-red-500/30'
+                  }`}>
+                    {/* Shimmer effect */}
+                    <span 
+                      className="absolute inset-0 -translate-x-full animate-[shimmer-slide_2s_infinite]"
+                      style={{
+                        background: calculatedResult.confidence === 'high'
+                          ? 'linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.3), transparent)'
+                          : calculatedResult.confidence === 'medium'
+                          ? 'linear-gradient(90deg, transparent, rgba(234, 179, 8, 0.3), transparent)'
+                          : 'linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.3), transparent)',
+                      }}
+                    />
+                    <span className={`relative z-10 text-lg font-bold ${
                       calculatedResult.confidence === 'high' 
-                        ? 'bg-green-500/20 text-green-700 dark:text-green-400 border border-green-500/30'
+                        ? 'text-green-700 dark:text-green-400'
                         : calculatedResult.confidence === 'medium'
-                        ? 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 border border-yellow-500/30'
-                        : 'bg-red-500/20 text-red-700 dark:text-red-400 border border-red-500/30'
+                        ? 'text-yellow-700 dark:text-yellow-400'
+                        : 'text-red-700 dark:text-red-400'
                     }`}>
-                      {/* Shimmer effect */}
-                      <span 
-                        className="absolute inset-0 -translate-x-full animate-[shimmer-slide_2s_infinite]"
-                        style={{
-                          background: calculatedResult.confidence === 'high'
-                            ? 'linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.3), transparent)'
-                            : calculatedResult.confidence === 'medium'
-                            ? 'linear-gradient(90deg, transparent, rgba(234, 179, 8, 0.3), transparent)'
-                            : 'linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.3), transparent)',
-                        }}
-                      />
-                      <span className="relative z-10">
-                        {calculatedResult.confidence.charAt(0).toUpperCase() + calculatedResult.confidence.slice(1)}
-                      </span>
+                      {calculatedResult.label}
                     </span>
-                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
                   </div>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-xs text-center">
-                  <p className="text-xs">
-                    <strong>Confidence</strong> reflects how decisive your answers were.
-                    {calculatedResult.confidence === 'high' && ' Strong opinions on most questions give high confidence.'}
-                    {calculatedResult.confidence === 'medium' && ' A mix of strong and moderate opinions gives medium confidence.'}
-                    {calculatedResult.confidence === 'low' && ' Mostly neutral answers result in lower confidence.'}
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-xs text-center">
+                <p className="text-xs">
+                  <strong>Confidence: {calculatedResult.confidence.charAt(0).toUpperCase() + calculatedResult.confidence.slice(1)}</strong>
+                  <br />
+                  {calculatedResult.confidence === 'high' && 'Strong opinions on most questions give high confidence in this result.'}
+                  {calculatedResult.confidence === 'medium' && 'A mix of strong and moderate opinions gives medium confidence in this result.'}
+                  {calculatedResult.confidence === 'low' && 'Mostly neutral answers result in lower confidence in this result.'}
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
 
         {/* Description */}
