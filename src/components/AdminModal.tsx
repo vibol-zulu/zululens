@@ -359,6 +359,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   const [selectedSubmissions, setSelectedSubmissions] = useState<Set<string>>(new Set());
   const [selectedComments, setSelectedComments] = useState<Set<string>>(new Set());
   const [selectedNews, setSelectedNews] = useState<Set<string>>(new Set());
+  const [selectedPositionAnalyses, setSelectedPositionAnalyses] = useState<Set<string>>(new Set());
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
 
   // Settings state
@@ -1889,6 +1890,23 @@ Return your analysis as JSON with this structure:
     }
   };
 
+  const toggleSelectPositionAnalysis = (id: string) => {
+    setSelectedPositionAnalyses(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAllPositionAnalyses = () => {
+    if (selectedPositionAnalyses.size === positionAnalyses.length) {
+      setSelectedPositionAnalyses(new Set());
+    } else {
+      setSelectedPositionAnalyses(new Set(positionAnalyses.map(p => p.id)));
+    }
+  };
+
   // Bulk action handlers
   const handleBulkDeleteChannels = async () => {
     if (selectedChannels.size === 0) return;
@@ -2069,6 +2087,28 @@ Return your analysis as JSON with this structure:
     } catch (error) {
       console.error('Bulk delete news error:', error);
       toast({ title: 'Failed to delete news', variant: 'destructive' });
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkDeletePositionAnalyses = async () => {
+    if (selectedPositionAnalyses.size === 0) return;
+    setBulkActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from('user_position_analyses')
+        .delete()
+        .in('id', Array.from(selectedPositionAnalyses));
+
+      if (error) throw error;
+
+      toast({ title: `${selectedPositionAnalyses.size} analyses deleted` });
+      setSelectedPositionAnalyses(new Set());
+      fetchPositionAnalyses();
+    } catch (error) {
+      console.error('Bulk delete position analyses error:', error);
+      toast({ title: 'Failed to delete analyses', variant: 'destructive' });
     } finally {
       setBulkActionLoading(false);
     }
@@ -2897,6 +2937,22 @@ Return your analysis as JSON with this structure:
                     <p className="text-sm text-muted-foreground">User political position analyses and diversity scores</p>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
+                    {selectedPositionAnalyses.size > 0 && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" size="sm" disabled={bulkActionLoading}>
+                            Bulk Actions ({selectedPositionAnalyses.size})
+                            <ChevronDown className="h-4 w-4 ml-1" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start">
+                          <DropdownMenuItem onClick={handleBulkDeletePositionAnalyses}>
+                            <Trash2 className="h-4 w-4 mr-2 text-destructive" />
+                            Delete Selected
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                     <div className="relative">
                       <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -2969,6 +3025,12 @@ Return your analysis as JSON with this structure:
                     <Table className="min-w-[800px] text-xs">
                       <TableHeader>
                         <TableRow>
+                          <TableHead className="w-10">
+                            <Checkbox
+                              checked={positionAnalyses.length > 0 && selectedPositionAnalyses.size === positionAnalyses.length}
+                              onCheckedChange={toggleSelectAllPositionAnalyses}
+                            />
+                          </TableHead>
                           <TableHead>User</TableHead>
                           <TableHead>Position</TableHead>
                           <TableHead>Score</TableHead>
@@ -2982,7 +3044,7 @@ Return your analysis as JSON with this structure:
                       <TableBody>
                         {positionAnalysesLoading ? (
                           <TableRow>
-                            <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                            <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                               Loading...
                             </TableCell>
                           </TableRow>
@@ -3002,7 +3064,7 @@ Return your analysis as JSON with this structure:
                           if (filteredAnalyses.length === 0) {
                             return (
                               <TableRow>
-                                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                                   {positionAnalysisSearch ? 'No matching analyses found' : 'No position analyses yet'}
                                 </TableCell>
                               </TableRow>
@@ -3019,6 +3081,12 @@ Return your analysis as JSON with this structure:
                             
                             return (
                               <TableRow key={analysis.id}>
+                                <TableCell>
+                                  <Checkbox
+                                    checked={selectedPositionAnalyses.has(analysis.id)}
+                                    onCheckedChange={() => toggleSelectPositionAnalysis(analysis.id)}
+                                  />
+                                </TableCell>
                                 <TableCell>
                                   <div className="font-medium">{analysis.user_email || analysis.visitor_name || 'Anonymous'}</div>
                                   <div className="text-muted-foreground">{analysis.country}</div>
