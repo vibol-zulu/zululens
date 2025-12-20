@@ -368,147 +368,148 @@ const SpectrumInputModal: React.FC<SpectrumInputModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md max-h-[85vh] p-0 overflow-hidden">
-        <DialogHeader className="p-6 pb-4 border-b">
-          <DialogTitle className="text-xl">Where Do You Get Your News?</DialogTitle>
-          <DialogDescription>
-            Select the news sources, podcasts, or channels you consume regularly from our dataset. Your position will be calculated based on your selections.
+      <DialogContent className="max-w-4xl max-h-[85vh] p-0 overflow-hidden">
+        <DialogHeader className="p-4 pb-3 border-b">
+          <DialogTitle className="text-lg">Where Do You Get Your News?</DialogTitle>
+          <DialogDescription className="text-sm">
+            Select the news sources you consume regularly. Your position will be calculated based on your selections.
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[calc(85vh-200px)] px-6 py-4">
-          <div className="space-y-4">
-          {/* Search Input */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search for a channel..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-9"
-              disabled={isAnalyzing}
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-
-          {/* Search Results Dropdown */}
-          {searchQuery.trim() && (
-            <div className="mt-2 border rounded-md bg-card shadow-md max-h-[200px] overflow-y-auto">
-              {filteredChannels.length > 0 ? (
-                filteredChannels.map(channel => (
-                  <button
-                    key={channel.id}
-                    onClick={() => addChannel(channel)}
-                    className="w-full px-3 py-2 text-left hover:bg-muted flex items-center justify-between text-sm"
-                  >
-                    <span>{channel.name}</span>
-                    <span className="text-xs text-muted-foreground">{channel.politicalLean}</span>
-                  </button>
-                ))
-              ) : noMatchesFound ? (
-                <div className="p-3 text-center">
-                  <p className="text-sm text-muted-foreground mb-2">
-                    "{searchQuery}" is not in our dataset.
-                  </p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleAddChannelRequest}
-                    className="gap-1"
-                  >
-                    <Plus className="h-3 w-3" />
-                    Submit this channel
-                  </Button>
-                </div>
-              ) : null}
+        <div className="flex flex-col md:flex-row gap-4 p-4">
+          {/* Left Column - Search and Available Channels */}
+          <div className="flex-1 space-y-3">
+            {/* Search Input */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search for a channel..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 pr-9"
+                disabled={isAnalyzing}
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
-          )}
 
-          {/* Selected Channels */}
-          <div className="p-3 border rounded-md bg-muted/30 h-[120px]">
-            <p className="text-sm font-medium mb-2">
-              {selectedChannels.length} channel{selectedChannels.length !== 1 ? 's' : ''} selected
-            </p>
-            <ScrollArea className="h-[80px]">
-              <div className="flex flex-wrap gap-2 pr-2">
-                {selectedChannels.length === 0 ? (
-                  <p className="text-xs text-muted-foreground italic">No channels selected yet</p>
-                ) : (
-                  selectedChannels.map(channel => (
-                    <div 
-                      key={channel.id}
-                      className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 text-sm"
-                    >
-                      <span>{channel.name}</span>
-                      <button
-                        onClick={() => removeChannel(channel.id)}
-                        className="text-muted-foreground hover:text-foreground"
-                        disabled={isAnalyzing}
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ))
-                )}
-              </div>
-            </ScrollArea>
-          </div>
-
-          {/* Available Channels List */}
-          <div>
-            <p className="text-sm font-medium mb-2">Available Channels</p>
-            <p className="text-xs text-muted-foreground mb-2">
-              Click on a channel to add it to your selection
-            </p>
-            <ScrollArea className="h-[150px] border rounded-md">
-              <div className="p-2 space-y-1">
-                {availableChannels
-                  .filter(channel => !selectedChannels.some(sc => sc.id === channel.id))
-                  .sort((a, b) => a.name.localeCompare(b.name))
-                  .map(channel => (
+            {/* Search Results Dropdown */}
+            {searchQuery.trim() && (
+              <div className="border rounded-md bg-card shadow-md max-h-[150px] overflow-y-auto">
+                {filteredChannels.length > 0 ? (
+                  filteredChannels.map(channel => (
                     <button
                       key={channel.id}
                       onClick={() => addChannel(channel)}
-                      className="w-full px-3 py-2 text-left hover:bg-muted rounded-md flex items-center justify-between text-sm transition-colors"
-                      disabled={isAnalyzing}
+                      className="w-full px-3 py-2 text-left hover:bg-muted flex items-center justify-between text-sm"
                     >
                       <span>{channel.name}</span>
                       <span className="text-xs text-muted-foreground">{channel.politicalLean}</span>
                     </button>
-                  ))}
+                  ))
+                ) : noMatchesFound ? (
+                  <div className="p-3 text-center">
+                    <p className="text-sm text-muted-foreground mb-2">
+                      "{searchQuery}" is not in our dataset.
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAddChannelRequest}
+                      className="gap-1"
+                    >
+                      <Plus className="h-3 w-3" />
+                      Submit this channel
+                    </Button>
+                  </div>
+                ) : null}
               </div>
-            </ScrollArea>
-            <p className="text-xs text-muted-foreground mt-2">
-              Don't see a channel? Use the search above or submit it for review.
-            </p>
-          </div>
-          </div>
-        </ScrollArea>
-
-        <div className="p-6 border-t bg-muted/30 flex items-center justify-between">
-          <Button variant="outline" onClick={handleClose} disabled={isAnalyzing}>
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleSubmit}
-            disabled={selectedChannels.length === 0 || isAnalyzing}
-          >
-            {isAnalyzing ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                Calculating...
-              </>
-            ) : (
-              'Show My Position'
             )}
-          </Button>
+
+            {/* Available Channels List */}
+            <div>
+              <p className="text-sm font-medium mb-1">Available Channels</p>
+              <ScrollArea className="h-[200px] border rounded-md">
+                <div className="p-2 space-y-1">
+                  {availableChannels
+                    .filter(channel => !selectedChannels.some(sc => sc.id === channel.id))
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map(channel => (
+                      <button
+                        key={channel.id}
+                        onClick={() => addChannel(channel)}
+                        className="w-full px-3 py-1.5 text-left hover:bg-muted rounded-md flex items-center justify-between text-sm transition-colors"
+                        disabled={isAnalyzing}
+                      >
+                        <span>{channel.name}</span>
+                        <span className="text-xs text-muted-foreground">{channel.politicalLean}</span>
+                      </button>
+                    ))}
+                </div>
+              </ScrollArea>
+              <p className="text-xs text-muted-foreground mt-1">
+                Don't see a channel? Use search or submit it for review.
+              </p>
+            </div>
+          </div>
+
+          {/* Right Column - Selected Channels */}
+          <div className="flex-1 flex flex-col">
+            <div className="p-3 border rounded-md bg-muted/30 flex-1 min-h-[200px]">
+              <p className="text-sm font-medium mb-2">
+                {selectedChannels.length} channel{selectedChannels.length !== 1 ? 's' : ''} selected
+              </p>
+              <ScrollArea className="h-[160px]">
+                <div className="flex flex-wrap gap-2 pr-2">
+                  {selectedChannels.length === 0 ? (
+                    <p className="text-xs text-muted-foreground italic">No channels selected yet</p>
+                  ) : (
+                    selectedChannels.map(channel => (
+                      <div 
+                        key={channel.id}
+                        className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 text-sm"
+                      >
+                        <span>{channel.name}</span>
+                        <button
+                          onClick={() => removeChannel(channel.id)}
+                          className="text-muted-foreground hover:text-foreground"
+                          disabled={isAnalyzing}
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </ScrollArea>
+            </div>
+
+            {/* Submit Button */}
+            <div className="pt-4 flex items-center justify-end gap-2">
+              <Button variant="outline" onClick={handleClose} disabled={isAnalyzing}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleSubmit}
+                disabled={selectedChannels.length === 0 || isAnalyzing}
+              >
+                {isAnalyzing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Calculating...
+                  </>
+                ) : (
+                  'Show My Position'
+                )}
+              </Button>
+            </div>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
