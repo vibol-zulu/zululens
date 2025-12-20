@@ -163,7 +163,7 @@ const ReasoningPanel: React.FC<{
               {displayLabel}
             </Badge>
             {refinedResult && (
-              <span className="text-xs px-1.5 py-0.5 bg-primary/20 text-primary rounded">Refined</span>
+              <span className="text-xs italic text-muted-foreground">Refined</span>
             )}
           </div>
           {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
