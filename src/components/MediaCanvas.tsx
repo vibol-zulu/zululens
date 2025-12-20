@@ -127,7 +127,7 @@ const ReasoningPanel: React.FC<{
   const displayDescription = refinedResult ? refinedResult.description : userPositionResult.description;
 
   return (
-    <div className="absolute bottom-4 left-4 right-4 bg-card/95 backdrop-blur-sm rounded-lg shadow-lg border z-10">
+    <div className={`absolute top-4 right-4 bg-card/95 backdrop-blur-sm rounded-lg shadow-lg border z-10 transition-all ${isExpanded ? 'max-w-4xl' : 'max-w-xs'}`}>
       {/* Header - always visible */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
@@ -144,7 +144,7 @@ const ReasoningPanel: React.FC<{
             <span className="text-xs px-1.5 py-0.5 bg-primary/20 text-primary rounded">Refined</span>
           )}
         </div>
-        {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+        {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
       </button>
 
       {/* Collapsible content - horizontal layout */}
@@ -160,7 +160,7 @@ const ReasoningPanel: React.FC<{
               onCancel={() => setShowQuestionnaire(false)}
             />
           ) : (
-            <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex flex-col lg:flex-row gap-4">
               {/* Left Column - Description & Diversity Score */}
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-muted-foreground mb-2">
@@ -233,7 +233,7 @@ const ReasoningPanel: React.FC<{
 
               {/* Center Column - Channel Suggestions */}
               {!refinedResult && userPositionResult.suggestedChannels && userPositionResult.suggestedChannels.length > 0 && (
-                <div className="flex-1 min-w-0 md:border-l md:pl-4">
+                <div className="flex-1 min-w-0 lg:border-l lg:pl-4">
                   <p className="text-xs font-medium mb-2">Suggested to improve diversity:</p>
                   <div className="space-y-1.5">
                     {userPositionResult.suggestedChannels.slice(0, 3).map((suggestion, i) => (
@@ -247,7 +247,7 @@ const ReasoningPanel: React.FC<{
               )}
 
               {/* Right Column - Further Refine Button */}
-              <div className="flex-shrink-0 md:border-l md:pl-4 md:flex md:flex-col md:justify-center">
+              <div className="flex-shrink-0 lg:border-l lg:pl-4 lg:flex lg:flex-col lg:justify-center">
                 <Button
                   variant="outline"
                   size="sm"
@@ -259,8 +259,8 @@ const ReasoningPanel: React.FC<{
                 </Button>
                 <p className="text-xs text-muted-foreground mt-2 text-center">
                   {refinedResult 
-                    ? 'Take the questionnaire again for a more accurate result.'
-                    : 'Not satisfied? Answer a few questions to refine your position.'}
+                    ? 'Retake for accuracy.'
+                    : 'Answer questions to refine.'}
                 </p>
               </div>
             </div>
