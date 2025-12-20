@@ -20,8 +20,8 @@ interface OnboardingStep {
 const onboardingSteps: OnboardingStep[] = [
   {
     icon: <Globe className="h-8 w-8" />,
-    title: "Map the Media Landscape",
-    description: "Discover how media channels position themselves politically across countries. Compare audience sizes and explore the spectrum of news sources.",
+    title: "Zulu Digital Microscope",
+    description: "An interactive visualization mapping the media landscape, starting with the U.S. It grows as new data and members join—helping make our information networks visible and improvable.",
   },
   {
     icon: <UserPlus className="h-8 w-8" />,
