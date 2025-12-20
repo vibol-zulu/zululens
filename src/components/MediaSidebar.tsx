@@ -323,10 +323,10 @@ const Sidebar: React.FC<SidebarProps> = ({
               size="sm" 
               onClick={() => onToggleAll(category)}
               disabled={sorted.length === 0}
-              className="flex-1 text-xs px-1 bg-background/90 hover:bg-background"
+              className="flex-1 text-xs px-3 h-8 bg-background/90 hover:bg-background"
               style={{ color: buttonTextColor }}
             >
-              {allSelected && sorted.length > 0 ? 'Deselect' : 'Select All'}
+              {allSelected && sorted.length > 0 ? 'Deselect All' : 'Select All'}
             </Button>
             <TooltipProvider>
               <Tooltip>
@@ -336,7 +336,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     variant="outline" 
                     size="sm" 
                     onClick={handleAddClick}
-                    className="px-2 shrink-0 bg-background/90 hover:bg-background text-xs"
+                    className="flex-1 text-xs px-3 h-8 bg-background/90 hover:bg-background"
                   >
                     <span style={{ color: buttonTextColor }}>Add Channel</span>
                   </Button>
@@ -463,7 +463,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             data-tour={side === 'left' ? "select-all" : undefined}
             onClick={() => onToggleAll(category)}
             disabled={sorted.length === 0}
-            className="flex-1 text-xs px-2 py-1 rounded bg-background/80 hover:bg-background/95 transition-colors disabled:opacity-50"
+            className="flex-1 text-xs px-3 py-2 rounded bg-background/80 hover:bg-background/95 transition-colors disabled:opacity-50"
             style={{ color: buttonTextColor }}
           >
             {allSelected && sorted.length > 0 ? 'Deselect All' : 'Select All'}
@@ -474,7 +474,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <button 
                   data-tour={side === 'left' ? "add-button" : undefined}
                   onClick={handleAddClick}
-                  className="px-2 py-1 rounded bg-background/80 hover:bg-background/95 transition-colors text-xs"
+                  className="flex-1 text-xs px-3 py-2 rounded bg-background/80 hover:bg-background/95 transition-colors"
                 >
                   <span style={{ color: buttonTextColor }}>Add Channel</span>
                 </button>
