@@ -546,6 +546,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
             country={country}
             userPoliticalScore={userPoliticalScore}
             userName={user?.user_metadata?.full_name || visitorName || 'You'}
+            visitorEmail={visitorEmail}
             personalizedChannelIds={personalizedChannelIds}
             userPositionResult={userPositionResult}
             pxFactorGlobal={appSettings.pxFactorGlobal}
