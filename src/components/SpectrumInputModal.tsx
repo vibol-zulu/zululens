@@ -432,30 +432,34 @@ const SpectrumInputModal: React.FC<SpectrumInputModalProps> = ({
           )}
 
           {/* Selected Channels */}
-          {selectedChannels.length > 0 && (
-            <div className="p-3 border rounded-md bg-muted/30">
-              <p className="text-sm font-medium mb-2">
-                {selectedChannels.length} channel{selectedChannels.length !== 1 ? 's' : ''} selected
-              </p>
-              <div className="flex flex-wrap gap-2 max-h-[100px] overflow-y-auto">
-                {selectedChannels.map(channel => (
-                  <div 
-                    key={channel.id}
-                    className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 text-sm"
-                  >
-                    <span>{channel.name}</span>
-                    <button
-                      onClick={() => removeChannel(channel.id)}
-                      className="text-muted-foreground hover:text-foreground"
-                      disabled={isAnalyzing}
+          <div className="p-3 border rounded-md bg-muted/30 h-[120px]">
+            <p className="text-sm font-medium mb-2">
+              {selectedChannels.length} channel{selectedChannels.length !== 1 ? 's' : ''} selected
+            </p>
+            <ScrollArea className="h-[80px]">
+              <div className="flex flex-wrap gap-2 pr-2">
+                {selectedChannels.length === 0 ? (
+                  <p className="text-xs text-muted-foreground italic">No channels selected yet</p>
+                ) : (
+                  selectedChannels.map(channel => (
+                    <div 
+                      key={channel.id}
+                      className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 text-sm"
                     >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
+                      <span>{channel.name}</span>
+                      <button
+                        onClick={() => removeChannel(channel.id)}
+                        className="text-muted-foreground hover:text-foreground"
+                        disabled={isAnalyzing}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))
+                )}
               </div>
-            </div>
-          )}
+            </ScrollArea>
+          </div>
 
           {/* Available Channels List */}
           <div>
