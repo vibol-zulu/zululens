@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowRight, Check, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Loader2, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -30,6 +30,13 @@ const SCALE_OPTIONS = [
   { value: 0, label: 'Neutral' },
   { value: 1, label: 'Agree' },
   { value: 2, label: 'Strongly Agree' },
+];
+
+const CALCULATING_MESSAGES = [
+  'Analyzing your responses...',
+  'Comparing political perspectives...',
+  'Calculating your position...',
+  'Finalizing results...',
 ];
 
 interface RefinedResult {
@@ -121,6 +128,10 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [isCalculating, setIsCalculating] = useState(false);
+  const [calculatingStep, setCalculatingStep] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [calculatedResult, setCalculatedResult] = useState<RefinedResult | null>(null);
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -150,6 +161,22 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
     fetchQuestions();
   }, [country]);
 
+  // Calculating animation effect
+  useEffect(() => {
+    if (isCalculating && calculatingStep < CALCULATING_MESSAGES.length) {
+      const timer = setTimeout(() => {
+        setCalculatingStep(prev => prev + 1);
+      }, 700);
+      return () => clearTimeout(timer);
+    } else if (isCalculating && calculatingStep >= CALCULATING_MESSAGES.length) {
+      // Show result after all messages
+      setTimeout(() => {
+        setIsCalculating(false);
+        setShowResult(true);
+      }, 400);
+    }
+  }, [isCalculating, calculatingStep]);
+
   const currentQuestion = questions[currentIndex];
   const totalQuestions = questions.length;
   const progress = totalQuestions > 0 ? ((currentIndex + 1) / totalQuestions) * 100 : 0;
@@ -174,7 +201,15 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
 
   const handleSubmit = () => {
     const result = calculateRefinedPosition(answers, questions, originalScore);
-    onComplete(result);
+    setCalculatedResult(result);
+    setIsCalculating(true);
+    setCalculatingStep(0);
+  };
+
+  const handleRevealComplete = () => {
+    if (calculatedResult) {
+      onComplete(calculatedResult);
+    }
   };
 
   if (isLoading) {
@@ -184,6 +219,124 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
         <p className="text-sm text-muted-foreground">
           Generating questions for {country}...
         </p>
+      </div>
+    );
+  }
+
+  // Calculating animation screen
+  if (isCalculating) {
+    return (
+      <div className="flex flex-col items-center justify-center py-8 space-y-4">
+        <div className="relative">
+          <div className="absolute inset-0 animate-ping">
+            <Sparkles className="h-8 w-8 text-primary/30" />
+          </div>
+          <Sparkles className="h-8 w-8 text-primary animate-pulse" />
+        </div>
+        <div className="space-y-2 text-center">
+          {CALCULATING_MESSAGES.slice(0, calculatingStep + 1).map((message, idx) => (
+            <p 
+              key={idx} 
+              className={`text-sm transition-all duration-300 ${
+                idx === calculatingStep 
+                  ? 'text-foreground font-medium' 
+                  : 'text-muted-foreground text-xs'
+              }`}
+              style={{
+                opacity: idx === calculatingStep ? 1 : 0.5,
+                transform: idx === calculatingStep ? 'scale(1)' : 'scale(0.95)',
+              }}
+            >
+              {message}
+            </p>
+          ))}
+        </div>
+        <div className="flex gap-1 mt-2">
+          {CALCULATING_MESSAGES.map((_, idx) => (
+            <div 
+              key={idx}
+              className={`h-1.5 w-6 rounded-full transition-all duration-300 ${
+                idx <= calculatingStep ? 'bg-primary' : 'bg-muted'
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Result reveal screen
+  if (showResult && calculatedResult) {
+    return (
+      <div className="py-4 space-y-4 animate-fade-in">
+        {/* Result badge with glow effect */}
+        <div className="text-center space-y-3">
+          <div className="inline-block relative">
+            <div 
+              className="absolute inset-0 blur-xl opacity-50 rounded-full"
+              style={{
+                background: `linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.5) 100%)`,
+              }}
+            />
+            <div className="relative px-6 py-3 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-full border border-primary/30">
+              <Sparkles className="h-4 w-4 text-primary absolute -top-1 -right-1 animate-pulse" />
+              <span className="text-lg font-bold text-primary">
+                {calculatedResult.label}
+              </span>
+            </div>
+          </div>
+          
+          {/* Score reveal with animation */}
+          <div 
+            className="text-3xl font-bold bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent"
+            style={{
+              animation: 'scale-in 0.5s ease-out 0.2s both',
+            }}
+          >
+            {calculatedResult.numericValue > 0 ? '+' : ''}{calculatedResult.numericValue}
+          </div>
+
+          {/* Confidence badge */}
+          <div 
+            className="inline-flex items-center gap-2"
+            style={{
+              animation: 'fade-in 0.5s ease-out 0.4s both',
+            }}
+          >
+            <span className="text-xs text-muted-foreground">Confidence:</span>
+            <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+              calculatedResult.confidence === 'high' 
+                ? 'bg-green-500/20 text-green-700 dark:text-green-400 border border-green-500/30'
+                : calculatedResult.confidence === 'medium'
+                ? 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 border border-yellow-500/30'
+                : 'bg-red-500/20 text-red-700 dark:text-red-400 border border-red-500/30'
+            }`}>
+              {calculatedResult.confidence.charAt(0).toUpperCase() + calculatedResult.confidence.slice(1)}
+            </span>
+          </div>
+        </div>
+
+        {/* Description */}
+        <p 
+          className="text-sm text-muted-foreground text-center leading-relaxed"
+          style={{
+            animation: 'fade-in 0.5s ease-out 0.6s both',
+          }}
+        >
+          {calculatedResult.description}
+        </p>
+
+        {/* Continue button */}
+        <Button
+          onClick={handleRevealComplete}
+          className="w-full mt-4"
+          style={{
+            animation: 'fade-in 0.5s ease-out 0.8s both',
+          }}
+        >
+          <Check className="h-4 w-4 mr-2" />
+          Continue
+        </Button>
       </div>
     );
   }
