@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Search, Database, MoreVertical, MessageCircle, BarChart3, Trophy, Flame, TrendingUp, Newspaper, ChevronDown, Bell, Loader2, Settings, Save, RefreshCw } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Search, Database, MoreVertical, MessageCircle, BarChart3, Trophy, Flame, TrendingUp, Newspaper, ChevronDown, Bell, Loader2, Settings, Save, RefreshCw, Sparkles } from 'lucide-react';
 import perplexityLogo from '@/assets/perplexity-color.svg';
 import { sendSubmissionEmail } from '@/lib/sendSubmissionEmail';
 import {
@@ -488,6 +488,39 @@ Return your analysis as JSON with this structure:
 
   const [politicalSystemPrompt, setPoliticalSystemPrompt] = useState(DEFAULT_POLITICAL_SYSTEM_PROMPT);
   const [politicalUserPrompt, setPoliticalUserPrompt] = useState(DEFAULT_POLITICAL_USER_PROMPT);
+  
+  // Questionnaire Prompt
+  const DEFAULT_QUESTIONNAIRE_PROMPT = `You are a political analyst expert. Generate exactly 8 politically relevant questions for someone in {country}.
+
+IMPORTANT: Generate UNIQUE and VARIED questions each time. Do not repeat common generic questions. Focus on specific, nuanced policy topics.
+
+The questions should:
+1. Be relevant to current political topics and debates in that specific region
+2. Cover economic, social, and governance categories (aim for variety)
+3. Be phrased as statements that someone can agree or disagree with
+4. Be balanced - some should lean left when agreed with, some should lean right
+5. Avoid extremely polarizing or offensive topics
+6. Be neutral in tone
+7. Be DIFFERENT from typical generic political questions - get creative and specific!
+
+Return ONLY a valid JSON array with this exact structure, no other text:
+[
+  {
+    "id": "q1",
+    "text": "The statement text here",
+    "explanation": "A brief 1-2 sentence explanation helping the user understand what this question is really asking about and why it matters politically.",
+    "category": "economic|social|governance",
+    "weight": 1 or -1
+  }
+]
+
+weight: 1 means agreeing leans left, -1 means agreeing leans right.
+explanation: Should clarify the political context or implications without being biased.
+
+Make sure questions are specific to {country}'s current political landscape and are UNIQUE to this session.`;
+
+  const [questionnairePrompt, setQuestionnairePrompt] = useState(DEFAULT_QUESTIONNAIRE_PROMPT);
+  
   const [settingsLoading, setSettingsLoading] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
   const [savingCanvasSettings, setSavingCanvasSettings] = useState(false);
@@ -557,6 +590,9 @@ Return your analysis as JSON with this structure:
       if (settingsMap['political_user_prompt']) {
         setPoliticalUserPrompt(settingsMap['political_user_prompt']);
       }
+      if (settingsMap['questionnaire_prompt']) {
+        setQuestionnairePrompt(settingsMap['questionnaire_prompt']);
+      }
       if (settingsMap['px_factor_global']) {
         setPxFactorGlobal(settingsMap['px_factor_global']);
       }
@@ -597,6 +633,9 @@ Return your analysis as JSON with this structure:
       }
       if (politicalUserPrompt.trim()) {
         settingsToSave.push({ key: 'political_user_prompt', value: politicalUserPrompt });
+      }
+      if (questionnairePrompt.trim()) {
+        settingsToSave.push({ key: 'questionnaire_prompt', value: questionnairePrompt });
       }
       
       for (const setting of settingsToSave) {
@@ -3693,7 +3732,44 @@ Return your analysis as JSON with this structure:
                     </CardContent>
                   </Card>
                   
-                  <Button 
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-primary" />
+                        Questionnaire Generation Prompt
+                        <Badge variant="default" className="text-xs">Active</Badge>
+                      </CardTitle>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Customize the AI prompt used to generate political questionnaire questions for users.
+                      </p>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="questionnaire-prompt">System Prompt</Label>
+                        <Textarea
+                          id="questionnaire-prompt"
+                          value={questionnairePrompt}
+                          onChange={(e) => setQuestionnairePrompt(e.target.value)}
+                          placeholder="You are a political analyst expert..."
+                          className="font-mono text-xs min-h-[250px]"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Use <code className="bg-muted px-1 rounded">{'{country}'}</code> placeholder for the user's selected country.
+                        </p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setQuestionnairePrompt(DEFAULT_QUESTIONNAIRE_PROMPT)}
+                        className="gap-2"
+                      >
+                        <RefreshCw className="h-3 w-3" />
+                        Reset to Default
+                      </Button>
+                    </CardContent>
+                  </Card>
+                  
+                  <Button
                     onClick={handleSaveSettings} 
                     disabled={savingSettings}
                     className="gap-2"

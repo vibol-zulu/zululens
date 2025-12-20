@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,9 +14,31 @@ serve(async (req) => {
   try {
     const { country } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
+    }
+
+    // Try to fetch custom prompt from settings
+    let customPrompt: string | null = null;
+    if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+      try {
+        const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+        const { data } = await supabase
+          .from('app_settings')
+          .select('value')
+          .eq('key', 'questionnaire_prompt')
+          .maybeSingle();
+        
+        if (data?.value) {
+          customPrompt = data.value;
+          console.log("Using custom questionnaire prompt from settings");
+        }
+      } catch (e) {
+        console.log("Could not fetch custom prompt, using default:", e);
+      }
     }
 
     // Generate a random seed to encourage question variety
@@ -30,7 +53,16 @@ serve(async (req) => {
     ];
     const selectedTopics = topicVariants[Math.floor(Math.random() * topicVariants.length)];
 
-    const systemPrompt = `You are a political analyst expert. Generate exactly 8 politically relevant questions for someone in ${country || 'the United States'}.
+    // Use custom prompt if available, otherwise use default
+    let systemPrompt: string;
+    
+    if (customPrompt) {
+      // Replace {country} placeholder in custom prompt
+      systemPrompt = customPrompt
+        .replace(/\{country\}/g, country || 'the United States')
+        + `\n\nFor this generation, prioritize topics related to: ${selectedTopics}\nRandom seed for variety: ${randomSeed}`;
+    } else {
+      systemPrompt = `You are a political analyst expert. Generate exactly 8 politically relevant questions for someone in ${country || 'the United States'}.
 
 IMPORTANT: Generate UNIQUE and VARIED questions each time. Do not repeat common generic questions. Focus on specific, nuanced policy topics.
 
@@ -61,6 +93,7 @@ weight: 1 means agreeing leans left, -1 means agreeing leans right.
 explanation: Should clarify the political context or implications without being biased.
 
 Make sure questions are specific to ${country || 'the United States'}'s current political landscape and are UNIQUE to this session.`;
+    }
 
     console.log(`Generating questions for country: ${country}`);
 
