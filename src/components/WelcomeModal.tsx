@@ -81,25 +81,25 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
           </div>
 
           {/* Content */}
-          <div className="p-6 space-y-5 flex-1 flex flex-col justify-center">
-            {/* Icon */}
-            <div className="flex justify-center">
+          <div className="p-6 flex-1 flex flex-col">
+            {/* Icon - fixed position from top */}
+            <div className="flex justify-center pt-4">
               <div className="p-4 rounded-full bg-primary/10 text-primary">
                 {currentStepData.icon}
               </div>
             </div>
 
-            {/* Title & Description */}
-            <div className="text-center space-y-2">
+            {/* Title & Description - fixed height container */}
+            <div className="flex-1 flex flex-col justify-center text-center space-y-2 py-4">
               <h2 className="text-xl sm:text-2xl font-semibold">
                 {currentStepData.title}
               </h2>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <p className="text-sm text-muted-foreground leading-relaxed min-h-[72px]">
                 {currentStepData.description}
               </p>
             </div>
 
-            {/* Step Counter */}
+            {/* Step Counter - fixed position from bottom */}
             <p className="text-center text-xs text-muted-foreground">
               {currentStep + 1} of {onboardingSteps.length}
             </p>
