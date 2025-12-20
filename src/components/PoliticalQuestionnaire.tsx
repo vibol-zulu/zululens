@@ -278,16 +278,6 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
               </span>
             </div>
           </div>
-          
-          {/* Score reveal with animation */}
-          <div 
-            className="text-3xl font-bold text-primary"
-            style={{
-              animation: 'scale-in 0.5s ease-out 0.2s both',
-            }}
-          >
-            {calculatedResult.numericValue > 0 ? '+' : ''}{calculatedResult.numericValue}
-          </div>
 
           {/* Confidence badge */}
           <div 
