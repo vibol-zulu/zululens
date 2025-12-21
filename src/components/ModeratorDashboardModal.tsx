@@ -63,10 +63,21 @@ import {
   Pencil,
   ChevronDown,
   Bell,
-  RefreshCw
+  RefreshCw,
+  AlertTriangle
 } from 'lucide-react';
 import perplexityLogo from '@/assets/perplexity-color.svg';
 import NotificationsTab from '@/components/NotificationsTab';
+
+interface SimilarChannel {
+  id: string;
+  name: string;
+  similarity: number;
+  match_type: string;
+  country: string;
+  category: string;
+  status: string;
+}
 
 interface ChannelEntry {
   id: string;
@@ -84,6 +95,8 @@ interface ChannelEntry {
   content_type?: string;
   political_lean?: string;
   start_date?: string;
+  has_similarity_flag?: boolean;
+  similar_channels?: unknown;
 }
 
 interface CommentEntry {
@@ -1247,7 +1260,20 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                                 onCheckedChange={() => toggleSelectPending(channel.id)}
                               />
                             </TableCell>
-                            <TableCell className="font-medium">{channel.name}</TableCell>
+                            <TableCell className="font-medium">
+                              <div className="flex items-center gap-2">
+                                {channel.name}
+                                {channel.has_similarity_flag && (
+                                  <span 
+                                    className="inline-flex items-center gap-1 text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded"
+                                    title={`Possible similarity detected with ${Array.isArray(channel.similar_channels) ? channel.similar_channels.length : 0} channel(s)`}
+                                  >
+                                    <AlertTriangle className="h-3 w-3" />
+                                    Similar
+                                  </span>
+                                )}
+                              </div>
+                            </TableCell>
                             <TableCell className="capitalize">{channel.category}</TableCell>
                             <TableCell>{channel.country}</TableCell>
                             <TableCell>{channel.year}</TableCell>
@@ -1255,7 +1281,9 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                               {channel.author_name || channel.author_email?.split('@')[0] || 'Unknown'}
                             </TableCell>
                             <TableCell>
-                              <Badge variant="secondary">pending</Badge>
+                              <div className="flex items-center gap-1">
+                                <Badge variant="secondary">pending</Badge>
+                              </div>
                             </TableCell>
                             <TableCell className="text-sm text-muted-foreground">
                               {new Date(channel.created_at).toLocaleDateString()}
@@ -1773,6 +1801,50 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                     </TableBody>
                   </Table>
                 </div>
+
+                {/* Similarity Warning Section */}
+                {channelToReview.has_similarity_flag && Array.isArray(channelToReview.similar_channels) && channelToReview.similar_channels.length > 0 && (
+                  <div className="rounded-md border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                      <h4 className="font-semibold text-amber-800 dark:text-amber-300">
+                        Potential Similar Channels Detected
+                      </h4>
+                    </div>
+                    <p className="text-sm text-amber-700 dark:text-amber-400 mb-3">
+                      Review these existing channels before approving to avoid duplicates:
+                    </p>
+                    <div className="space-y-2">
+                      {(channelToReview.similar_channels as SimilarChannel[]).map((similar, idx) => (
+                        <div 
+                          key={similar.id || idx}
+                          className="flex items-center justify-between bg-background/80 rounded px-3 py-2 text-sm"
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="font-medium">{similar.name}</span>
+                            <Badge variant="outline" className="text-xs">
+                              {similar.category}
+                            </Badge>
+                            <span className="text-muted-foreground text-xs">
+                              {similar.country}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge 
+                              variant={similar.match_type === 'exact' ? 'destructive' : similar.match_type === 'contains' ? 'default' : 'secondary'}
+                              className="text-xs"
+                            >
+                              {similar.similarity}% {similar.match_type}
+                            </Badge>
+                            <Badge variant="outline" className="text-xs capitalize">
+                              {similar.status}
+                            </Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Analyse Submission Section */}
                 <div className="space-y-4">

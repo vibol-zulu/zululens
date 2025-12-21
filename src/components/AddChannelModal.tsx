@@ -72,8 +72,18 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
   const { toast } = useToast();
   const { user, isAdmin, isModerator } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCheckingSimilarity, setIsCheckingSimilarity] = useState(false);
   const [showPendingDialog, setShowPendingDialog] = useState(false);
   const [pendingChannelName, setPendingChannelName] = useState('');
+  const [similarChannelsFound, setSimilarChannelsFound] = useState<Array<{
+    id: string;
+    name: string;
+    similarity: number;
+    match_type: string;
+    country: string;
+    category: string;
+    status: string;
+  }> | null>(null);
   const [selectedCountry, setSelectedCountry] = useState(country === 'Global' ? '' : country);
   const [formData, setFormData] = useState({
     name: '',
@@ -173,6 +183,39 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
       return;
     }
 
+    // Check for similar channels before submission
+    setIsCheckingSimilarity(true);
+    type SimilarChannel = {
+      id: string;
+      name: string;
+      similarity: number;
+      match_type: string;
+      country: string;
+      category: string;
+      status: string;
+    };
+    let similarChannels: SimilarChannel[] = [];
+    
+    try {
+      const { data: similarData, error: similarError } = await supabase
+        .rpc('find_similar_channels', {
+          _channel_name: trimmedName,
+          _country: effectiveCountry,
+          _category: category
+        });
+      
+      if (similarError) {
+        console.error('Error checking similarity:', similarError);
+      } else if (similarData && Array.isArray(similarData) && similarData.length > 0) {
+        similarChannels = similarData as SimilarChannel[];
+        setSimilarChannelsFound(similarChannels);
+      }
+    } catch (err) {
+      console.error('Similarity check failed:', err);
+    } finally {
+      setIsCheckingSimilarity(false);
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -194,7 +237,10 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
           author_id: user?.id,
           status: canAutoApprove ? 'approved' : 'pending',
           approved_at: canAutoApprove ? new Date().toISOString() : null,
-          approved_by: canAutoApprove ? user?.id : null
+          approved_by: canAutoApprove ? user?.id : null,
+          // Store similarity check results for moderator review
+          similar_channels: similarChannels.length > 0 ? similarChannels : null,
+          has_similarity_flag: similarChannels.length > 0
         })
         .select('id')
         .single();
