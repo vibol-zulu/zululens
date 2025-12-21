@@ -44,12 +44,15 @@ export const useChannelProfile = (channelId: string | null) => {
       setLoading(true);
       setError(null);
 
+      // Strip "user_" prefix if present (added by useUserChannels for frontend disambiguation)
+      const rawChannelId = channelId.startsWith('user_') ? channelId.slice(5) : channelId;
+
       try {
         // Fetch channel data
         const { data: channelData, error: channelError } = await supabase
           .from('user_channels')
           .select('*')
-          .eq('id', channelId)
+          .eq('id', rawChannelId)
           .maybeSingle();
 
         if (channelError) throw channelError;
@@ -63,7 +66,7 @@ export const useChannelProfile = (channelId: string | null) => {
         const { data: profileData, error: profileError } = await supabase
           .from('channel_profiles')
           .select('*')
-          .eq('channel_id', channelId)
+          .eq('channel_id', rawChannelId)
           .maybeSingle();
 
         if (profileError && profileError.code !== 'PGRST116') {
