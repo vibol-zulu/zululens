@@ -35,6 +35,56 @@ export type Database = {
         }
         Relationships: []
       }
+      channel_profiles: {
+        Row: {
+          channel_id: string
+          created_at: string
+          description: string | null
+          founding_year: number | null
+          headquarters: string | null
+          id: string
+          key_people: string[] | null
+          notable_events: string[] | null
+          parent_company: string | null
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          channel_id: string
+          created_at?: string
+          description?: string | null
+          founding_year?: number | null
+          headquarters?: string | null
+          id?: string
+          key_people?: string[] | null
+          notable_events?: string[] | null
+          parent_company?: string | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          channel_id?: string
+          created_at?: string
+          description?: string | null
+          founding_year?: number | null
+          headquarters?: string | null
+          id?: string
+          key_people?: string[] | null
+          notable_events?: string[] | null
+          parent_company?: string | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "channel_profiles_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: true
+            referencedRelation: "user_channels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       comments: {
         Row: {
           content: string

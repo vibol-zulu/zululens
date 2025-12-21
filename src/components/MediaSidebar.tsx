@@ -4,12 +4,13 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Plus, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Plus, Search, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import AddChannelModal from './AddChannelModal';
 import ContributorModal from './ContributorModal';
+import ChannelProfilePanel from './ChannelProfilePanel';
 import { useAuth } from '@/hooks/useAuth';
 
 // The Big 6 are the corporate channels from 2000
@@ -69,6 +70,7 @@ interface BrandItemProps {
   brand: BrandData;
   isSelected: boolean;
   onToggle: (id: string) => void;
+  onShowProfile: (id: string) => void;
   isMobile?: boolean;
   isFirstItem?: boolean;
 }
@@ -77,13 +79,14 @@ const BrandItem: React.FC<BrandItemProps> = ({
   brand, 
   isSelected, 
   onToggle, 
+  onShowProfile,
   isMobile, 
   isFirstItem
 }) => {
   return (
     <div 
       className={cn(
-        "flex items-start gap-2 transition-opacity",
+        "flex items-start gap-2 transition-opacity group",
         isMobile ? "gap-2" : "gap-3",
         isSelected ? "opacity-100" : "opacity-70"
       )}
@@ -99,10 +102,34 @@ const BrandItem: React.FC<BrandItemProps> = ({
         htmlFor={`cb-${brand.id}`}
         className={cn("cursor-pointer leading-tight flex-1 font-geist", isMobile ? "text-[10px]" : "text-xs")}
       >
-        <span className={cn("font-medium", isSelected && "font-semibold")}>
-          {brand.name}
-        </span>
-        <span className={cn("text-muted-foreground ml-1", isMobile ? "text-[9px]" : "text-[10px]")}>({brand.valueMillions}M)</span>
+        <div className="flex items-center gap-1">
+          <span className={cn("font-medium", isSelected && "font-semibold")}>
+            {brand.name}
+          </span>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onShowProfile(brand.id);
+                  }}
+                  className={cn(
+                    "opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-muted",
+                    isMobile ? "h-3 w-3" : "h-4 w-4"
+                  )}
+                >
+                  <Info className={cn("text-muted-foreground hover:text-foreground", isMobile ? "h-2.5 w-2.5" : "h-3 w-3")} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p>View profile</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+        <span className={cn("text-muted-foreground ml-0", isMobile ? "text-[9px]" : "text-[10px]")}>({brand.valueMillions}M)</span>
         <div className={cn("text-muted-foreground italic mt-0.5", isMobile ? "text-[9px]" : "text-[10px]")}>{brand.platform}</div>
       </label>
     </div>
@@ -114,6 +141,7 @@ interface CollapsibleSectionProps {
   brands: BrandData[];
   selectedIds: Set<string>;
   onToggle: (id: string) => void;
+  onShowProfile: (id: string) => void;
   defaultOpen?: boolean;
   isMobile?: boolean;
   showFirstItemTour?: boolean;
@@ -124,6 +152,7 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   brands,
   selectedIds,
   onToggle,
+  onShowProfile,
   defaultOpen = true,
   isMobile = false,
   showFirstItemTour = false,
@@ -147,6 +176,7 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
               brand={b} 
               isSelected={selectedIds.has(b.id)} 
               onToggle={onToggle}
+              onShowProfile={onShowProfile}
               isMobile={isMobile}
               isFirstItem={showFirstItemTour && index === 0}
             />
@@ -163,6 +193,7 @@ interface CountryGroupProps {
   brands: BrandData[];
   selectedIds: Set<string>;
   onToggle: (id: string) => void;
+  onShowProfile: (id: string) => void;
   isMobile?: boolean;
   category: Category;
 }
@@ -172,6 +203,7 @@ const CountryGroup: React.FC<CountryGroupProps> = ({
   brands,
   selectedIds,
   onToggle,
+  onShowProfile,
   isMobile = false,
   category
 }) => {
@@ -199,6 +231,7 @@ const CountryGroup: React.FC<CountryGroupProps> = ({
               brand={b} 
               isSelected={selectedIds.has(b.id)} 
               onToggle={onToggle}
+              onShowProfile={onShowProfile}
               isMobile={isMobile}
             />
           ))}
@@ -228,7 +261,12 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [showAddModal, setShowAddModal] = useState(false);
   const [showContributorModal, setShowContributorModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
   const { user, isContributor } = useAuth();
+  
+  const handleShowProfile = (id: string) => {
+    setSelectedProfileId(id);
+  };
   
   // Filter brands by search query
   const filteredBrands = useMemo(() => {
@@ -383,6 +421,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     brands={countryBrands}
                     selectedIds={selectedIds}
                     onToggle={onToggle}
+                    onShowProfile={handleShowProfile}
                     isMobile={true}
                     category={category}
                   />
@@ -395,6 +434,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   brands={big6Filtered} 
                   selectedIds={selectedIds} 
                   onToggle={onToggle}
+                  onShowProfile={handleShowProfile}
                   isMobile={true}
                   showFirstItemTour={side === 'left'}
                 />
@@ -403,6 +443,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   brands={othersFiltered} 
                   selectedIds={selectedIds} 
                   onToggle={onToggle}
+                  onShowProfile={handleShowProfile}
                   isMobile={true}
                 />
               </>
@@ -414,6 +455,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     brand={b} 
                     isSelected={selectedIds.has(b.id)} 
                     onToggle={onToggle}
+                    onShowProfile={handleShowProfile}
                     isMobile={true}
                   />
                 ))}
@@ -442,6 +484,11 @@ const Sidebar: React.FC<SidebarProps> = ({
           customMessage="Create a free account to become a Member and start suggesting channels for the media landscape dataset."
           isAuthenticated={!!user}
           onSignUpClick={onSignUpClick}
+        />
+        
+        <ChannelProfilePanel
+          channelId={selectedProfileId}
+          onClose={() => setSelectedProfileId(null)}
         />
       </div>
     );
@@ -529,6 +576,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   brands={countryBrands}
                   selectedIds={selectedIds}
                   onToggle={onToggle}
+                  onShowProfile={handleShowProfile}
                   isMobile={false}
                   category={category}
                 />
@@ -541,6 +589,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 brands={big6Filtered} 
                 selectedIds={selectedIds} 
                 onToggle={onToggle}
+                onShowProfile={handleShowProfile}
                 showFirstItemTour={side === 'left'}
               />
               <CollapsibleSection 
@@ -548,6 +597,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 brands={othersFiltered} 
                 selectedIds={selectedIds} 
                 onToggle={onToggle}
+                onShowProfile={handleShowProfile}
               />
             </>
           ) : (
@@ -558,6 +608,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   brand={b} 
                   isSelected={selectedIds.has(b.id)} 
                   onToggle={onToggle}
+                  onShowProfile={handleShowProfile}
                 />
               ))}
             </div>
@@ -587,6 +638,11 @@ const Sidebar: React.FC<SidebarProps> = ({
         customMessage="Create a free account to become a Member and start suggesting channels for the media landscape dataset."
         isAuthenticated={!!user}
         onSignUpClick={onSignUpClick}
+      />
+      
+      <ChannelProfilePanel
+        channelId={selectedProfileId}
+        onClose={() => setSelectedProfileId(null)}
       />
     </div>
   );
