@@ -138,10 +138,58 @@ const SpectrumInputModal: React.FC<SpectrumInputModalProps> = ({
     const label = binToLabel(roundedBinIndex);
     
     // Calculate Information Diversity Score (0-100)
-    // Based on: coverage of bins (0-4), number of sources, and spread
+    // Based on: coverage of bins, balance of distribution, and minimum source threshold
     const binCoverage = uniqueBins.size / 5; // What percentage of spectrum is covered
-    const sourceBonus = Math.min(selectedChannels.length / 10, 1); // Bonus for more sources (max at 10)
-    const informationDiversityScore = Math.round((binCoverage * 70 + sourceBonus * 30));
+    
+    // Calculate balance: how evenly sources are distributed across bins
+    // Count sources per bin
+    const binCounts: number[] = [0, 0, 0, 0, 0];
+    binIndices.forEach(idx => {
+      binCounts[idx]++;
+    });
+    
+    // Calculate balance using normalized entropy-like measure
+    // Perfect balance = all occupied bins have equal counts
+    const occupiedBinCounts = binCounts.filter(count => count > 0);
+    let balanceScore = 0;
+    
+    if (occupiedBinCounts.length > 1) {
+      const totalSources = selectedChannels.length;
+      // Ideal distribution would be totalSources / occupiedBins for each bin
+      const idealPerBin = totalSources / occupiedBinCounts.length;
+      
+      // Calculate how close we are to ideal distribution
+      // Sum of squared deviations from ideal, normalized
+      let deviationSum = 0;
+      occupiedBinCounts.forEach(count => {
+        const deviation = Math.abs(count - idealPerBin) / idealPerBin;
+        deviationSum += deviation;
+      });
+      
+      // Average deviation, inverted so higher = better balance
+      const avgDeviation = deviationSum / occupiedBinCounts.length;
+      balanceScore = Math.max(0, 1 - avgDeviation);
+    } else if (occupiedBinCounts.length === 1) {
+      // Only one bin occupied = no balance
+      balanceScore = 0;
+    }
+    
+    // Small-selection safeguard: reduce balance contribution when fewer than 5 sources
+    const selectionThreshold = 5;
+    const selectionMultiplier = Math.min(selectedChannels.length / selectionThreshold, 1);
+    const adjustedBalanceScore = balanceScore * selectionMultiplier;
+    
+    // Final score composition:
+    // - Bin coverage: 50% (rewards covering different parts of spectrum)
+    // - Balance: 30% (rewards even distribution, scaled by selection count)
+    // - Minimum threshold bonus: 20% (rewards meeting minimum source count)
+    const thresholdBonus = selectedChannels.length >= selectionThreshold ? 1 : selectedChannels.length / selectionThreshold;
+    
+    const informationDiversityScore = Math.round(
+      (binCoverage * 50) + 
+      (adjustedBalanceScore * 30) + 
+      (thresholdBonus * 20)
+    );
     
     // Calculate diversity based on spread of bin indices
     let diversityScore: 'low' | 'medium' | 'high' = 'low';
