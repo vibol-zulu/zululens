@@ -329,10 +329,10 @@ const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, ca
                 </p>
 
                 {/* Scroll indicator */}
-                <div className="flex items-center justify-center gap-2 pt-1">
-                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground animate-pulse">
+                <div className="flex justify-center pt-1">
+                  <div className="flex flex-col items-center text-[10px] text-muted-foreground animate-pulse">
                     <span>Scroll for more</span>
-                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="h-3 w-3 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                     </svg>
                   </div>
