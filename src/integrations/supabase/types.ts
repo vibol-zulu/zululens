@@ -35,6 +35,56 @@ export type Database = {
         }
         Relationships: []
       }
+      channel_profile_suggestions: {
+        Row: {
+          channel_id: string
+          created_at: string
+          current_value: string | null
+          field_name: string
+          id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          suggested_by: string | null
+          suggested_value: string
+          updated_at: string
+        }
+        Insert: {
+          channel_id: string
+          created_at?: string
+          current_value?: string | null
+          field_name: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          suggested_by?: string | null
+          suggested_value: string
+          updated_at?: string
+        }
+        Update: {
+          channel_id?: string
+          created_at?: string
+          current_value?: string | null
+          field_name?: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          suggested_by?: string | null
+          suggested_value?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "channel_profile_suggestions_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "user_channels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       channel_profiles: {
         Row: {
           channel_id: string

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Globe, Users, Calendar, MapPin, Building2, ExternalLink, Tv, Radio, Newspaper, Video, Podcast, Mail, Mic, HelpCircle, Link2, ImageIcon } from 'lucide-react';
+import React, { useState } from 'react';
+import { Globe, Users, Calendar, MapPin, Building2, ExternalLink, Tv, Radio, Newspaper, Video, Podcast, Mail, Mic, HelpCircle, Link2, ImageIcon, PenLine } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -8,11 +8,21 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useChannelProfile } from '@/hooks/useChannelProfile';
+import { useAuth } from '@/hooks/useAuth';
+import ProfileSuggestionModal from './ProfileSuggestionModal';
 
 interface ChannelProfilePanelProps {
   channelId: string | null;
   category?: 'corporate' | 'independent';
   onClose: () => void;
+}
+
+interface SuggestionState {
+  isOpen: boolean;
+  fieldName: string;
+  fieldLabel: string;
+  currentValue: string | null;
+  isTextarea: boolean;
 }
 
 const getPoliticalLeanColor = (lean: string) => {
@@ -163,7 +173,78 @@ const getPlatformIcon = (platform: string) => {
 
 const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, category: _category, onClose }) => {
   const { channel, loading, error } = useChannelProfile(channelId);
+  const { user } = useAuth();
   const isOpen = channelId !== null;
+
+  const [suggestionModal, setSuggestionModal] = useState<SuggestionState>({
+    isOpen: false,
+    fieldName: '',
+    fieldLabel: '',
+    currentValue: null,
+    isTextarea: false,
+  });
+
+  const openSuggestion = (fieldName: string, fieldLabel: string, currentValue: string | null, isTextarea = false) => {
+    setSuggestionModal({
+      isOpen: true,
+      fieldName,
+      fieldLabel,
+      currentValue,
+      isTextarea,
+    });
+  };
+
+  const closeSuggestion = () => {
+    setSuggestionModal(prev => ({ ...prev, isOpen: false }));
+  };
+
+  // Helper component for fields with suggest button
+  const ProfileField = ({ 
+    fieldName, 
+    label, 
+    value, 
+    icon: Icon,
+    isTextarea = false 
+  }: { 
+    fieldName: string; 
+    label: string; 
+    value: string | number | null | undefined;
+    icon?: React.ComponentType<{ className?: string }>;
+    isTextarea?: boolean;
+  }) => (
+    <div className="group">
+      <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1 flex items-center gap-1.5">
+        {Icon && <Icon className="h-3 w-3" />}
+        {label}
+      </h4>
+      <div className="flex items-start justify-between gap-2">
+        {value ? (
+          <p className="text-sm flex-1">{value}</p>
+        ) : (
+          <p className="text-sm text-muted-foreground italic flex-1">Not available</p>
+        )}
+        {user && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                  onClick={() => openSuggestion(fieldName, label, value?.toString() || null, isTextarea)}
+                >
+                  <PenLine className="h-3 w-3" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="left">
+                <p className="text-xs">{value ? 'Suggest edit' : 'Suggest value'}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -309,96 +390,182 @@ const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, ca
                 );
               })()}
 
-              {/* Extended Profile Data */}
-              {channel.profile ? (
-                <div className="space-y-5 pt-2">
-                  {channel.profile.description && (
-                    <>
-                      <Separator />
-                      <div>
-                        <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">About</h4>
-                        <p className="text-sm leading-relaxed">
-                          {channel.profile.description}
-                        </p>
-                      </div>
-                    </>
-                  )}
+              {/* Extended Profile Data - Always show all fields */}
+              <div className="space-y-5 pt-2">
+                {/* About / Description */}
+                <Separator />
+                <ProfileField
+                  fieldName="description"
+                  label="About"
+                  value={channel.profile?.description}
+                  isTextarea
+                />
 
-                  {(channel.profile.parent_company || channel.profile.headquarters || channel.profile.founding_year) && (
-                    <>
-                      <Separator />
-                      <div className="grid grid-cols-2 gap-4">
-                        {channel.profile.parent_company && (
-                          <div>
-                            <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1 flex items-center gap-1.5">
-                              <Building2 className="h-3 w-3" />
-                              Parent Company
-                            </h4>
-                            <p className="text-sm">{channel.profile.parent_company}</p>
-                          </div>
-                        )}
-                        {channel.profile.headquarters && (
-                          <div>
-                            <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">Headquarters</h4>
-                            <p className="text-sm">{channel.profile.headquarters}</p>
-                          </div>
-                        )}
-                        {channel.profile.founding_year && (
-                          <div>
-                            <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">Founded</h4>
-                            <p className="text-sm">{channel.profile.founding_year}</p>
-                          </div>
-                        )}
-                      </div>
-                    </>
-                  )}
-
-                  {channel.profile.key_people && channel.profile.key_people.length > 0 && (
-                    <>
-                      <Separator />
-                      <div>
-                        <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">Key People</h4>
-                        <div className="flex flex-wrap gap-1.5">
-                          {channel.profile.key_people.map((person, idx) => (
-                            <Badge key={idx} variant="secondary" className="text-xs font-normal">
-                              {person}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  )}
-
-                  {channel.profile.notable_events && channel.profile.notable_events.length > 0 && (
-                    <>
-                      <Separator />
-                      <div>
-                        <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">Notable Events</h4>
-                        <ul className="space-y-1.5">
-                          {channel.profile.notable_events.map((event, idx) => (
-                            <li key={idx} className="text-sm text-muted-foreground flex items-start gap-2">
-                              <span className="text-primary mt-0.5">•</span>
-                              <span>{event}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </>
-                  )}
-
-                </div>
-              ) : (
-                <>
-                  <Separator />
-                  <div className="text-center py-4">
-                    <p className="text-sm text-muted-foreground italic">
-                      Extended profile information coming soon.
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Help us by contributing data about this channel.
-                    </p>
+                {/* Website */}
+                <Separator />
+                <div className="group">
+                  <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1 flex items-center gap-1.5">
+                    <Link2 className="h-3 w-3" />
+                    Website
+                  </h4>
+                  <div className="flex items-start justify-between gap-2">
+                    {channel.profile?.website_url ? (
+                      <a 
+                        href={channel.profile.website_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-primary hover:underline underline-offset-2 flex-1"
+                      >
+                        {channel.profile.website_url.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                      </a>
+                    ) : (
+                      <p className="text-sm text-muted-foreground italic flex-1">Not available</p>
+                    )}
+                    {user && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                              onClick={() => openSuggestion('website_url', 'Website URL', channel.profile?.website_url || null)}
+                            >
+                              <PenLine className="h-3 w-3" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="left">
+                            <p className="text-xs">{channel.profile?.website_url ? 'Suggest edit' : 'Suggest value'}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
                   </div>
-                </>
+                </div>
+
+                {/* Organization Details Grid */}
+                <Separator />
+                <div className="grid grid-cols-2 gap-4">
+                  <ProfileField
+                    fieldName="parent_company"
+                    label="Parent Company"
+                    value={channel.profile?.parent_company}
+                    icon={Building2}
+                  />
+                  <ProfileField
+                    fieldName="headquarters"
+                    label="Headquarters"
+                    value={channel.profile?.headquarters}
+                    icon={MapPin}
+                  />
+                  <ProfileField
+                    fieldName="founding_year"
+                    label="Founded"
+                    value={channel.profile?.founding_year}
+                    icon={Calendar}
+                  />
+                </div>
+
+                {/* Key People */}
+                <Separator />
+                <div className="group">
+                  <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2 flex items-center justify-between">
+                    <span>Key People</span>
+                    {user && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => openSuggestion('key_people', 'Key People', channel.profile?.key_people?.join(', ') || null)}
+                            >
+                              <PenLine className="h-3 w-3" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="left">
+                            <p className="text-xs">Suggest key people (comma-separated)</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </h4>
+                  {channel.profile?.key_people && channel.profile.key_people.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {channel.profile.key_people.map((person, idx) => (
+                        <Badge key={idx} variant="secondary" className="text-xs font-normal">
+                          {person}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground italic">Not available</p>
+                  )}
+                </div>
+
+                {/* Notable Events */}
+                <Separator />
+                <div className="group">
+                  <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2 flex items-center justify-between">
+                    <span>Notable Events</span>
+                    {user && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => openSuggestion('notable_events', 'Notable Events', channel.profile?.notable_events?.join('\n') || null, true)}
+                            >
+                              <PenLine className="h-3 w-3" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="left">
+                            <p className="text-xs">Suggest notable events</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </h4>
+                  {channel.profile?.notable_events && channel.profile.notable_events.length > 0 ? (
+                    <ul className="space-y-1.5">
+                      {channel.profile.notable_events.map((event, idx) => (
+                        <li key={idx} className="text-sm text-muted-foreground flex items-start gap-2">
+                          <span className="text-primary mt-0.5">•</span>
+                          <span>{event}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-muted-foreground italic">Not available</p>
+                  )}
+                </div>
+
+                {/* Sign in prompt for non-authenticated users */}
+                {!user && (
+                  <>
+                    <Separator />
+                    <p className="text-xs text-muted-foreground text-center py-2">
+                      Sign in to suggest edits to this profile
+                    </p>
+                  </>
+                )}
+              </div>
+
+              {/* Profile Suggestion Modal */}
+              {channel && (
+                <ProfileSuggestionModal
+                  isOpen={suggestionModal.isOpen}
+                  onClose={closeSuggestion}
+                  channelId={channel.id}
+                  channelName={channel.name}
+                  fieldName={suggestionModal.fieldName}
+                  fieldLabel={suggestionModal.fieldLabel}
+                  currentValue={suggestionModal.currentValue}
+                  isTextarea={suggestionModal.isTextarea}
+                />
               )}
             </div>
           </ScrollArea>
