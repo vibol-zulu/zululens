@@ -117,6 +117,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
     diversityNote: string;
     suggestedChannels?: Array<{ id: string; name: string; politicalLean: string; reason: string }>;
     informationDiversityScore?: number;
+    channels?: Array<{ name: string; politicalLean: string; reasoning?: string }>;
   } | null>(null);
 
   const { settings: appSettings, loading: appSettingsLoading } = useAppSettings();
@@ -788,7 +789,8 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
             diversityScore: result.diversityScore,
             diversityNote: result.diversityNote,
             suggestedChannels: result.suggestedChannels,
-            informationDiversityScore: result.informationDiversityScore
+            informationDiversityScore: result.informationDiversityScore,
+            channels: result.channels
           });
           setViewMode('compass');
           // Update selectedIds to only show the user's selected channels
