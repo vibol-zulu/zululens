@@ -27,6 +27,7 @@ const PLATFORMS = [
   'Broadcast TV',
   'Print/Digital',
   'Podcast',
+  'Spotify',
   'X (Twitter)',
   'TikTok',
   'Instagram',
