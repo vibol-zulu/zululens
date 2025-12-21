@@ -304,14 +304,12 @@ const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, ca
 
               {/* Veracity / Bias Score - Coming Soon */}
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    Veracity / Bias Score
-                  </h4>
+                <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground flex items-center gap-2">
+                  Veracity / Bias Score
                   <Badge variant="outline" className="text-[10px] px-2 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800">
                     Coming Soon
                   </Badge>
-                </div>
+                </h4>
                 
                 {/* Blank Progress Meter */}
                 <div className="space-y-2">
@@ -332,6 +330,16 @@ const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, ca
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   This feature will enable <span className="font-medium text-foreground">Public Governance</span> over accuracy and bias standards for global news, media, and political commentator channels—empowering citizens to hold media accountable.
                 </p>
+
+                {/* Scroll indicator */}
+                <div className="flex items-center justify-center gap-2 pt-1">
+                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground animate-pulse">
+                    <span>Scroll for more</span>
+                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                  </div>
+                </div>
               </div>
 
               <Separator />
