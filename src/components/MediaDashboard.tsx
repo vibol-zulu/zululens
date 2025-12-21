@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { YearData, ViewMode } from '@/types/media';
-import { COUNTRIES } from '@/data/mediaData';
+import { COUNTRIES, COUNTRIES_WITH_DATA } from '@/data/mediaData';
 import MediaCanvas from '@/components/MediaCanvas';
 import { Badge } from '@/components/ui/badge';
 import Sidebar from '@/components/MediaSidebar';
@@ -38,6 +38,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  CommandSeparator,
 } from '@/components/ui/command';
 import {
   DropdownMenu,
@@ -357,8 +358,28 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                     <CommandInput placeholder="Search country..." />
                     <CommandList>
                       <CommandEmpty>No country found.</CommandEmpty>
-                      <CommandGroup>
-                        {COUNTRIES.map((c) => (
+                      {/* Countries with datasets */}
+                      <CommandGroup heading="With Datasets">
+                        {COUNTRIES_WITH_DATA.map((c) => (
+                          <CommandItem
+                            key={c}
+                            value={c}
+                            onSelect={() => {
+                              handleCountryChange(c);
+                              setCountryOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={`mr-2 h-4 w-4 ${country === c ? "opacity-100" : "opacity-0"}`}
+                            />
+                            {c}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                      <CommandSeparator />
+                      {/* Other countries */}
+                      <CommandGroup heading="Other Countries">
+                        {COUNTRIES.filter(c => !COUNTRIES_WITH_DATA.includes(c)).map((c) => (
                           <CommandItem
                             key={c}
                             value={c}
