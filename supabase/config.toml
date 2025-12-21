@@ -32,3 +32,9 @@ verify_jwt = false
 
 [functions.analyze-political-lean]
 verify_jwt = false
+
+[functions.populate-channel-profile]
+verify_jwt = false
+
+[functions.questionnaire-chat]
+verify_jwt = false
