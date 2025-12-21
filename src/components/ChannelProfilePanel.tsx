@@ -313,18 +313,13 @@ const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, ca
                 
                 {/* Blank Progress Meter */}
                 <div className="space-y-1">
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1 space-y-1">
-                      <div className="h-3 bg-muted rounded-full overflow-hidden border border-border">
-                        <div className="h-full w-0 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded-full transition-all duration-500" />
-                      </div>
-                      <div className="flex justify-between text-[10px] text-muted-foreground px-0.5">
-                        <span>Low</span>
-                        <span>Moderate</span>
-                        <span>High</span>
-                      </div>
-                    </div>
-                    <span className="text-sm font-medium text-muted-foreground min-w-[40px] text-right">—%</span>
+                  <div className="h-3 bg-muted rounded-full overflow-hidden border border-border">
+                    <div className="h-full w-0 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded-full transition-all duration-500" />
+                  </div>
+                  <div className="flex justify-between text-[10px] text-muted-foreground px-0.5">
+                    <span>Low</span>
+                    <span>Moderate</span>
+                    <span>High</span>
                   </div>
                 </div>
 
