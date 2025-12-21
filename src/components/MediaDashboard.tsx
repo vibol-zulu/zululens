@@ -136,6 +136,16 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   // Auth state for contributor access
   const { user, isContributor, isModerator, isAdmin, signOut } = useAuth();
   
+  // Clear user-specific state when user signs out
+  useEffect(() => {
+    if (!user) {
+      setUserPoliticalScore(null);
+      setPersonalizedChannelIds([]);
+      setUserPositionResult(null);
+      setViewMode(appSettings.defaultViewMode);
+    }
+  }, [user, appSettings.defaultViewMode]);
+  
   // Fetch unread notifications count
   const fetchUnreadCount = useCallback(async () => {
     if (!user) {
