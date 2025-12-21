@@ -14,6 +14,12 @@ export interface ChannelProfile {
   headquarters: string | null;
   created_at: string;
   updated_at: string;
+  // Veracity / Bias scoring
+  veracity_score: number | null;
+  bias_score: number | null;
+  veracity_votes: number | null;
+  bias_votes: number | null;
+  last_scored_at: string | null;
 }
 
 export interface ChannelWithProfile {
