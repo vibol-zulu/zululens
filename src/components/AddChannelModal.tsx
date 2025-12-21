@@ -56,7 +56,8 @@ const AVAILABLE_COUNTRIES = [
   'United States',
   'United Kingdom',
   'Canada',
-  'Australia'
+  'Australia',
+  'Other'
 ];
 
 const AddChannelModal: React.FC<AddChannelModalProps> = ({
@@ -79,15 +80,23 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
     platform: '',
     contentType: ''
   });
+  const [otherPlatform, setOtherPlatform] = useState('');
+  const [otherContentType, setOtherContentType] = useState('');
+  const [otherCountry, setOtherCountry] = useState('');
+
+  // Compute effective values (use custom "Other" values if selected)
+  const effectivePlatform = formData.platform === 'Other' ? otherPlatform.trim() : formData.platform;
+  const effectiveContentType = formData.contentType === 'Other' ? otherContentType.trim() : formData.contentType;
+  const effectiveSelectedCountry = selectedCountry === 'Other' ? otherCountry.trim() : selectedCountry;
 
   // Determine the actual country to use for submission
-  const effectiveCountry = country === 'Global' ? selectedCountry : country;
+  const effectiveCountry = country === 'Global' ? effectiveSelectedCountry : country;
   const isGlobalView = country === 'Global';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.platform || !formData.contentType) {
+    if (!formData.name || !effectivePlatform || !effectiveContentType) {
       toast({
         title: "Missing fields",
         description: "Please fill in all fields",
@@ -96,11 +105,39 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
       return;
     }
 
+    // Validate "Other" fields have values
+    if (formData.platform === 'Other' && !otherPlatform.trim()) {
+      toast({
+        title: "Platform required",
+        description: "Please specify the platform",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (formData.contentType === 'Other' && !otherContentType.trim()) {
+      toast({
+        title: "Content type required",
+        description: "Please specify the content type",
+        variant: "destructive"
+      });
+      return;
+    }
+
     // Require country selection when in Global view
-    if (isGlobalView && !selectedCountry) {
+    if (isGlobalView && !effectiveSelectedCountry) {
       toast({
         title: "Country required",
         description: "Please select a country for this channel",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (isGlobalView && selectedCountry === 'Other' && !otherCountry.trim()) {
+      toast({
+        title: "Country required",
+        description: "Please specify the country",
         variant: "destructive"
       });
       return;
@@ -149,8 +186,8 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
           category,
           value_millions: 0, // To be estimated by mods/admins
           start_date: 'TBD', // To be estimated by mods/admins
-          platform: formData.platform,
-          content_type: formData.contentType,
+          platform: effectivePlatform,
+          content_type: effectiveContentType,
           political_lean: 'TBD', // To be analyzed by AI
           country: effectiveCountry,
           year,
@@ -181,6 +218,9 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
         platform: '',
         contentType: ''
       });
+      setOtherPlatform('');
+      setOtherContentType('');
+      setOtherCountry('');
       // Reset country selection for next submission
       if (isGlobalView) {
         setSelectedCountry('');
@@ -239,6 +279,15 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
                   ))}
                 </SelectContent>
               </Select>
+              {formData.platform === 'Other' && (
+                <Input
+                  placeholder="Specify platform..."
+                  value={otherPlatform}
+                  onChange={(e) => setOtherPlatform(e.target.value)}
+                  className="mt-2"
+                  maxLength={50}
+                />
+              )}
             </div>
 
             <div className="space-y-2">
@@ -256,6 +305,15 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
                   ))}
                 </SelectContent>
               </Select>
+              {formData.contentType === 'Other' && (
+                <Input
+                  placeholder="Specify content type..."
+                  value={otherContentType}
+                  onChange={(e) => setOtherContentType(e.target.value)}
+                  className="mt-2"
+                  maxLength={50}
+                />
+              )}
             </div>
 
             {/* Country selector shown only when in Global view */}
@@ -275,6 +333,15 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
                     ))}
                   </SelectContent>
                 </Select>
+                {selectedCountry === 'Other' && (
+                  <Input
+                    placeholder="Specify country..."
+                    value={otherCountry}
+                    onChange={(e) => setOtherCountry(e.target.value)}
+                    className="mt-2"
+                    maxLength={50}
+                  />
+                )}
               </div>
             )}
 
