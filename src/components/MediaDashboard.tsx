@@ -621,6 +621,11 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               onChannelAdded={refetchUserChannels}
               visitorName={visitorName}
               visitorEmail={visitorEmail}
+              onSignUpClick={() => {
+                setSignInDefaultTab('signup');
+                setSignInMessage('Create an account to view detailed information about all media channels.');
+                setShowSignIn(true);
+              }}
               onMethodologyClick={() => setShowMethodology(true)}
             />
             <Sidebar 
@@ -638,6 +643,11 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               onChannelAdded={refetchUserChannels}
               visitorName={visitorName}
               visitorEmail={visitorEmail}
+              onSignUpClick={() => {
+                setSignInDefaultTab('signup');
+                setSignInMessage('Create an account to view detailed information about all media channels.');
+                setShowSignIn(true);
+              }}
               onMethodologyClick={() => setShowMethodology(true)}
             />
           </div>
