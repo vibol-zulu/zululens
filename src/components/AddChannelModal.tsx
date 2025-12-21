@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,7 @@ import { Category, calcRadius } from '@/types/media';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { Clock } from 'lucide-react';
+import { Clock, AlertTriangle } from 'lucide-react';
 
 interface AddChannelModalProps {
   isOpen: boolean;
@@ -93,6 +93,7 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
   const [otherPlatform, setOtherPlatform] = useState('');
   const [otherContentType, setOtherContentType] = useState('');
   const [otherCountry, setOtherCountry] = useState('');
+  const [debouncedName, setDebouncedName] = useState('');
 
   // Compute effective values (use custom "Other" values if selected)
   const effectivePlatform = formData.platform === 'Other' ? otherPlatform.trim() : formData.platform;
@@ -102,6 +103,58 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
   // Determine the actual country to use for submission
   const effectiveCountry = country === 'Global' ? effectiveSelectedCountry : country;
   const isGlobalView = country === 'Global';
+
+  // Debounce the channel name for similarity checking
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedName(formData.name.trim());
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [formData.name]);
+
+  // Check for similar channels when name changes
+  useEffect(() => {
+    const checkSimilarity = async () => {
+      if (debouncedName.length < 3) {
+        setSimilarChannelsFound(null);
+        return;
+      }
+
+      setIsCheckingSimilarity(true);
+      try {
+        const { data: similarData, error: similarError } = await supabase
+          .rpc('find_similar_channels', {
+            _channel_name: debouncedName,
+            _country: effectiveCountry || 'United States',
+            _category: category
+          });
+        
+        if (similarError) {
+          console.error('Error checking similarity:', similarError);
+          setSimilarChannelsFound(null);
+        } else if (similarData && Array.isArray(similarData) && similarData.length > 0) {
+          setSimilarChannelsFound(similarData as Array<{
+            id: string;
+            name: string;
+            similarity: number;
+            match_type: string;
+            country: string;
+            category: string;
+            status: string;
+          }>);
+        } else {
+          setSimilarChannelsFound(null);
+        }
+      } catch (err) {
+        console.error('Similarity check failed:', err);
+        setSimilarChannelsFound(null);
+      } finally {
+        setIsCheckingSimilarity(false);
+      }
+    };
+
+    checkSimilarity();
+  }, [debouncedName, effectiveCountry, category]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -183,44 +236,14 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
       return;
     }
 
-    // Check for similar channels before submission
-    setIsCheckingSimilarity(true);
-    type SimilarChannel = {
-      id: string;
-      name: string;
-      similarity: number;
-      match_type: string;
-      country: string;
-      category: string;
-      status: string;
-    };
-    let similarChannels: SimilarChannel[] = [];
-    
-    try {
-      const { data: similarData, error: similarError } = await supabase
-        .rpc('find_similar_channels', {
-          _channel_name: trimmedName,
-          _country: effectiveCountry,
-          _category: category
-        });
-      
-      if (similarError) {
-        console.error('Error checking similarity:', similarError);
-      } else if (similarData && Array.isArray(similarData) && similarData.length > 0) {
-        similarChannels = similarData as SimilarChannel[];
-        setSimilarChannelsFound(similarChannels);
-      }
-    } catch (err) {
-      console.error('Similarity check failed:', err);
-    } finally {
-      setIsCheckingSimilarity(false);
-    }
-
     setIsSubmitting(true);
 
     try {
       // Only admins can auto-approve, all other users (including moderators) submit as pending
       const canAutoApprove = isAdmin;
+      
+      // Use the already-found similar channels from real-time check
+      const similarChannelsForStorage = similarChannelsFound || [];
       
       const { data: channelData, error } = await supabase
         .from('user_channels')
@@ -239,8 +262,8 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
           approved_at: canAutoApprove ? new Date().toISOString() : null,
           approved_by: canAutoApprove ? user?.id : null,
           // Store similarity check results for moderator review
-          similar_channels: similarChannels.length > 0 ? similarChannels : null,
-          has_similarity_flag: similarChannels.length > 0
+          similar_channels: similarChannelsForStorage.length > 0 ? similarChannelsForStorage : null,
+          has_similarity_flag: similarChannelsForStorage.length > 0
         })
         .select('id')
         .single();
@@ -267,6 +290,8 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
       setOtherPlatform('');
       setOtherContentType('');
       setOtherCountry('');
+      setSimilarChannelsFound(null);
+      setDebouncedName('');
       // Reset country selection for next submission
       if (isGlobalView) {
         setSelectedCountry('');
@@ -308,6 +333,33 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
               />
+              {/* Similar channels warning */}
+              {isCheckingSimilarity && formData.name.trim().length >= 3 && (
+                <p className="text-xs text-muted-foreground">Checking for similar channels...</p>
+              )}
+              {similarChannelsFound && similarChannelsFound.length > 0 && (
+                <div className="mt-2 p-3 rounded-md bg-warning/10 border border-warning/30">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="h-4 w-4 text-warning mt-0.5 shrink-0" />
+                    <div className="space-y-1 text-sm">
+                      <p className="font-medium text-warning">Similar channels found:</p>
+                      <ul className="space-y-1">
+                        {similarChannelsFound.slice(0, 3).map((channel) => (
+                          <li key={channel.id} className="text-muted-foreground">
+                            <span className="font-medium">{channel.name}</span>
+                            <span className="text-xs ml-1">
+                              ({channel.status === 'approved' ? 'live' : channel.status})
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Please verify this isn't a duplicate before submitting.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
