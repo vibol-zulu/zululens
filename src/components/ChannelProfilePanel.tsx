@@ -11,6 +11,7 @@ import { COLORS } from '@/types/media';
 
 interface ChannelProfilePanelProps {
   channelId: string | null;
+  category?: 'corporate' | 'independent';
   onClose: () => void;
 }
 
@@ -21,16 +22,19 @@ const getPoliticalLeanColor = (lean: string) => {
   return 'bg-gray-500/20 text-gray-700 dark:text-gray-300';
 };
 
-const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, onClose }) => {
+const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, category, onClose }) => {
   const { channel, loading, error } = useChannelProfile(channelId);
   const isOpen = channelId !== null;
 
+  // Determine slide direction: corporate from left, independent from right
+  const slideDirection = category === 'corporate' ? 'left' : 'right';
+  
   const categoryColor = channel?.category === 'corporate' ? COLORS.corporate : COLORS.independent;
   const categoryTextColor = channel?.category === 'corporate' ? COLORS.independent : COLORS.corporate;
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side="left" className="w-full sm:max-w-md p-0 overflow-hidden">
+      <SheetContent side={slideDirection} className="w-full sm:max-w-md p-0 overflow-hidden">
         {loading ? (
           <div className="p-6 space-y-4">
             <Skeleton className="h-8 w-3/4" />
@@ -51,9 +55,9 @@ const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, on
           </div>
         ) : channel ? (
           <>
-            {/* Header with category color */}
+            {/* Header with category color - full width */}
             <div 
-              className="p-6 pb-4"
+              className="px-6 py-6 pb-4 -mx-0 w-full"
               style={{ backgroundColor: categoryColor }}
             >
               <SheetHeader>

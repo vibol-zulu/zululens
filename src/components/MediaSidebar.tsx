@@ -262,10 +262,12 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [showContributorModal, setShowContributorModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
+  const [selectedProfileCategory, setSelectedProfileCategory] = useState<'corporate' | 'independent'>('corporate');
   const { user, isContributor } = useAuth();
   
   const handleShowProfile = (id: string) => {
     setSelectedProfileId(id);
+    setSelectedProfileCategory(category);
   };
   
   // Filter brands by search query
@@ -488,6 +490,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         
         <ChannelProfilePanel
           channelId={selectedProfileId}
+          category={selectedProfileCategory}
           onClose={() => setSelectedProfileId(null)}
         />
       </div>
@@ -642,6 +645,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       
       <ChannelProfilePanel
         channelId={selectedProfileId}
+        category={selectedProfileCategory}
         onClose={() => setSelectedProfileId(null)}
       />
     </div>
