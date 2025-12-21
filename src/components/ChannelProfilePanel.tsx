@@ -345,24 +345,7 @@ const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, ca
               <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                 <div className="flex items-center gap-2.5">
                   <Users className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <div className="text-sm flex items-center gap-1">
-                    <span className="font-medium">{channel.value_millions}M</span>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button className="inline-flex items-center gap-0.5 text-muted-foreground hover:text-foreground transition-colors">
-                            <span className="text-xs font-medium">UMA</span>
-                            <HelpCircle className="h-3 w-3" />
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="max-w-xs">
-                          <p className="text-xs leading-relaxed">
-                            <strong>Unique Monthly Audience</strong> — A cross-platform audience estimate combining reach metrics from websites, YouTube, podcasts, and social platforms with de-duplication applied.
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
+                  <span className="text-sm font-medium">{channel.value_millions}M</span>
                 </div>
                 <div className="flex items-center gap-2.5">
                   <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
