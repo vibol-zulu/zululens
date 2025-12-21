@@ -87,6 +87,8 @@ export type Database = {
       }
       channel_profiles: {
         Row: {
+          bias_score: number | null
+          bias_votes: number | null
           channel_id: string
           created_at: string
           description: string | null
@@ -94,13 +96,18 @@ export type Database = {
           headquarters: string | null
           id: string
           key_people: string[] | null
+          last_scored_at: string | null
           logo_url: string | null
           notable_events: string[] | null
           parent_company: string | null
           updated_at: string
+          veracity_score: number | null
+          veracity_votes: number | null
           website_url: string | null
         }
         Insert: {
+          bias_score?: number | null
+          bias_votes?: number | null
           channel_id: string
           created_at?: string
           description?: string | null
@@ -108,13 +115,18 @@ export type Database = {
           headquarters?: string | null
           id?: string
           key_people?: string[] | null
+          last_scored_at?: string | null
           logo_url?: string | null
           notable_events?: string[] | null
           parent_company?: string | null
           updated_at?: string
+          veracity_score?: number | null
+          veracity_votes?: number | null
           website_url?: string | null
         }
         Update: {
+          bias_score?: number | null
+          bias_votes?: number | null
           channel_id?: string
           created_at?: string
           description?: string | null
@@ -122,10 +134,13 @@ export type Database = {
           headquarters?: string | null
           id?: string
           key_people?: string[] | null
+          last_scored_at?: string | null
           logo_url?: string | null
           notable_events?: string[] | null
           parent_company?: string | null
           updated_at?: string
+          veracity_score?: number | null
+          veracity_votes?: number | null
           website_url?: string | null
         }
         Relationships: [
