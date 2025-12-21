@@ -434,7 +434,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
             </span>
           )}
           
-          {/* Pill-shaped Sign Up button for Tier 1 users */}
+          {/* Pill-shaped Sign Up / In button for Tier 1 users */}
           {!user && (
             <Button 
               onClick={() => {
@@ -445,7 +445,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               className="rounded-full font-medium text-xs px-3 py-1 h-7 text-white hover:opacity-90"
               style={{ backgroundColor: '#00564A' }}
             >
-              Sign Up
+              Sign Up / In
             </Button>
           )}
 
