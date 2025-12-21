@@ -15,24 +15,40 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+interface ExplanationStructured {
+  summary: string;
+  agreement: string;
+  disagreement: string;
+}
+
 interface PoliticalQuestion {
   id: string;
   text: string;
-  explanation: string;
+  explanation: string | ExplanationStructured;
   category: 'economic' | 'social' | 'governance';
   weight: number;
 }
 
 // Fallback questions if AI generation fails
 const FALLBACK_QUESTIONS: PoliticalQuestion[] = [
-  { id: 'q1', text: 'Government should regulate the economy more.', explanation: 'This asks whether you believe government oversight of businesses and markets leads to better outcomes than letting the free market operate independently. Those on the left typically support more regulation while conservatives prefer less government involvement.', category: 'economic', weight: 1 },
-  { id: 'q2', text: 'Traditional values should be preserved.', explanation: 'This explores whether you prioritize maintaining established social norms, customs, and institutions versus embracing progressive social changes. Conservatives typically value tradition while progressives favor reform.', category: 'social', weight: -1 },
-  { id: 'q3', text: 'The wealthy should pay much higher taxes.', explanation: 'This addresses income redistribution—whether higher earners should contribute more to fund public services and reduce inequality. Left-leaning views typically support higher taxes on wealth while right-leaning views oppose them.', category: 'economic', weight: 1 },
-  { id: 'q4', text: 'Immigration needs stricter controls.', explanation: 'This weighs stricter border controls and vetting against more welcoming policies for migrants and refugees. Conservative positions typically favor tighter restrictions while progressive positions favor more open policies.', category: 'social', weight: -1 },
-  { id: 'q5', text: 'Climate action is worth economic costs.', explanation: 'This asks if environmental protection should take precedence over short-term economic considerations like jobs and industry profits. Left-leaning positions typically prioritize climate action while right-leaning positions emphasize economic concerns.', category: 'governance', weight: 1 },
-  { id: 'q6', text: 'Free markets solve problems better than government.', explanation: 'This tests your belief in private sector efficiency versus government-led solutions for societal challenges. Conservative and libertarian views favor market solutions while progressive views prefer government intervention.', category: 'economic', weight: -1 },
-  { id: 'q7', text: 'Social programs should be expanded.', explanation: 'This asks whether government should provide more support through healthcare, education, and welfare to create a more equal society. Left-leaning positions favor expansion while right-leaning positions prefer limiting government programs.', category: 'social', weight: 1 },
-  { id: 'q8', text: 'Military strength matters more than diplomacy.', explanation: 'This explores whether military strength or international cooperation should be the primary tool for national security. Conservative positions typically favor strong defense while progressive positions emphasize diplomacy.', category: 'governance', weight: -1 },
+  { id: 'q1', text: 'Government should regulate the economy more.', explanation: { summary: 'This asks whether government oversight of businesses and markets leads to better outcomes.', agreement: 'Agreeing suggests you believe government intervention can correct market failures and protect consumers.', disagreement: 'Disagreeing suggests you prefer free market principles with minimal government involvement.' }, category: 'economic', weight: 1 },
+  { id: 'q2', text: 'Traditional values should be preserved.', explanation: { summary: 'This explores your views on maintaining established social norms versus embracing change.', agreement: 'Agreeing suggests you value cultural continuity and established institutions.', disagreement: 'Disagreeing suggests you favor progressive social reforms and cultural evolution.' }, category: 'social', weight: -1 },
+  { id: 'q3', text: 'The wealthy should pay much higher taxes.', explanation: { summary: 'This addresses income redistribution and tax policy for high earners.', agreement: 'Agreeing suggests you support using taxation to reduce inequality and fund public services.', disagreement: 'Disagreeing suggests you believe lower taxes encourage investment and economic growth.' }, category: 'economic', weight: 1 },
+  { id: 'q4', text: 'Immigration needs stricter controls.', explanation: { summary: 'This weighs border security against more welcoming immigration policies.', agreement: 'Agreeing suggests you prioritize national security and controlled immigration processes.', disagreement: 'Disagreeing suggests you favor more open borders and pathways for migrants.' }, category: 'social', weight: -1 },
+  { id: 'q5', text: 'Climate action is worth economic costs.', explanation: { summary: 'This asks if environmental protection should take precedence over economic concerns.', agreement: 'Agreeing suggests you believe addressing climate change is an urgent priority worth sacrifices.', disagreement: 'Disagreeing suggests you prioritize economic stability over environmental regulations.' }, category: 'governance', weight: 1 },
+  { id: 'q6', text: 'Free markets solve problems better than government.', explanation: { summary: 'This tests your belief in private sector efficiency versus government solutions.', agreement: 'Agreeing suggests you trust market mechanisms to allocate resources effectively.', disagreement: 'Disagreeing suggests you believe government intervention is necessary to address societal issues.' }, category: 'economic', weight: -1 },
+  { id: 'q7', text: 'Social programs should be expanded.', explanation: { summary: 'This asks about government support through healthcare, education, and welfare.', agreement: 'Agreeing suggests you support a stronger social safety net funded by public resources.', disagreement: 'Disagreeing suggests you prefer limited government programs and personal responsibility.' }, category: 'social', weight: 1 },
+  { id: 'q8', text: 'Military strength matters more than diplomacy.', explanation: { summary: 'This explores whether defense capability or international cooperation is the better approach.', agreement: 'Agreeing suggests you believe a strong military is essential for national security.', disagreement: 'Disagreeing suggests you favor diplomatic solutions and international cooperation.' }, category: 'governance', weight: -1 },
 ];
 
 const SCALE_OPTIONS = [
@@ -161,6 +177,34 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
   const [showResult, setShowResult] = useState(false);
   const [calculatedResult, setCalculatedResult] = useState<RefinedResult | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [showExitConfirmation, setShowExitConfirmation] = useState(false);
+
+  // Helper to check if explanation is structured
+  const isStructuredExplanation = (explanation: string | ExplanationStructured): explanation is ExplanationStructured => {
+    return typeof explanation === 'object' && 'summary' in explanation;
+  };
+
+  // Helper to get explanation as string for QuestionnaireChat
+  const getExplanationString = (explanation: string | ExplanationStructured): string => {
+    if (isStructuredExplanation(explanation)) {
+      return `${explanation.summary} ${explanation.agreement} ${explanation.disagreement}`;
+    }
+    return explanation;
+  };
+
+  // Handle cancel with confirmation
+  const handleCancelClick = () => {
+    if (Object.keys(answers).length > 0) {
+      setShowExitConfirmation(true);
+    } else {
+      onCancel();
+    }
+  };
+
+  const confirmExit = () => {
+    setShowExitConfirmation(false);
+    onCancel();
+  };
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -466,9 +510,17 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
               <span>Learn more</span>
             </CollapsibleTrigger>
             <CollapsibleContent className="pt-2">
-              <p className="text-xs text-muted-foreground leading-relaxed pl-4 border-l-2 border-muted">
-                {currentQuestion.explanation}
-              </p>
+              <div className="text-xs text-muted-foreground leading-relaxed pl-4 border-l-2 border-muted space-y-2">
+                {isStructuredExplanation(currentQuestion.explanation) ? (
+                  <>
+                    <p>{currentQuestion.explanation.summary}</p>
+                    <p><span className="font-bold text-foreground">Agreement:</span> {currentQuestion.explanation.agreement}</p>
+                    <p><span className="font-bold text-foreground">Disagreement:</span> {currentQuestion.explanation.disagreement}</p>
+                  </>
+                ) : (
+                  <p>{currentQuestion.explanation}</p>
+                )}
+              </div>
             </CollapsibleContent>
           </Collapsible>
         )}
@@ -476,7 +528,7 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
         {/* AI Chat Helper */}
         <QuestionnaireChat
           question={currentQuestion.text}
-          explanation={currentQuestion.explanation}
+          explanation={getExplanationString(currentQuestion.explanation)}
           category={currentQuestion.category}
         />
       </div>
@@ -503,7 +555,7 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
         <Button
           variant="ghost"
           size="sm"
-          onClick={currentIndex === 0 ? onCancel : handlePrev}
+          onClick={currentIndex === 0 ? handleCancelClick : handlePrev}
           className="text-xs"
         >
           <ArrowLeft className="h-3 w-3 mr-1" />
@@ -532,9 +584,25 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
           </Button>
         )}
       </div>
+
+      {/* Exit Confirmation Dialog */}
+      <AlertDialog open={showExitConfirmation} onOpenChange={setShowExitConfirmation}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Quit Questionnaire?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to quit? Your progress will be lost and you'll need to start over.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Continue Questionnaire</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmExit}>Yes, Quit</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
 
 export default PoliticalQuestionnaire;
-export type { RefinedResult };
+export type { RefinedResult, ExplanationStructured };
