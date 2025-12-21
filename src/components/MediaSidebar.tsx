@@ -45,6 +45,7 @@ interface SidebarProps {
   visitorName?: string;
   visitorEmail?: string;
   onSignUpClick?: () => void;
+  onMethodologyClick?: () => void;
 }
 
 const SidebarToggle: React.FC<{ side: 'left' | 'right'; isOpen: boolean; onClick: () => void }> = ({ side, isOpen, onClick }) => (
@@ -257,7 +258,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   onChannelAdded,
   visitorName = '',
   visitorEmail = '',
-  onSignUpClick
+  onSignUpClick,
+  onMethodologyClick
 }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showContributorModal, setShowContributorModal] = useState(false);
@@ -493,6 +495,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           channelId={selectedProfileId}
           category={selectedProfileCategory}
           onClose={() => setSelectedProfileId(null)}
+          onMethodologyClick={onMethodologyClick}
         />
       </div>
     );
@@ -648,6 +651,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         channelId={selectedProfileId}
         category={selectedProfileCategory}
         onClose={() => setSelectedProfileId(null)}
+        onMethodologyClick={onMethodologyClick}
       />
     </div>
   );

@@ -620,6 +620,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               onChannelAdded={refetchUserChannels}
               visitorName={visitorName}
               visitorEmail={visitorEmail}
+              onMethodologyClick={() => setShowMethodology(true)}
             />
             <Sidebar 
               category="independent" 
@@ -636,6 +637,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               onChannelAdded={refetchUserChannels}
               visitorName={visitorName}
               visitorEmail={visitorEmail}
+              onMethodologyClick={() => setShowMethodology(true)}
             />
           </div>
         )}
@@ -661,6 +663,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                 setSignInDefaultTab('signup');
                 setShowSignIn(true);
               }}
+              onMethodologyClick={() => setShowMethodology(true)}
             />
             
             <Sidebar 
@@ -681,6 +684,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                 setSignInDefaultTab('signup');
                 setShowSignIn(true);
               }}
+              onMethodologyClick={() => setShowMethodology(true)}
             />
           </>
         )}
