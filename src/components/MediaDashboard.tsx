@@ -100,6 +100,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
   const [showModeratorDashboard, setShowModeratorDashboard] = useState(false);
   const [showNews, setShowNews] = useState(false);
   const [signInDefaultTab, setSignInDefaultTab] = useState<'signin' | 'signup'>('signin');
+  const [signInMessage, setSignInMessage] = useState<string | undefined>(undefined);
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
   const [pendingSubmissionsCount, setPendingSubmissionsCount] = useState(0);
   const [showContributorCelebration, setShowContributorCelebration] = useState(false);
@@ -661,6 +662,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               visitorEmail={visitorEmail}
               onSignUpClick={() => {
                 setSignInDefaultTab('signup');
+                setSignInMessage('Create an account to view detailed information about all media channels.');
                 setShowSignIn(true);
               }}
               onMethodologyClick={() => setShowMethodology(true)}
@@ -682,6 +684,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
               visitorEmail={visitorEmail}
               onSignUpClick={() => {
                 setSignInDefaultTab('signup');
+                setSignInMessage('Create an account to view detailed information about all media channels.');
                 setShowSignIn(true);
               }}
               onMethodologyClick={() => setShowMethodology(true)}
@@ -722,8 +725,12 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
       <AdminModal open={showAdmin} onClose={() => setShowAdmin(false)} />
       <SignInModal 
         open={showSignIn} 
-        onClose={() => setShowSignIn(false)} 
+        onClose={() => {
+          setShowSignIn(false);
+          setSignInMessage(undefined);
+        }} 
         defaultTab={signInDefaultTab}
+        signUpMessage={signInMessage}
       />
       <MemberDashboardModal
         open={showMemberDashboard}

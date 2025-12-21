@@ -16,9 +16,10 @@ interface SignInModalProps {
   open: boolean;
   onClose: () => void;
   defaultTab?: 'signin' | 'signup';
+  signUpMessage?: string;
 }
 
-const SignInModal: React.FC<SignInModalProps> = ({ open, onClose, defaultTab = 'signin' }) => {
+const SignInModal: React.FC<SignInModalProps> = ({ open, onClose, defaultTab = 'signin', signUpMessage }) => {
   const { toast } = useToast();
   const { user, signIn, loading: authLoading } = useAuth();
   
@@ -201,7 +202,7 @@ const SignInModal: React.FC<SignInModalProps> = ({ open, onClose, defaultTab = '
         
         <p className="text-sm text-muted-foreground">
           {isSignUp 
-            ? 'Create an account to join discussions and contribute.'
+            ? (signUpMessage || 'Create an account to join discussions and contribute.')
             : 'Sign in to access your account.'}
         </p>
         
