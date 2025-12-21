@@ -268,7 +268,10 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
               <Label>Platform *</Label>
               <Select 
                 value={formData.platform} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, platform: value }))}
+                onValueChange={(value) => {
+                  console.log('Platform selected:', value);
+                  setFormData(prev => ({ ...prev, platform: value }));
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select platform" />
@@ -279,7 +282,7 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
                   ))}
                 </SelectContent>
               </Select>
-              {formData.platform === 'Other' && (
+              {formData.platform === 'Other' ? (
                 <Input
                   placeholder="Specify platform..."
                   value={otherPlatform}
@@ -287,7 +290,7 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
                   className="mt-2"
                   maxLength={50}
                 />
-              )}
+              ) : null}
             </div>
 
             <div className="space-y-2">
