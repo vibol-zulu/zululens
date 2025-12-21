@@ -4,6 +4,16 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { YearData, ViewMode, COLORS } from '@/types/media';
 import { BrandCircle, INNER_CONTAINER_RADIUS, SPECTRUM_BIN_WIDTH, SPECTRUM_BIN_HEIGHT, getSpectrumBinIndex } from '@/lib/BrandCircle';
 import PoliticalQuestionnaire, { RefinedResult } from '@/components/PoliticalQuestionnaire';
@@ -120,6 +130,8 @@ const ReasoningPanel: React.FC<{
   const [isExpanded, setIsExpanded] = useState(true);
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const [refinedResult, setRefinedResult] = useState<RefinedResult | null>(null);
+  const [showExitConfirmation, setShowExitConfirmation] = useState(false);
+  const [hasStartedQuestionnaire, setHasStartedQuestionnaire] = useState(false);
 
   // Notify parent of initial expanded state
   useEffect(() => {
@@ -135,7 +147,30 @@ const ReasoningPanel: React.FC<{
   const handleQuestionnaireComplete = (result: RefinedResult) => {
     setRefinedResult(result);
     setShowQuestionnaire(false);
+    setHasStartedQuestionnaire(false);
     onRefinedResult?.(result);
+  };
+
+  const handleQuestionnaireOpenChange = (open: boolean) => {
+    if (!open && hasStartedQuestionnaire) {
+      // User is trying to close the modal - show confirmation
+      setShowExitConfirmation(true);
+    } else if (open) {
+      setShowQuestionnaire(true);
+    } else {
+      setShowQuestionnaire(false);
+    }
+  };
+
+  const handleStartQuestionnaire = () => {
+    setShowQuestionnaire(true);
+    setHasStartedQuestionnaire(true);
+  };
+
+  const confirmQuestionnaireExit = () => {
+    setShowExitConfirmation(false);
+    setShowQuestionnaire(false);
+    setHasStartedQuestionnaire(false);
   };
 
   const displayResult = refinedResult || userPositionResult;
@@ -260,7 +295,7 @@ const ReasoningPanel: React.FC<{
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setShowQuestionnaire(true)}
+                onClick={handleStartQuestionnaire}
                 className="w-full text-xs border-pink-400 bg-pink-500/10 hover:bg-pink-500/20 text-pink-600 dark:text-pink-400 dark:border-pink-500/50"
               >
                 <RefreshCw className="h-3 w-3 mr-2" />
@@ -277,7 +312,7 @@ const ReasoningPanel: React.FC<{
       </div>
 
       {/* Questionnaire Modal */}
-      <Dialog open={showQuestionnaire} onOpenChange={setShowQuestionnaire}>
+      <Dialog open={showQuestionnaire} onOpenChange={handleQuestionnaireOpenChange}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <PoliticalQuestionnaire
             originalScore={originalScore}
@@ -285,10 +320,32 @@ const ReasoningPanel: React.FC<{
             visitorName={userName}
             visitorEmail={visitorEmail}
             onComplete={handleQuestionnaireComplete}
-            onCancel={() => setShowQuestionnaire(false)}
+            onCancel={() => {
+              if (hasStartedQuestionnaire) {
+                setShowExitConfirmation(true);
+              } else {
+                setShowQuestionnaire(false);
+              }
+            }}
           />
         </DialogContent>
       </Dialog>
+
+      {/* Exit Confirmation Dialog */}
+      <AlertDialog open={showExitConfirmation} onOpenChange={setShowExitConfirmation}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Quit Questionnaire?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to quit? Your progress will be lost and you'll need to start over.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Continue Questionnaire</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmQuestionnaireExit}>Yes, Quit</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };

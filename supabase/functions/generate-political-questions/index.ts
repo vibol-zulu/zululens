@@ -80,14 +80,21 @@ The questions should:
 
 CRITICAL FORMAT REQUIREMENTS:
 - "text" must be a SHORT, SIMPLE statement (under 15 words) - easy to read at a glance
-- "explanation" provides the DETAILED context (2-4 sentences) explaining what the statement means, why it matters politically, and the different perspectives on the issue
+- "explanation" must be a JSON object with three fields:
+  - "summary": A brief one-liner explaining what this statement is about (1 sentence)
+  - "agreement": What agreeing with this statement typically means politically (1-2 sentences)
+  - "disagreement": What disagreeing with this statement typically means politically (1-2 sentences)
 
 Return ONLY a valid JSON array with this exact structure, no other text:
 [
   {
     "id": "q1",
     "text": "Short simple statement here",
-    "explanation": "Detailed 2-4 sentence explanation providing context about what this statement really means, why it's politically significant, and the different viewpoints people hold on this issue.",
+    "explanation": {
+      "summary": "Brief one-liner about what this question explores.",
+      "agreement": "What agreeing with this statement typically indicates about your political views.",
+      "disagreement": "What disagreeing with this statement typically indicates about your political views."
+    },
     "category": "economic|social|governance",
     "weight": 1 or -1
   }
