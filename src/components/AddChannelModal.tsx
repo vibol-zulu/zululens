@@ -268,10 +268,7 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
               <Label>Platform *</Label>
               <Select 
                 value={formData.platform} 
-                onValueChange={(value) => {
-                  console.log('Platform selected:', value);
-                  setFormData(prev => ({ ...prev, platform: value }));
-                }}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, platform: value }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select platform" />
@@ -308,7 +305,7 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
                   ))}
                 </SelectContent>
               </Select>
-              {formData.contentType === 'Other' && (
+              {formData.contentType === 'Other' ? (
                 <Input
                   placeholder="Specify content type..."
                   value={otherContentType}
@@ -316,7 +313,7 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
                   className="mt-2"
                   maxLength={50}
                 />
-              )}
+              ) : null}
             </div>
 
             {/* Country selector shown only when in Global view */}
@@ -336,7 +333,7 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
                     ))}
                   </SelectContent>
                 </Select>
-                {selectedCountry === 'Other' && (
+                {selectedCountry === 'Other' ? (
                   <Input
                     placeholder="Specify country..."
                     value={otherCountry}
@@ -344,7 +341,7 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
                     className="mt-2"
                     maxLength={50}
                   />
-                )}
+                ) : null}
               </div>
             )}
 
