@@ -407,10 +407,9 @@ const SpectrumInputModal: React.FC<SpectrumInputModalProps> = ({
                     <button
                       key={channel.id}
                       onClick={() => addChannel(channel)}
-                      className="w-full px-3 py-2 text-left hover:bg-muted flex items-center justify-between text-sm"
+                      className="w-full px-3 py-2 text-left hover:bg-muted text-sm"
                     >
                       <span>{channel.name}</span>
-                      <span className="text-xs text-muted-foreground">{channel.politicalLean}</span>
                     </button>
                   ))
                 ) : noMatchesFound ? (
@@ -444,11 +443,10 @@ const SpectrumInputModal: React.FC<SpectrumInputModalProps> = ({
                       <button
                         key={channel.id}
                         onClick={() => addChannel(channel)}
-                        className="w-full px-3 py-1.5 text-left hover:bg-muted rounded-md flex items-center justify-between text-sm transition-colors"
+                        className="w-full px-3 py-1.5 text-left hover:bg-muted rounded-md text-sm transition-colors"
                         disabled={isAnalyzing}
                       >
                         <span>{channel.name}</span>
-                        <span className="text-xs text-muted-foreground">{channel.politicalLean}</span>
                       </button>
                     ))}
                 </div>
