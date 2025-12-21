@@ -1,6 +1,6 @@
 import React from 'react';
-import { X, Globe, Users, Calendar, MapPin, Building2, ExternalLink, TrendingUp } from 'lucide-react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Globe, Users, Calendar, MapPin, Building2, ExternalLink, TrendingUp } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
@@ -22,19 +22,16 @@ const getPoliticalLeanColor = (lean: string) => {
   return 'bg-gray-500/20 text-gray-700 dark:text-gray-300';
 };
 
-const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, category, onClose }) => {
+const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, category: _category, onClose }) => {
   const { channel, loading, error } = useChannelProfile(channelId);
   const isOpen = channelId !== null;
 
-  // Determine slide direction: corporate from left, independent from right
-  const slideDirection = category === 'corporate' ? 'left' : 'right';
-  
   const categoryColor = channel?.category === 'corporate' ? COLORS.corporate : COLORS.independent;
   const categoryTextColor = channel?.category === 'corporate' ? COLORS.independent : COLORS.corporate;
 
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side={slideDirection} className="w-full sm:max-w-md p-0 overflow-hidden">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="p-0 overflow-hidden w-[calc(100%-2rem)] sm:max-w-xl">
         {loading ? (
           <div className="p-6 space-y-4">
             <Skeleton className="h-8 w-3/4" />
@@ -48,41 +45,41 @@ const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, ca
           </div>
         ) : error ? (
           <div className="p-6">
-            <SheetHeader>
-              <SheetTitle>Error</SheetTitle>
-            </SheetHeader>
+            <DialogHeader>
+              <DialogTitle>Error</DialogTitle>
+            </DialogHeader>
             <p className="text-destructive mt-4">{error}</p>
           </div>
         ) : channel ? (
           <>
             {/* Header with category color - full width */}
-            <div 
-              className="px-6 py-6 pb-4 -mx-0 w-full"
-              style={{ backgroundColor: categoryColor }}
-            >
-              <SheetHeader>
-                <SheetTitle 
-                  className="text-xl font-bold pr-8"
-                  style={{ color: categoryTextColor }}
-                >
-                  {channel.name}
-                </SheetTitle>
-              </SheetHeader>
-              <div className="flex flex-wrap gap-2 mt-3">
-                <Badge 
-                  variant="secondary" 
-                  className="capitalize"
-                  style={{ backgroundColor: `${categoryTextColor}20`, color: categoryTextColor }}
-                >
-                  {channel.category}
-                </Badge>
-                <Badge className={getPoliticalLeanColor(channel.political_lean)}>
-                  {channel.political_lean}
-                </Badge>
+            <div style={{ backgroundColor: categoryColor }} className="w-full">
+              <div className="p-6 pb-4">
+                <DialogHeader className="p-0">
+                  <DialogTitle
+                    className="text-xl font-bold pr-8"
+                    style={{ color: categoryTextColor }}
+                  >
+                    {channel.name}
+                  </DialogTitle>
+                </DialogHeader>
+
+                <div className="flex flex-wrap gap-2 mt-3">
+                  <Badge
+                    variant="secondary"
+                    className="capitalize"
+                    style={{ backgroundColor: `${categoryTextColor}20`, color: categoryTextColor }}
+                  >
+                    {channel.category}
+                  </Badge>
+                  <Badge className={getPoliticalLeanColor(channel.political_lean)}>
+                    {channel.political_lean}
+                  </Badge>
+                </div>
               </div>
             </div>
 
-            <ScrollArea className="h-[calc(100vh-180px)]">
+            <ScrollArea className="max-h-[calc(100vh-16rem)]">
               <div className="p-6 space-y-6">
                 {/* Quick Stats */}
                 <div className="grid grid-cols-2 gap-4">
@@ -213,8 +210,8 @@ const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, ca
             </ScrollArea>
           </>
         ) : null}
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 };
 
