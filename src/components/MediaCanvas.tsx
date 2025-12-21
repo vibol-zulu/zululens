@@ -24,6 +24,12 @@ interface ChannelSuggestion {
   reason: string;
 }
 
+interface SelectedChannel {
+  name: string;
+  politicalLean: string;
+  reasoning?: string;
+}
+
 interface UserPositionResult {
   label: string;
   description: string;
@@ -31,6 +37,7 @@ interface UserPositionResult {
   diversityNote: string;
   suggestedChannels?: ChannelSuggestion[];
   informationDiversityScore?: number;
+  channels?: SelectedChannel[];
 }
 
 interface MediaCanvasProps {
@@ -211,6 +218,26 @@ const ReasoningPanel: React.FC<{
             <p className="text-sm text-muted-foreground">
               {displayDescription}
             </p>
+
+            {/* Selected Channels Dropdown */}
+            {userPositionResult.channels && userPositionResult.channels.length > 0 && (
+              <Collapsible>
+                <CollapsibleTrigger className="flex items-center justify-between w-full text-xs text-muted-foreground hover:text-foreground transition-colors group py-1.5">
+                  <span className="font-medium">Your Selected Channels ({userPositionResult.channels.length})</span>
+                  <ChevronDown className="h-3 w-3 transition-transform group-data-[state=open]:rotate-180" />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pt-2">
+                  <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                    {userPositionResult.channels.map((channel, i) => (
+                      <div key={i} className="text-xs p-1.5 bg-muted/50 rounded flex items-center justify-between">
+                        <span className="font-medium truncate">{channel.name}</span>
+                        <span className="text-muted-foreground ml-2 shrink-0">{channel.politicalLean}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            )}
             
             {/* Refined result confidence indicator */}
             {refinedResult && (
