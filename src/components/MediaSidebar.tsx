@@ -4,7 +4,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Plus, Search, Info } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Plus, Search, SquareArrowOutUpRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -116,11 +116,13 @@ const BrandItem: React.FC<BrandItemProps> = ({
                     onShowProfile(brand.id);
                   }}
                   className={cn(
-                    "opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-muted",
-                    isMobile ? "h-3 w-3" : "h-4 w-4"
+                    "opacity-0 group-hover:opacity-100 transition-all duration-200",
+                    "p-1 rounded-md hover:bg-primary/10 hover:scale-110",
+                    "text-muted-foreground hover:text-primary",
+                    isMobile ? "h-5 w-5" : "h-6 w-6"
                   )}
                 >
-                  <Info className={cn("text-muted-foreground hover:text-foreground", isMobile ? "h-2.5 w-2.5" : "h-3 w-3")} />
+                  <SquareArrowOutUpRight className={cn(isMobile ? "h-3.5 w-3.5" : "h-4 w-4")} />
                 </button>
               </TooltipTrigger>
               <TooltipContent side="right">
