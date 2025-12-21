@@ -44,6 +44,7 @@ export type Database = {
           headquarters: string | null
           id: string
           key_people: string[] | null
+          logo_url: string | null
           notable_events: string[] | null
           parent_company: string | null
           updated_at: string
@@ -57,6 +58,7 @@ export type Database = {
           headquarters?: string | null
           id?: string
           key_people?: string[] | null
+          logo_url?: string | null
           notable_events?: string[] | null
           parent_company?: string | null
           updated_at?: string
@@ -70,6 +72,7 @@ export type Database = {
           headquarters?: string | null
           id?: string
           key_people?: string[] | null
+          logo_url?: string | null
           notable_events?: string[] | null
           parent_company?: string | null
           updated_at?: string

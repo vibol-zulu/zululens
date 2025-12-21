@@ -6,6 +6,7 @@ export interface ChannelProfile {
   channel_id: string;
   description: string | null;
   website_url: string | null;
+  logo_url: string | null;
   parent_company: string | null;
   key_people: string[] | null;
   notable_events: string[] | null;

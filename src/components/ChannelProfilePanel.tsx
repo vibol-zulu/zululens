@@ -1,5 +1,5 @@
 import React from 'react';
-import { Globe, Users, Calendar, MapPin, Building2, ExternalLink, Tv, Radio, Newspaper, Video, Podcast, Mail, Mic, HelpCircle } from 'lucide-react';
+import { Globe, Users, Calendar, MapPin, Building2, ExternalLink, Tv, Radio, Newspaper, Video, Podcast, Mail, Mic, HelpCircle, Link2, ImageIcon } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -188,19 +188,48 @@ const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, ca
         ) : channel ? (
           <ScrollArea className="max-h-[80vh]">
             <div className="p-6 space-y-5">
-              {/* Header */}
-              <DialogHeader className="space-y-3">
-                <DialogTitle className="text-xl font-semibold tracking-tight">
-                  {channel.name}
-                </DialogTitle>
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant="outline" className={getCategoryStyle(channel.category)}>
-                    {channel.category}
-                  </Badge>
-                  <Badge variant="outline" className={getPoliticalLeanColor(channel.political_lean)}>
-                    {channel.political_lean}
-                  </Badge>
+              {/* Header with Logo */}
+              <DialogHeader className="space-y-4">
+                <div className="flex items-start gap-4">
+                  {/* Channel Logo */}
+                  {channel.profile?.logo_url ? (
+                    <img 
+                      src={channel.profile.logo_url} 
+                      alt={`${channel.name} logo`}
+                      className="w-16 h-16 rounded-lg object-contain bg-muted border border-border shrink-0"
+                    />
+                  ) : (
+                    <div className="w-16 h-16 rounded-lg bg-muted border border-border flex items-center justify-center shrink-0">
+                      <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <DialogTitle className="text-xl font-semibold tracking-tight">
+                      {channel.name}
+                    </DialogTitle>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      <Badge variant="outline" className={getCategoryStyle(channel.category)}>
+                        {channel.category}
+                      </Badge>
+                      <Badge variant="outline" className={getPoliticalLeanColor(channel.political_lean)}>
+                        {channel.political_lean}
+                      </Badge>
+                    </div>
+                  </div>
                 </div>
+
+                {/* Website Link - Prominent */}
+                {channel.profile?.website_url && (
+                  <a 
+                    href={channel.profile.website_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-sm text-primary hover:underline underline-offset-2"
+                  >
+                    <Link2 className="h-4 w-4" />
+                    {channel.profile.website_url.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                  </a>
+                )}
               </DialogHeader>
 
               <Separator />
@@ -357,20 +386,6 @@ const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, ca
                     </>
                   )}
 
-                  {channel.profile.website_url && (
-                    <>
-                      <Separator />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                        onClick={() => window.open(channel.profile!.website_url!, '_blank')}
-                      >
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        Visit Website
-                      </Button>
-                    </>
-                  )}
                 </div>
               ) : (
                 <>
