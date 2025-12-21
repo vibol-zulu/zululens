@@ -30,7 +30,7 @@ const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, on
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="w-full sm:max-w-md p-0 overflow-hidden">
+      <SheetContent side="left" className="w-full sm:max-w-md p-0 overflow-hidden">
         {loading ? (
           <div className="p-6 space-y-4">
             <Skeleton className="h-8 w-3/4" />
