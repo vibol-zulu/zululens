@@ -95,26 +95,25 @@ const BrandItem: React.FC<BrandItemProps> = ({
         id={`cb-${brand.id}`}
         checked={isSelected} 
         onCheckedChange={() => onToggle(brand.id)}
-        className="mt-1"
+        className="mt-1 shrink-0"
         data-tour={isFirstItem ? "channel-item" : undefined}
       />
-      <label
-        htmlFor={`cb-${brand.id}`}
-        className={cn("cursor-pointer leading-tight flex-1 font-geist", isMobile ? "text-[10px]" : "text-xs")}
-      >
+      <div className={cn("leading-tight flex-1 font-geist", isMobile ? "text-[10px]" : "text-xs")}>
         <div className="flex items-center gap-1">
-          <span className={cn("font-medium", isSelected && "font-semibold")}>
+          <button
+            onClick={() => onShowProfile(brand.id)}
+            className={cn(
+              "font-medium text-left hover:text-primary hover:underline underline-offset-2 transition-colors cursor-pointer",
+              isSelected && "font-semibold"
+            )}
+          >
             {brand.name}
-          </span>
+          </button>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onShowProfile(brand.id);
-                  }}
+                  onClick={() => onShowProfile(brand.id)}
                   className={cn(
                     "opacity-0 group-hover:opacity-100 transition-all duration-200",
                     "p-1 rounded-md hover:bg-primary/10 hover:scale-110",
@@ -131,9 +130,9 @@ const BrandItem: React.FC<BrandItemProps> = ({
             </Tooltip>
           </TooltipProvider>
         </div>
-        <span className={cn("text-muted-foreground ml-0", isMobile ? "text-[9px]" : "text-[10px]")}>({brand.valueMillions}M)</span>
+        <span className={cn("text-muted-foreground", isMobile ? "text-[9px]" : "text-[10px]")}>({brand.valueMillions}M)</span>
         <div className={cn("text-muted-foreground italic mt-0.5", isMobile ? "text-[9px]" : "text-[10px]")}>{brand.platform}</div>
-      </label>
+      </div>
     </div>
   );
 };
