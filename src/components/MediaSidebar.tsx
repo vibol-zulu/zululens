@@ -269,6 +269,11 @@ const Sidebar: React.FC<SidebarProps> = ({
   const { user, isContributor } = useAuth();
   
   const handleShowProfile = (id: string) => {
+    // Gate channel profiles behind authentication
+    if (!user) {
+      onSignUpClick?.();
+      return;
+    }
     setSelectedProfileId(id);
     setSelectedProfileCategory(category);
   };
