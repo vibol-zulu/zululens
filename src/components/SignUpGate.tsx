@@ -158,13 +158,13 @@ const SignUpGate: React.FC<SignUpGateProps> = ({ onJoin }) => {
           </form>
 
           <p className="text-white/60 text-sm mt-6 text-center">
-            Have an account?{" "}
+            Want to join discussions?{" "}
             <button
               type="button"
               onClick={() => setShowSignIn(true)}
               className="text-white/90 underline hover:text-white transition-colors"
             >
-              Sign in here
+              Sign Up / In
             </button>
           </p>
 
