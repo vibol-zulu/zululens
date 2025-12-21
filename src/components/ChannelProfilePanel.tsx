@@ -355,7 +355,7 @@ const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, ca
                             <HelpCircle className="h-3 w-3" />
                           </button>
                         </TooltipTrigger>
-                        <TooltipContent side="bottom" align="center" className="max-w-xs z-[100]">
+                        <TooltipContent side="top" className="max-w-xs">
                           <p className="text-xs leading-relaxed">
                             <strong>Unique Monthly Audience</strong> — A cross-platform audience estimate combining reach metrics from websites, YouTube, podcasts, and social platforms with de-duplication applied.
                           </p>
