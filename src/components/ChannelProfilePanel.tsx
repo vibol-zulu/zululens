@@ -15,6 +15,7 @@ interface ChannelProfilePanelProps {
   channelId: string | null;
   category?: 'corporate' | 'independent';
   onClose: () => void;
+  onMethodologyClick?: () => void;
 }
 
 interface SuggestionState {
@@ -171,7 +172,7 @@ const getPlatformIcon = (platform: string) => {
   return { icon: Globe, label: 'Platform', color: 'text-muted-foreground' };
 };
 
-const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, category: _category, onClose }) => {
+const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, category: _category, onClose, onMethodologyClick }) => {
   const { channel, loading, error } = useChannelProfile(channelId);
   const { user } = useAuth();
   const isOpen = channelId !== null;
@@ -345,7 +346,15 @@ const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, ca
               <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                 <div className="flex items-center gap-2.5">
                   <Users className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <span className="text-sm font-medium">{channel.value_millions}M</span>
+                  <div className="text-sm flex items-center gap-1">
+                    <span className="font-medium">{channel.value_millions}M</span>
+                    <button
+                      onClick={onMethodologyClick}
+                      className="text-xs font-medium text-muted-foreground hover:text-primary hover:underline transition-colors"
+                    >
+                      UMA
+                    </button>
+                  </div>
                 </div>
                 <div className="flex items-center gap-2.5">
                   <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
