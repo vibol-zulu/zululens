@@ -540,10 +540,12 @@ export type Database = {
           content_type: string
           country: string
           created_at: string
+          has_similarity_flag: boolean | null
           id: string
           name: string
           platform: string
           political_lean: string
+          similar_channels: Json | null
           start_date: string
           status: string
           updated_at: string
@@ -558,10 +560,12 @@ export type Database = {
           content_type: string
           country?: string
           created_at?: string
+          has_similarity_flag?: boolean | null
           id?: string
           name: string
           platform: string
           political_lean: string
+          similar_channels?: Json | null
           start_date: string
           status?: string
           updated_at?: string
@@ -576,10 +580,12 @@ export type Database = {
           content_type?: string
           country?: string
           created_at?: string
+          has_similarity_flag?: boolean | null
           id?: string
           name?: string
           platform?: string
           political_lean?: string
+          similar_channels?: Json | null
           start_date?: string
           status?: string
           updated_at?: string
@@ -712,6 +718,15 @@ export type Database = {
         }
         Returns: boolean
       }
+      find_similar_channels: {
+        Args: {
+          _category: string
+          _channel_name: string
+          _country: string
+          _exclude_id?: string
+        }
+        Returns: Json
+      }
       get_profile_display_name: { Args: { _user_id: string }; Returns: string }
       get_profiles_by_ids: {
         Args: { _user_ids: string[] }
@@ -731,6 +746,8 @@ export type Database = {
         Args: { _country?: string; _email: string; _name: string }
         Returns: string
       }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
       update_tier1_visitor_time: {
         Args: { _additional_seconds: number; _visitor_id: string }
         Returns: undefined
