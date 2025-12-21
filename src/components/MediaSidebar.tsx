@@ -415,7 +415,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
         
         <ScrollArea className="flex-1">
-          <div className="px-2 pt-1 pb-2">
+          <div className="px-2 pt-1 pb-24">
             {sorted.length === 0 && (
               <p className="text-center text-muted-foreground text-xs italic py-4">
                 No data available
@@ -572,7 +572,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       <ScrollArea className="flex-1">
-        <div className="px-4 pt-2 pb-4">
+        <div className="px-4 pt-2 pb-24">
           {sorted.length === 0 && (
             <p className="text-center text-muted-foreground text-sm italic py-4">
               No data available
