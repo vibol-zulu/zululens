@@ -302,6 +302,40 @@ const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, ca
 
               <Separator />
 
+              {/* Veracity / Bias Score - Coming Soon */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Veracity / Bias Score
+                  </h4>
+                  <Badge variant="outline" className="text-[10px] px-2 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800">
+                    Coming Soon
+                  </Badge>
+                </div>
+                
+                {/* Blank Progress Meter */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 h-3 bg-muted rounded-full overflow-hidden border border-border">
+                      <div className="h-full w-0 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded-full transition-all duration-500" />
+                    </div>
+                    <span className="text-sm font-medium text-muted-foreground min-w-[40px] text-right">—%</span>
+                  </div>
+                  <div className="flex justify-between text-[10px] text-muted-foreground px-0.5">
+                    <span>Low</span>
+                    <span>Moderate</span>
+                    <span>High</span>
+                  </div>
+                </div>
+
+                {/* Description */}
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  This feature will enable <span className="font-medium text-foreground">Public Governance</span> over accuracy and bias standards for global news, media, and political commentator channels—empowering citizens to hold media accountable.
+                </p>
+              </div>
+
+              <Separator />
+
               {/* Quick Stats Grid */}
               <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                 <div className="flex items-center gap-2.5">
