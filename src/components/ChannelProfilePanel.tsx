@@ -1,11 +1,12 @@
 import React from 'react';
-import { Globe, Users, Calendar, MapPin, Building2, ExternalLink, TrendingUp } from 'lucide-react';
+import { Globe, Users, Calendar, MapPin, Building2, ExternalLink, Tv, Radio, Newspaper, Video, Podcast, Mail, Mic, HelpCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useChannelProfile } from '@/hooks/useChannelProfile';
 
 interface ChannelProfilePanelProps {
@@ -24,6 +25,48 @@ const getPoliticalLeanColor = (lean: string) => {
 const getCategoryStyle = (category: string) => {
   if (category === 'corporate') return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800';
   return 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800';
+};
+
+const getMediaTypeIcon = (contentType: string) => {
+  const type = contentType.toLowerCase();
+  
+  // TV / Video content
+  if (type.includes('24h news') || type.includes('evening news') || type.includes('network news') || type.includes('news show')) {
+    return { icon: Tv, label: 'Television' };
+  }
+  
+  // Video / YouTube content
+  if (type.includes('video') || type.includes('clips') || type.includes('documentary') || type.includes('comedy') || type.includes('prank') || type.includes('memes')) {
+    return { icon: Video, label: 'Video' };
+  }
+  
+  // Podcast content
+  if (type.includes('podcast') || type.includes('long-form interview') || type.includes('interview show')) {
+    return { icon: Podcast, label: 'Podcast' };
+  }
+  
+  // Radio content
+  if (type.includes('radio')) {
+    return { icon: Radio, label: 'Radio' };
+  }
+  
+  // Print / Newsletter content
+  if (type.includes('newspaper') || type.includes('newsletter') || type.includes('digest') || type.includes('alt-weekly') || type.includes('wire service')) {
+    return { icon: Newspaper, label: 'Print/Newsletter' };
+  }
+  
+  // Online journalism / digital
+  if (type.includes('online') || type.includes('digital') || type.includes('investigative')) {
+    return { icon: Mail, label: 'Digital' };
+  }
+  
+  // Multi-platform / Network
+  if (type.includes('multi') || type.includes('network')) {
+    return { icon: Mic, label: 'Multi-platform' };
+  }
+  
+  // Default
+  return { icon: Mic, label: 'Media' };
 };
 
 const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, category: _category, onClose }) => {
@@ -74,9 +117,23 @@ const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, ca
               <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                 <div className="flex items-center gap-2.5">
                   <Users className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <div className="text-sm">
+                  <div className="text-sm flex items-center gap-1">
                     <span className="font-medium">{channel.value_millions}M</span>
-                    <span className="text-muted-foreground ml-1">audience</span>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button className="inline-flex items-center gap-0.5 text-muted-foreground hover:text-foreground transition-colors">
+                            <span className="text-xs font-medium">UMA</span>
+                            <HelpCircle className="h-3 w-3" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs leading-relaxed">
+                            <strong>Unique Monthly Audience</strong> — A cross-platform audience estimate combining reach metrics from websites, YouTube, podcasts, and social platforms with de-duplication applied.
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 </div>
                 <div className="flex items-center gap-2.5">
@@ -93,11 +150,27 @@ const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, ca
                 </div>
               </div>
 
-              {/* Content Type */}
-              <div className="flex items-center gap-2.5">
-                <TrendingUp className="h-4 w-4 text-muted-foreground shrink-0" />
-                <span className="text-sm text-muted-foreground">{channel.content_type}</span>
-              </div>
+              {/* Content Type with Media Icon */}
+              {(() => {
+                const { icon: MediaIcon, label } = getMediaTypeIcon(channel.content_type);
+                return (
+                  <div className="flex items-center gap-2.5">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="shrink-0">
+                            <MediaIcon className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="left">
+                          <p className="text-xs">{label}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <span className="text-sm text-muted-foreground">{channel.content_type}</span>
+                  </div>
+                );
+              })()}
 
               {/* Extended Profile Data */}
               {channel.profile ? (
