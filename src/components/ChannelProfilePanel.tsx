@@ -230,7 +230,7 @@ const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, ca
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                  className={`h-6 w-6 p-0 shrink-0 ${value ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'} transition-opacity`}
                   onClick={() => openSuggestion(fieldName, label, value?.toString() || null, isTextarea)}
                 >
                   <PenLine className="h-3 w-3" />
@@ -428,7 +428,7 @@ const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, ca
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                              className={`h-6 w-6 p-0 shrink-0 ${channel.profile?.website_url ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'} transition-opacity`}
                               onClick={() => openSuggestion('website_url', 'Website URL', channel.profile?.website_url || null)}
                             >
                               <PenLine className="h-3 w-3" />
@@ -478,7 +478,7 @@ const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, ca
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                              className={`h-6 w-6 p-0 ${channel.profile?.key_people?.length ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'} transition-opacity`}
                               onClick={() => openSuggestion('key_people', 'Key People', channel.profile?.key_people?.join(', ') || null)}
                             >
                               <PenLine className="h-3 w-3" />
@@ -516,7 +516,7 @@ const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, ca
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                              className={`h-6 w-6 p-0 ${channel.profile?.notable_events?.length ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'} transition-opacity`}
                               onClick={() => openSuggestion('notable_events', 'Notable Events', channel.profile?.notable_events?.join('\n') || null, true)}
                             >
                               <PenLine className="h-3 w-3" />
