@@ -350,7 +350,7 @@ const ChannelProfilePanel: React.FC<ChannelProfilePanelProps> = ({ channelId, ca
                     <span className="font-medium">{channel.value_millions}M</span>
                     <button
                       onClick={onMethodologyClick}
-                      className="text-xs font-medium text-muted-foreground hover:text-primary hover:underline transition-colors"
+                      className="text-xs font-medium text-blue-500 underline hover:text-blue-600 transition-colors"
                     >
                       UMA
                     </button>
