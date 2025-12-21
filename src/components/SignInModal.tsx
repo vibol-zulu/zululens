@@ -285,13 +285,13 @@ const SignInModal: React.FC<SignInModalProps> = ({ open, onClose, defaultTab = '
               </button>
             </>
           ) : (
-            <>New here?{' '}
+            <>Have an account?{' '}
               <button 
                 type="button"
                 onClick={() => setIsSignUp(true)}
                 className="text-primary hover:underline font-medium"
               >
-                Create account
+                Sign-in here
               </button>
             </>
           )}
