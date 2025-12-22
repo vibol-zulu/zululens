@@ -93,7 +93,7 @@ const ContributorCelebration: React.FC<ContributorCelebrationProps> = ({
             <Sparkles className="w-6 h-6 text-yellow-500 absolute -top-1 -right-1 animate-pulse" />
             <Star className="w-5 h-5 text-yellow-400 absolute -bottom-1 -left-1 animate-pulse" />
           </div>
-          <DialogTitle className="text-2xl sm:text-3xl font-bold">
+          <DialogTitle className="text-xl sm:text-2xl font-bold">
             🎉 Congratulations, {userName}! 🎉
           </DialogTitle>
           <DialogDescription className="text-base mt-2">
@@ -103,8 +103,8 @@ const ContributorCelebration: React.FC<ContributorCelebrationProps> = ({
 
         <div className="space-y-4 py-4">
           <div className="flex items-center justify-center gap-2">
-            <span className="text-lg">New Member status:</span>
-            <Badge className="text-base px-3 py-1 bg-primary shimmer-text">Contributor</Badge>
+            <span className="text-base">New Member status:</span>
+            <Badge className="text-base px-3 py-1 bg-primary/20 text-primary border border-primary/30 shimmer-text">Contributor</Badge>
           </div>
         </div>
 
