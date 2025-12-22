@@ -207,6 +207,14 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
                   </p>
                 </div>
 
+                {/* Account Explanation */}
+                <div className="rounded-md border p-4">
+                  <h3 className="text-sm font-medium mb-2">Your Account</h3>
+                  <p className="text-xs text-muted-foreground">
+                    As a Member, you can submit channel suggestions for review. Once 10 of your submissions are approved, you'll be upgraded to Contributor status with additional privileges.
+                  </p>
+                </div>
+
                 {/* Stats Grid */}
                 <div className="rounded-md border p-4">
                   <h3 className="text-sm font-medium mb-4">Get 10 channels approved to unlock Contributor status. </h3>
