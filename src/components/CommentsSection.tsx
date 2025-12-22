@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronUp, ChevronDown, MessageSquare, Send, Edit2, Trash2, Reply, X, UserPlus } from 'lucide-react';
+import { ChevronUp, ChevronDown, MessageSquare, Send, Edit2, Trash2, Reply, X, UserPlus, PartyPopper, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useComments, Comment } from '@/hooks/useComments';
@@ -18,6 +18,13 @@ interface NewsItem {
   created_at: string;
   source_url?: string;
   image_url?: string;
+}
+
+interface ApprovalNotification {
+  id: string;
+  channelName: string;
+  message: string;
+  created_at: string;
 }
 
 interface CommentsSectionProps {
@@ -160,6 +167,8 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [previewIndex, setPreviewIndex] = useState(0);
   const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
+  const [approvalNotifications, setApprovalNotifications] = useState<ApprovalNotification[]>([]);
+  const [showingApproval, setShowingApproval] = useState(false);
   
   const isMobile = useIsMobile();
   const { user, isAdmin } = useAuth();
@@ -167,6 +176,81 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
 
   // Check if user has moderator role (similar to admin check in useAuth)
   const [isModerator, setIsModerator] = useState(false);
+  
+  // Fetch approval notifications for the user
+  useEffect(() => {
+    const fetchApprovalNotifications = async () => {
+      if (!user) {
+        setApprovalNotifications([]);
+        return;
+      }
+      
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('id, message, channel_id, created_at')
+        .eq('target_user_id', user.id)
+        .eq('type', 'submission_review')
+        .eq('is_read', false)
+        .order('created_at', { ascending: false })
+        .limit(5);
+      
+      if (!error && data && data.length > 0) {
+        // Extract channel names from messages
+        const notifications: ApprovalNotification[] = data.map(n => {
+          // Extract channel name from message like 'Your channel suggestion "CNN" has been approved...'
+          const match = n.message.match(/"([^"]+)"/);
+          const channelName = match ? match[1] : 'Your channel';
+          
+          return {
+            id: n.id,
+            channelName,
+            message: n.message,
+            created_at: n.created_at
+          };
+        });
+        
+        setApprovalNotifications(notifications);
+        setShowingApproval(true);
+      }
+    };
+    
+    fetchApprovalNotifications();
+    
+    // Set up realtime subscription for new notifications
+    if (user) {
+      const channel = supabase
+        .channel('approval-notifications')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+            filter: `target_user_id=eq.${user.id}`
+          },
+          (payload) => {
+            const newNotif = payload.new as any;
+            if (newNotif.type === 'submission_review' && !newNotif.is_read) {
+              const match = newNotif.message.match(/"([^"]+)"/);
+              const channelName = match ? match[1] : 'Your channel';
+              
+              setApprovalNotifications(prev => [{
+                id: newNotif.id,
+                channelName,
+                message: newNotif.message,
+                created_at: newNotif.created_at
+              }, ...prev]);
+              setShowingApproval(true);
+            }
+          }
+        )
+        .subscribe();
+      
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [user]);
   
   // Fetch news items (for desktop/tablet)
   useEffect(() => {
@@ -201,16 +285,42 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
     checkModerator();
   }, [user]);
 
-  // Cycle through placeholder comments when collapsed
+  // Cycle through placeholder comments OR approval notifications when collapsed
   React.useEffect(() => {
     if (isExpanded) return;
     
+    // If showing approval notifications, cycle through them
+    if (showingApproval && approvalNotifications.length > 0) {
+      const interval = setInterval(() => {
+        setPreviewIndex((prev) => {
+          const nextIndex = (prev + 1) % approvalNotifications.length;
+          // After cycling through all approvals, switch back to regular comments
+          if (nextIndex === 0 && prev === approvalNotifications.length - 1) {
+            // Mark notifications as read after user has seen them
+            approvalNotifications.forEach(async (notif) => {
+              await supabase
+                .from('notifications')
+                .update({ is_read: true, read_at: new Date().toISOString(), read_by: user?.id })
+                .eq('id', notif.id);
+            });
+            setShowingApproval(false);
+            setApprovalNotifications([]);
+            return 0;
+          }
+          return nextIndex;
+        });
+      }, 5000); // Show each approval for 5 seconds
+      
+      return () => clearInterval(interval);
+    }
+    
+    // Regular placeholder cycling
     const interval = setInterval(() => {
       setPreviewIndex((prev) => (prev + 1) % PLACEHOLDER_COMMENTS.length);
     }, 4000);
     
     return () => clearInterval(interval);
-  }, [isExpanded]);
+  }, [isExpanded, showingApproval, approvalNotifications, user]);
 
   const handleSubmit = async () => {
     if (!newComment.trim()) return;
@@ -258,7 +368,42 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
   // Tier 1 users (not authenticated) see the section but with sign-up prompt
   const isAuthenticated = !!user;
   
-  const currentPreview = PLACEHOLDER_COMMENTS[previewIndex];
+  const currentPreview = PLACEHOLDER_COMMENTS[previewIndex % PLACEHOLDER_COMMENTS.length];
+  const currentApproval = showingApproval && approvalNotifications.length > 0 
+    ? approvalNotifications[previewIndex % approvalNotifications.length] 
+    : null;
+
+  // Render approval notification with celebration styling
+  const renderApprovalPreview = () => {
+    if (!currentApproval) return null;
+    const isApproved = currentApproval.message.includes('approved');
+    
+    return (
+      <span 
+        key={`approval-${currentApproval.id}-${previewIndex}`}
+        className="flex items-center gap-2 animate-fade-in"
+      >
+        {isApproved ? (
+          <>
+            <PartyPopper className="h-4 w-4 text-green-500 animate-bounce shrink-0" />
+            <span className="font-semibold text-green-600 dark:text-green-400">
+              🎉 Congratulations!
+            </span>
+            <span className="text-foreground">
+              "{currentApproval.channelName}" is now live!
+            </span>
+            <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+          </>
+        ) : (
+          <>
+            <span className="font-medium text-muted-foreground">
+              Update on "{currentApproval.channelName}"
+            </span>
+          </>
+        )}
+      </span>
+    );
+  };
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t shadow-lg">
@@ -274,35 +419,57 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
       >
         {/* Mobile: Preview on top when collapsed */}
         {isMobile && !isExpanded && (
-          <div className="w-full text-sm text-muted-foreground overflow-hidden text-left">
-            <span 
-              key={previewIndex}
-              className="block truncate animate-fade-in"
-            >
-              <span className="font-medium text-foreground/70">{currentPreview.username}:</span>{" "}
-              <span className="italic">{currentPreview.content}</span>
-            </span>
+          <div className={`w-full text-sm overflow-hidden text-left ${
+            showingApproval && currentApproval ? 'bg-green-50 dark:bg-green-950/30 -mx-4 px-4 py-2 border-b border-green-200 dark:border-green-800' : ''
+          }`}>
+            {showingApproval && currentApproval ? (
+              renderApprovalPreview()
+            ) : (
+              <span 
+                key={previewIndex}
+                className="block truncate animate-fade-in text-muted-foreground"
+              >
+                <span className="font-medium text-foreground/70">{currentPreview.username}:</span>{" "}
+                <span className="italic">{currentPreview.content}</span>
+              </span>
+            )}
           </div>
         )}
         
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <MessageSquare className="h-4 w-4 text-primary shrink-0" />
+            {showingApproval && currentApproval ? (
+              <PartyPopper className="h-4 w-4 text-green-500 shrink-0 animate-pulse" />
+            ) : (
+              <MessageSquare className="h-4 w-4 text-primary shrink-0" />
+            )}
             <span className="font-medium text-sm shrink-0">
-              Comments {totalComments > 0 && `(${totalComments})`}
+              {showingApproval && currentApproval ? (
+                <span className="text-green-600 dark:text-green-400">New Approval!</span>
+              ) : (
+                <>Comments {totalComments > 0 && `(${totalComments})`}</>
+              )}
             </span>
-            <span className="text-xs text-muted-foreground shrink-0">— {country}</span>
+            {!showingApproval && (
+              <span className="text-xs text-muted-foreground shrink-0">— {country}</span>
+            )}
             
             {/* Desktop: Cycling preview inline when collapsed */}
             {!isMobile && !isExpanded && (
-              <div className="flex items-center gap-2 ml-6 text-sm text-muted-foreground overflow-hidden">
-                <span 
-                  key={previewIndex}
-                  className="truncate animate-fade-in"
-                >
-                  <span className="font-medium text-foreground/70">{currentPreview.username}:</span>{" "}
-                  <span className="italic">{currentPreview.content}</span>
-                </span>
+              <div className={`flex items-center gap-2 ml-6 text-sm overflow-hidden ${
+                showingApproval && currentApproval ? 'text-foreground' : 'text-muted-foreground'
+              }`}>
+                {showingApproval && currentApproval ? (
+                  renderApprovalPreview()
+                ) : (
+                  <span 
+                    key={previewIndex}
+                    className="truncate animate-fade-in"
+                  >
+                    <span className="font-medium text-foreground/70">{currentPreview.username}:</span>{" "}
+                    <span className="italic">{currentPreview.content}</span>
+                  </span>
+                )}
               </div>
             )}
           </div>
