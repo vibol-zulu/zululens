@@ -309,7 +309,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
           }
           return nextIndex;
         });
-      }, 5000); // Show each approval for 5 seconds
+      }, 15000); // Show each approval for 15 seconds
       
       return () => clearInterval(interval);
     }
