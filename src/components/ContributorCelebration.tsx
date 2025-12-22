@@ -104,7 +104,7 @@ const ContributorCelebration: React.FC<ContributorCelebrationProps> = ({
         <div className="space-y-4 py-4">
           <div className="flex items-center justify-center gap-2">
             <span className="text-base">New Member status:</span>
-            <Badge className="text-base px-4 py-1.5 bg-pink-500/10 border border-pink-400 dark:border-pink-500/50 font-bold shimmer-text">Contributor</Badge>
+            <Badge className="text-base px-4 py-1.5 bg-pink-500/10 border border-pink-400 dark:border-pink-500/50 font-bold shimmer-pink">Contributor</Badge>
           </div>
         </div>
 
