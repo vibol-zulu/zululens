@@ -409,7 +409,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-7 h-7 text-xs focus-visible:ring-0 focus-visible:ring-offset-0 bg-background/90"
+              className="pl-7 h-8 text-xs focus-visible:ring-0 focus-visible:ring-offset-0 bg-background/90"
             />
           </div>
         </div>
@@ -566,7 +566,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             placeholder="Search channels..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-7 pr-3 py-1 text-xs rounded bg-background/80 border-0 focus:outline-none focus:bg-background/95 placeholder:text-muted-foreground/70"
+            className="w-full pl-7 pr-3 py-2 text-xs rounded bg-background/80 border-0 focus:outline-none focus:bg-background/95 placeholder:text-muted-foreground/70"
           />
         </div>
       </div>
