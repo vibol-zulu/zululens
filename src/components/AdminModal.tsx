@@ -218,7 +218,31 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   const [showSubmissionDialog, setShowSubmissionDialog] = useState(false);
   const [submissionsStatusFilter, setSubmissionsStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
   const [submissionSearch, setSubmissionSearch] = useState('');
-  
+
+  // Moderator applications state
+  const [moderatorApplications, setModeratorApplications] = useState<{
+    id: string;
+    user_id: string;
+    name: string;
+    email: string;
+    message: string;
+    country: string;
+    status: string;
+    created_at: string;
+    reviewed_at: string | null;
+  }[]>([]);
+  const [moderatorApplicationsLoading, setModeratorApplicationsLoading] = useState(false);
+  const [selectedModeratorApplication, setSelectedModeratorApplication] = useState<{
+    id: string;
+    user_id: string;
+    name: string;
+    email: string;
+    message: string;
+    country: string;
+    status: string;
+    created_at: string;
+  } | null>(null);
+  const [showModeratorApplicationDialog, setShowModeratorApplicationDialog] = useState(false);
   // AI Estimation state
   const [isEstimating, setIsEstimating] = useState(false);
   const [estimationResult, setEstimationResult] = useState<{
@@ -798,6 +822,67 @@ Make sure questions are specific to {country}'s current political landscape and 
       toast({ title: 'Failed to load submissions', variant: 'destructive' });
     } finally {
       setSubmissionsLoading(false);
+    }
+  };
+
+  // Fetch moderator applications
+  const fetchModeratorApplications = async () => {
+    if (!isAdmin) return;
+    
+    setModeratorApplicationsLoading(true);
+    try {
+      let query = supabase
+        .from('moderator_requests')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (submissionsStatusFilter !== 'all') {
+        query = query.eq('status', submissionsStatusFilter);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+
+      setModeratorApplications(data || []);
+    } catch (error) {
+      console.error('Error fetching moderator applications:', error);
+      toast({ title: 'Failed to load moderator applications', variant: 'destructive' });
+    } finally {
+      setModeratorApplicationsLoading(false);
+    }
+  };
+
+  // Update moderator application status
+  const updateModeratorApplicationStatus = async (applicationId: string, newStatus: 'approved' | 'rejected', userId: string) => {
+    try {
+      const { error } = await supabase
+        .from('moderator_requests')
+        .update({ 
+          status: newStatus, 
+          reviewed_at: new Date().toISOString(),
+          reviewed_by: user?.id 
+        })
+        .eq('id', applicationId);
+
+      if (error) throw error;
+
+      // If approved, add the moderator role to the user
+      if (newStatus === 'approved') {
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({ user_id: userId, role: 'moderator' });
+
+        if (roleError && !roleError.message.includes('duplicate')) {
+          console.error('Error adding moderator role:', roleError);
+        }
+      }
+
+      toast({ title: `Application ${newStatus}` });
+      fetchModeratorApplications();
+    } catch (error) {
+      console.error('Error updating application:', error);
+      toast({ title: 'Failed to update application', variant: 'destructive' });
     }
   };
 
@@ -1389,6 +1474,7 @@ Make sure questions are specific to {country}'s current political landscape and 
       fetchUsers();
     } else if (isAuthenticated && open && activeTab === 'submissions' && isAdmin) {
       fetchSubmissions();
+      fetchModeratorApplications();
     } else if (isAuthenticated && open && activeTab === 'comments' && isAdmin) {
       fetchComments();
     } else if (isAuthenticated && open && activeTab === 'analytics' && isAdmin) {
@@ -1406,6 +1492,7 @@ Make sure questions are specific to {country}'s current political landscape and 
   useEffect(() => {
     if (isAuthenticated && open && activeTab === 'submissions' && isAdmin) {
       fetchSubmissions();
+      fetchModeratorApplications();
     }
   }, [submissionsStatusFilter]);
 
@@ -2697,6 +2784,138 @@ Make sure questions are specific to {country}'s current political landscape and 
                           )}
                         </TableBody>
                       </Table>
+                  </div>
+
+                  {/* Moderator Applications Section */}
+                  <div className="mt-6">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Shield className="h-4 w-4 text-primary" />
+                      <h3 className="font-semibold text-sm">Moderator Applications</h3>
+                      <Badge variant="secondary" className="ml-1">
+                        {moderatorApplications.filter(a => a.status === 'pending').length} pending
+                      </Badge>
+                    </div>
+                    <div className="rounded-md border overflow-x-auto">
+                      <Table className="min-w-[600px] text-xs">
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="w-[80px]">
+                              <Badge variant="outline" className="gap-1">
+                                <Shield className="h-3 w-3" />
+                                Type
+                              </Badge>
+                            </TableHead>
+                            <TableHead>Applicant</TableHead>
+                            <TableHead>Email</TableHead>
+                            <TableHead>Country</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Date</TableHead>
+                            <TableHead className="w-[100px]">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {moderatorApplicationsLoading ? (
+                            <TableRow>
+                              <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                                Loading...
+                              </TableCell>
+                            </TableRow>
+                          ) : moderatorApplications.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                                No moderator applications found
+                              </TableCell>
+                            </TableRow>
+                          ) : (
+                            moderatorApplications
+                              .filter(app => !submissionSearch || 
+                                app.name.toLowerCase().includes(submissionSearch.toLowerCase()) ||
+                                app.email.toLowerCase().includes(submissionSearch.toLowerCase())
+                              )
+                              .map(app => (
+                              <TableRow key={app.id} className="bg-primary/5">
+                                <TableCell>
+                                  <Badge variant="outline" className="gap-1 text-primary border-primary/30">
+                                    <Shield className="h-3 w-3" />
+                                    Moderator
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="font-medium">{app.name}</TableCell>
+                                <TableCell className="text-sm">{app.email}</TableCell>
+                                <TableCell>{app.country}</TableCell>
+                                <TableCell>
+                                  <Badge variant={
+                                    app.status === 'pending' ? 'secondary' : 
+                                    app.status === 'approved' ? 'default' : 'destructive'
+                                  } className={app.status === 'approved' ? 'bg-emerald-600' : ''}>
+                                    {app.status}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="text-sm text-muted-foreground">
+                                  {new Date(app.created_at).toLocaleDateString()}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex gap-1">
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <Button 
+                                            variant="ghost" 
+                                            size="icon"
+                                            onClick={() => { setSelectedModeratorApplication(app); setShowModeratorApplicationDialog(true); }}
+                                          >
+                                            <Search className="h-4 w-4" />
+                                          </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p>View Application</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+                                    {app.status === 'pending' && (
+                                      <>
+                                        <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <Button 
+                                                variant="ghost" 
+                                                size="icon"
+                                                onClick={() => updateModeratorApplicationStatus(app.id, 'approved', app.user_id)}
+                                              >
+                                                <Check className="h-4 w-4 text-green-600" />
+                                              </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <p>Approve (Grant Moderator Role)</p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
+                                        <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <Button 
+                                                variant="ghost" 
+                                                size="icon"
+                                                onClick={() => updateModeratorApplicationStatus(app.id, 'rejected', app.user_id)}
+                                              >
+                                                <XCircle className="h-4 w-4 text-destructive" />
+                                              </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <p>Reject</p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
+                                      </>
+                                    )}
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
                   </div>
                 </div>
               </TabsContent>
@@ -4422,6 +4641,87 @@ Make sure questions are specific to {country}'s current political landscape and 
                       Approve ({estimationResult.deduplicatedAudience?.toFixed(2) || '0'}M)
                     </Button>
                   </div>
+                )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Moderator Application Details Dialog */}
+        <Dialog open={showModeratorApplicationDialog} onOpenChange={setShowModeratorApplicationDialog}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-primary" />
+                Moderator Application
+              </DialogTitle>
+            </DialogHeader>
+            
+            {selectedModeratorApplication && (
+              <div className="space-y-4">
+                <div className="rounded-md border">
+                  <Table>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground w-1/3">Applicant</TableCell>
+                        <TableCell className="font-semibold">{selectedModeratorApplication.name}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground">Email</TableCell>
+                        <TableCell>{selectedModeratorApplication.email}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground">Country</TableCell>
+                        <TableCell>{selectedModeratorApplication.country}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground">Status</TableCell>
+                        <TableCell>
+                          <Badge variant={
+                            selectedModeratorApplication.status === 'pending' ? 'secondary' : 
+                            selectedModeratorApplication.status === 'approved' ? 'default' : 'destructive'
+                          } className={selectedModeratorApplication.status === 'approved' ? 'bg-emerald-600' : ''}>
+                            {selectedModeratorApplication.status}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground">Submitted</TableCell>
+                        <TableCell>{new Date(selectedModeratorApplication.created_at).toLocaleDateString()}</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground">Application Message</Label>
+                  <div className="p-3 rounded-md bg-muted/50 text-sm whitespace-pre-wrap">
+                    {selectedModeratorApplication.message}
+                  </div>
+                </div>
+
+                {selectedModeratorApplication.status === 'pending' && (
+                  <DialogFooter className="gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        updateModeratorApplicationStatus(selectedModeratorApplication.id, 'rejected', selectedModeratorApplication.user_id);
+                        setShowModeratorApplicationDialog(false);
+                      }}
+                    >
+                      <XCircle className="h-4 w-4 mr-2 text-destructive" />
+                      Reject
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        updateModeratorApplicationStatus(selectedModeratorApplication.id, 'approved', selectedModeratorApplication.user_id);
+                        setShowModeratorApplicationDialog(false);
+                      }}
+                    >
+                      <Check className="h-4 w-4 mr-2" />
+                      Approve & Grant Moderator Role
+                    </Button>
+                  </DialogFooter>
                 )}
               </div>
             )}
