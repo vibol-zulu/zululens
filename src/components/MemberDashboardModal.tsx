@@ -1,13 +1,38 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useMySubmissions, ChannelSubmission } from '@/hooks/useMySubmissions';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,26 +40,22 @@ import { Clock, CheckCircle, XCircle, TrendingUp, Sparkles, FileText, BarChart3,
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import NotificationsTab from '@/components/NotificationsTab';
 import AccountSettingsTab from '@/components/AccountSettingsTab';
+
 interface MemberDashboardModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   userName: string;
 }
+
+
 const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
   open,
   onOpenChange,
   userName
 }) => {
-  const {
-    submissions,
-    stats,
-    loading,
-    refetch
-  } = useMySubmissions();
-  const {
-    toast
-  } = useToast();
-  const progressPercent = stats.progressToContributor / 10 * 100;
+  const { submissions, stats, loading, refetch } = useMySubmissions();
+  const { toast } = useToast();
+  const progressPercent = (stats.progressToContributor / 10) * 100;
   const [activeTab, setActiveTab] = React.useState('overview');
   const [submissionsSearch, setSubmissionsSearch] = React.useState('');
 
@@ -61,6 +82,7 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
       refetch();
     }
   }, [open, refetch]);
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
@@ -73,6 +95,7 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
         return null;
     }
   };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
@@ -80,6 +103,7 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
       year: 'numeric'
     });
   };
+
   const handleEdit = (submission: ChannelSubmission) => {
     setEditingSubmission(submission);
     setEditFormData({
@@ -93,67 +117,67 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
     });
     setShowEditDialog(true);
   };
+
   const saveEdit = async () => {
     if (!editingSubmission || !editFormData.name) {
-      toast({
-        title: 'Name is required',
-        variant: 'destructive'
-      });
+      toast({ title: 'Name is required', variant: 'destructive' });
       return;
     }
+
     try {
-      const {
-        error
-      } = await supabase.from('user_channels').update({
-        name: editFormData.name,
-        value_millions: editFormData.value_millions,
-        category: editFormData.category,
-        platform: editFormData.platform,
-        content_type: editFormData.content_type,
-        political_lean: editFormData.political_lean,
-        start_date: editFormData.start_date
-      }).eq('id', editingSubmission.id);
+      const { error } = await supabase
+        .from('user_channels')
+        .update({
+          name: editFormData.name,
+          value_millions: editFormData.value_millions,
+          category: editFormData.category,
+          platform: editFormData.platform,
+          content_type: editFormData.content_type,
+          political_lean: editFormData.political_lean,
+          start_date: editFormData.start_date
+        })
+        .eq('id', editingSubmission.id);
+
       if (error) throw error;
-      toast({
-        title: 'Submission updated'
-      });
+
+      toast({ title: 'Submission updated' });
       setShowEditDialog(false);
       setEditingSubmission(null);
       refetch();
     } catch (error) {
       console.error('Error updating submission:', error);
-      toast({
-        title: 'Failed to update submission',
-        variant: 'destructive'
-      });
+      toast({ title: 'Failed to update submission', variant: 'destructive' });
     }
   };
+
   const handleDelete = (submission: ChannelSubmission) => {
     setSubmissionToDelete(submission);
     setShowDeleteDialog(true);
   };
+
   const confirmDelete = async () => {
     if (!submissionToDelete) return;
+
     try {
-      const {
-        error
-      } = await supabase.from('user_channels').delete().eq('id', submissionToDelete.id);
+      const { error } = await supabase
+        .from('user_channels')
+        .delete()
+        .eq('id', submissionToDelete.id);
+
       if (error) throw error;
-      toast({
-        title: 'Submission removed'
-      });
+
+      toast({ title: 'Submission removed' });
       setShowDeleteDialog(false);
       setSubmissionToDelete(null);
       refetch();
     } catch (error) {
       console.error('Error deleting submission:', error);
-      toast({
-        title: 'Failed to remove submission',
-        variant: 'destructive'
-      });
+      toast({ title: 'Failed to remove submission', variant: 'destructive' });
     }
   };
-  return <Dialog open={open} onOpenChange={onOpenChange}>
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] p-0 overflow-hidden">
         <div className="flex flex-col h-[70vh]">
           {/* Header */}
@@ -174,9 +198,11 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
                 <TabsTrigger value="submissions" className="gap-2">
                   <FileText className="h-4 w-4" />
                   Submissions
-                  {stats.total > 0 && <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                  {stats.total > 0 && (
+                    <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
                       {stats.total}
-                    </Badge>}
+                    </Badge>
+                  )}
                 </TabsTrigger>
                 <TabsTrigger value="notifications" className="gap-2">
                   <Bell className="h-4 w-4" />
@@ -192,6 +218,27 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
             {/* Overview Tab */}
             <TabsContent value="overview" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
               <div className="flex-1 overflow-auto p-4 space-y-4">
+                {/* Welcome & Explanation Section */}
+                <div className="rounded-md border border-primary/20 bg-primary/5 p-4">
+                  <h3 className="text-sm font-semibold mb-2 text-primary">Welcome to Your Dashboard</h3>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    As a Member, you can submit new media channels for review. Once approved, channels become part of the public visualization.
+                  </p>
+                  <div className="space-y-2 text-xs">
+                    <div className="flex items-start gap-2">
+                      <CheckCircle className="h-3.5 w-3.5 text-emerald-500 mt-0.5 shrink-0" />
+                      <span><strong>Submit Channels:</strong> Add new media channels via the "Add Channel" button on the main page</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Clock className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
+                      <span><strong>Track Progress:</strong> View your pending, approved, and rejected submissions</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <TrendingUp className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+                      <span><strong>Become a Contributor:</strong> Get 10 channels approved to unlock Contributor status with more features</span>
+                    </div>
+                  </div>
+                </div>
                 {/* Progress Section */}
                 <div className="rounded-md border p-4">
                   <div className="flex items-center justify-between mb-3">
@@ -207,17 +254,9 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
                   </p>
                 </div>
 
-                {/* Account Explanation */}
-                <div className="rounded-md border p-4">
-                  <h3 className="text-sm font-medium mb-2">Your Account</h3>
-                  <p className="text-xs text-muted-foreground">
-                    As a Member, you can submit channel suggestions for review. Once 10 of your submissions are approved, you'll be upgraded to Contributor status with additional privileges.
-                  </p>
-                </div>
-
                 {/* Stats Grid */}
                 <div className="rounded-md border p-4">
-                  <h3 className="text-sm font-medium mb-4">Get 10 channels approved to unlock Contributor status. </h3>
+                  <h3 className="text-sm font-medium mb-4">Submission Statistics</h3>
                   <div className="grid grid-cols-3 gap-4">
                     <div className="text-center p-3 bg-muted/50 rounded-lg">
                       <div className="text-2xl font-bold text-amber-500">{stats.pending}</div>
@@ -239,18 +278,28 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
             {/* Submissions Tab */}
             <TabsContent value="submissions" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
               <div className="border-b p-4 shrink-0">
-                <Input placeholder="Search submissions..." value={submissionsSearch} onChange={e => setSubmissionsSearch(e.target.value)} className="w-full max-w-xs" />
+                <Input
+                  placeholder="Search submissions..."
+                  value={submissionsSearch}
+                  onChange={(e) => setSubmissionsSearch(e.target.value)}
+                  className="w-full max-w-xs"
+                />
               </div>
               <div className="flex-1 overflow-auto p-4">
-                {loading ? <div className="flex items-center justify-center py-12 text-muted-foreground text-sm">
+                {loading ? (
+                  <div className="flex items-center justify-center py-12 text-muted-foreground text-sm">
                     Loading...
-                  </div> : submissions.length === 0 ? <div className="flex flex-col items-center justify-center py-12 text-center">
+                  </div>
+                ) : submissions.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
                     <Sparkles className="w-8 h-8 text-muted-foreground/50 mb-3" />
                     <p className="text-sm text-muted-foreground">No submissions yet</p>
                     <p className="text-xs text-muted-foreground/70 mt-1">
                       Start suggesting channels to track your progress
                     </p>
-                  </div> : <div className="rounded-md border overflow-x-auto">
+                  </div>
+                ) : (
+                  <div className="rounded-md border overflow-x-auto">
                     <Table className="min-w-[600px] text-xs">
                       <TableHeader>
                         <TableRow>
@@ -263,7 +312,14 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {submissions.filter(s => !submissionsSearch || s.name.toLowerCase().includes(submissionsSearch.toLowerCase()) || s.country.toLowerCase().includes(submissionsSearch.toLowerCase()) || s.status.toLowerCase().includes(submissionsSearch.toLowerCase())).map(submission => <TableRow key={submission.id}>
+                        {submissions
+                          .filter(s => !submissionsSearch || 
+                            s.name.toLowerCase().includes(submissionsSearch.toLowerCase()) ||
+                            s.country.toLowerCase().includes(submissionsSearch.toLowerCase()) ||
+                            s.status.toLowerCase().includes(submissionsSearch.toLowerCase())
+                          )
+                          .map((submission) => (
+                          <TableRow key={submission.id}>
                             <TableCell className="font-medium">{submission.name}</TableCell>
                             <TableCell>{submission.country}</TableCell>
                             <TableCell>{submission.year}</TableCell>
@@ -272,19 +328,33 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
                               {formatDate(submission.created_at)}
                             </TableCell>
                             <TableCell>
-                              {submission.status === 'pending' && <div className="flex items-center gap-1">
-                                  <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleEdit(submission)}>
+                              {submission.status === 'pending' && (
+                                <div className="flex items-center gap-1">
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-7 w-7 p-0"
+                                    onClick={() => handleEdit(submission)}
+                                  >
                                     <Pencil className="h-3 w-3" />
                                   </Button>
-                                  <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive hover:text-destructive" onClick={() => handleDelete(submission)}>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                                    onClick={() => handleDelete(submission)}
+                                  >
                                     <Trash2 className="h-3 w-3" />
                                   </Button>
-                                </div>}
+                                </div>
+                              )}
                             </TableCell>
-                          </TableRow>)}
+                          </TableRow>
+                        ))}
                       </TableBody>
                     </Table>
-                  </div>}
+                  </div>
+                )}
               </div>
             </TabsContent>
 
@@ -312,24 +382,23 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
               <div className="grid grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto p-1">
                 <div className="col-span-2">
                   <Label>Channel Name</Label>
-                  <Input value={editFormData.name} onChange={e => setEditFormData({
-                  ...editFormData,
-                  name: e.target.value
-                })} />
+                  <Input
+                    value={editFormData.name}
+                    onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                  />
                 </div>
                 <div>
                   <Label>Audience (Millions)</Label>
-                  <Input type="number" step="0.1" value={editFormData.value_millions} onChange={e => setEditFormData({
-                  ...editFormData,
-                  value_millions: parseFloat(e.target.value) || 0
-                })} />
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={editFormData.value_millions}
+                    onChange={(e) => setEditFormData({ ...editFormData, value_millions: parseFloat(e.target.value) || 0 })}
+                  />
                 </div>
                 <div>
                   <Label>Category</Label>
-                  <Select value={editFormData.category} onValueChange={v => setEditFormData({
-                  ...editFormData,
-                  category: v
-                })}>
+                  <Select value={editFormData.category} onValueChange={(v) => setEditFormData({ ...editFormData, category: v })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="corporate">Corporate</SelectItem>
@@ -339,24 +408,23 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
                 </div>
                 <div>
                   <Label>Platform</Label>
-                  <Input value={editFormData.platform} onChange={e => setEditFormData({
-                  ...editFormData,
-                  platform: e.target.value
-                })} placeholder="e.g., TV, Digital, Print" />
+                  <Input
+                    value={editFormData.platform}
+                    onChange={(e) => setEditFormData({ ...editFormData, platform: e.target.value })}
+                    placeholder="e.g., TV, Digital, Print"
+                  />
                 </div>
                 <div>
                   <Label>Content Type</Label>
-                  <Input value={editFormData.content_type} onChange={e => setEditFormData({
-                  ...editFormData,
-                  content_type: e.target.value
-                })} placeholder="e.g., News, Entertainment" />
+                  <Input
+                    value={editFormData.content_type}
+                    onChange={(e) => setEditFormData({ ...editFormData, content_type: e.target.value })}
+                    placeholder="e.g., News, Entertainment"
+                  />
                 </div>
                 <div>
                   <Label>Political Lean</Label>
-                  <Select value={editFormData.political_lean} onValueChange={v => setEditFormData({
-                  ...editFormData,
-                  political_lean: v
-                })}>
+                  <Select value={editFormData.political_lean} onValueChange={(v) => setEditFormData({ ...editFormData, political_lean: v })}>
                     <SelectTrigger><SelectValue placeholder="Select lean" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="left">Left</SelectItem>
@@ -369,10 +437,11 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
                 </div>
                 <div>
                   <Label>Start Date</Label>
-                  <Input value={editFormData.start_date} onChange={e => setEditFormData({
-                  ...editFormData,
-                  start_date: e.target.value
-                })} placeholder="e.g., 1980, 2010" />
+                  <Input
+                    value={editFormData.start_date}
+                    onChange={(e) => setEditFormData({ ...editFormData, start_date: e.target.value })}
+                    placeholder="e.g., 1980, 2010"
+                  />
                 </div>
               </div>
               <div className="flex justify-end gap-2 pt-2">
@@ -401,6 +470,8 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
           </AlertDialogContent>
         </AlertDialog>
       </DialogContent>
-    </Dialog>;
+    </Dialog>
+  );
 };
+
 export default MemberDashboardModal;
