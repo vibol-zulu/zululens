@@ -428,54 +428,6 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
                       </div>
                     )}
                   </div>
-
-                  {/* Activity Summary */}
-                  <div className="rounded-md border p-4">
-                    <h3 className="text-sm font-medium mb-4">Activity</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
-                          <Target className="h-4 w-4 text-primary" />
-                        </div>
-                        <div>
-                          <div className="font-semibold">{metrics?.total_suggestions || 0}</div>
-                          <div className="text-xs text-muted-foreground">Total Suggestions</div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
-                          <CheckCircle className="h-4 w-4 text-primary" />
-                        </div>
-                        <div>
-                          <div className="font-semibold">{metrics?.approved_suggestions || 0}</div>
-                          <div className="text-xs text-muted-foreground">Approved</div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
-                          <Trophy className="h-4 w-4 text-primary" />
-                        </div>
-                        <div>
-                          <div className="font-semibold">{metrics?.total_comments || 0}</div>
-                          <div className="text-xs text-muted-foreground">Comments</div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
-                          <Clock className="h-4 w-4 text-primary" />
-                        </div>
-                        <div>
-                          <div className="font-semibold text-sm">
-                            {metrics?.last_activity_date 
-                              ? formatDate(metrics.last_activity_date)
-                              : 'No activity'
-                            }
-                          </div>
-                          <div className="text-xs text-muted-foreground">Last Active</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </TabsContent>
 
