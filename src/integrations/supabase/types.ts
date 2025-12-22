@@ -275,6 +275,45 @@ export type Database = {
         }
         Relationships: []
       }
+      moderator_requests: {
+        Row: {
+          country: string | null
+          created_at: string | null
+          email: string
+          id: string
+          message: string
+          name: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          country?: string | null
+          created_at?: string | null
+          email: string
+          id?: string
+          message: string
+          name: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          country?: string | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       news_updates: {
         Row: {
           category: string

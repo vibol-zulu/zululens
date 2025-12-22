@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import {
   AlertDialog,
@@ -15,9 +18,9 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table,
@@ -37,8 +40,9 @@ import {
 import { useContributorMetrics, LeaderboardEntry } from '@/hooks/useContributorMetrics';
 import { useMySubmissions, ChannelSubmission } from '@/hooks/useMySubmissions';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Flame, Trophy, Target, TrendingUp, Clock, CheckCircle, XCircle, Loader2, BarChart3, FileText, Users, Pencil, Trash2, Bell, Settings } from 'lucide-react';
+import { Trophy, Target, TrendingUp, Clock, CheckCircle, XCircle, Loader2, BarChart3, FileText, Users, Pencil, Trash2, Bell, Settings, Shield } from 'lucide-react';
 import NotificationsTab from '@/components/NotificationsTab';
 import AccountSettingsTab from '@/components/AccountSettingsTab';
 
@@ -56,9 +60,16 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
   const { metrics, leaderboard, userRank, loading: metricsLoading, fetchLeaderboard } = useContributorMetrics();
   const { submissions, stats, loading: submissionsLoading, refetch: refetchSubmissions } = useMySubmissions();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [submissionsSearch, setSubmissionsSearch] = useState('');
   const [leaderboardSearch, setLeaderboardSearch] = useState('');
+
+  // Moderator application state
+  const [showModeratorApplicationDialog, setShowModeratorApplicationDialog] = useState(false);
+  const [moderatorApplicationMessage, setModeratorApplicationMessage] = useState('');
+  const [submittingApplication, setSubmittingApplication] = useState(false);
+  const [existingApplication, setExistingApplication] = useState<{ status: string; created_at: string } | null>(null);
 
   // Edit state
   const [editingSubmission, setEditingSubmission] = useState<ChannelSubmission | null>(null);
@@ -77,12 +88,71 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
   const [submissionToDelete, setSubmissionToDelete] = useState<ChannelSubmission | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
+  // Fetch existing moderator application
   useEffect(() => {
+    const fetchExistingApplication = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from('moderator_requests')
+        .select('status, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (data) {
+        setExistingApplication(data);
+      }
+    };
+    
     if (open) {
       fetchLeaderboard();
       refetchSubmissions();
+      fetchExistingApplication();
     }
-  }, [open, fetchLeaderboard, refetchSubmissions]);
+  }, [open, fetchLeaderboard, refetchSubmissions, user]);
+
+  const handleModeratorApplication = async () => {
+    if (!user || !moderatorApplicationMessage.trim()) {
+      toast({ title: 'Please enter a message', variant: 'destructive' });
+      return;
+    }
+
+    setSubmittingApplication(true);
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name, email')
+        .eq('id', user.id)
+        .single();
+
+      const { error } = await supabase
+        .from('moderator_requests')
+        .insert({
+          user_id: user.id,
+          name: profile?.full_name || 'Unknown',
+          email: profile?.email || user.email || '',
+          message: moderatorApplicationMessage.trim(),
+          country: 'United States'
+        });
+
+      if (error) throw error;
+
+      toast({ title: 'Application submitted successfully!' });
+      setShowModeratorApplicationDialog(false);
+      setModeratorApplicationMessage('');
+      setExistingApplication({ status: 'pending', created_at: new Date().toISOString() });
+    } catch (error: any) {
+      console.error('Error submitting moderator application:', error);
+      toast({ 
+        title: 'Failed to submit application', 
+        description: error.message || 'Please try again later',
+        variant: 'destructive' 
+      });
+    } finally {
+      setSubmittingApplication(false);
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -248,36 +318,14 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
                         <span><strong>Leaderboard:</strong> Compete with other contributors based on your engagement score</span>
                       </div>
                       <div className="flex items-start gap-2">
-                        <Flame className="h-3.5 w-3.5 text-orange-500 mt-0.5 shrink-0" />
-                        <span><strong>Build Streaks:</strong> Stay active daily to increase your streak and engagement score</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <Target className="h-3.5 w-3.5 text-blue-500 mt-0.5 shrink-0" />
-                        <span><strong>Become a Moderator:</strong> Get 50 channels approved to unlock Moderator status with review privileges</span>
+                        <Shield className="h-3.5 w-3.5 text-blue-500 mt-0.5 shrink-0" />
+                        <span><strong>Become a Moderator:</strong> Apply to become a Moderator and help review channel submissions</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Stats Row */}
-                  <div className="grid grid-cols-4 gap-3">
-                    <div className="rounded-md border p-4 text-center">
-                      <div className="flex items-center justify-center gap-1.5 mb-1">
-                        <Flame className="h-4 w-4 text-orange-500" />
-                        <span className="text-xs text-muted-foreground">Streak</span>
-                      </div>
-                      <div className="text-2xl font-bold">{metrics?.current_streak || 0}</div>
-                      <div className="text-[10px] text-muted-foreground">days</div>
-                    </div>
-
-                    <div className="rounded-md border p-4 text-center">
-                      <div className="flex items-center justify-center gap-1.5 mb-1">
-                        <Trophy className="h-4 w-4 text-yellow-500" />
-                        <span className="text-xs text-muted-foreground">Best</span>
-                      </div>
-                      <div className="text-2xl font-bold">{metrics?.longest_streak || 0}</div>
-                      <div className="text-[10px] text-muted-foreground">days</div>
-                    </div>
-
+                  <div className="grid grid-cols-3 gap-3">
                     <div className="rounded-md border p-4 text-center">
                       <div className="flex items-center justify-center gap-1.5 mb-1">
                         <TrendingUp className="h-4 w-4 text-emerald-500" />
@@ -299,12 +347,21 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
                         {leaderboard.length > 0 ? `of ${leaderboard.length}` : ''}
                       </div>
                     </div>
+
+                    <div className="rounded-md border p-4 text-center">
+                      <div className="flex items-center justify-center gap-1.5 mb-1">
+                        <CheckCircle className="h-4 w-4 text-emerald-500" />
+                        <span className="text-xs text-muted-foreground">Approved</span>
+                      </div>
+                      <div className="text-2xl font-bold">{stats.approved}</div>
+                      <div className="text-[10px] text-muted-foreground">channels</div>
+                    </div>
                   </div>
 
                   {/* Submission Stats */}
                   <div className="rounded-md border p-4">
                     <h3 className="text-sm font-medium mb-4">Submissions</h3>
-                    <div className="grid grid-cols-3 gap-4 text-center mb-4">
+                    <div className="grid grid-cols-3 gap-4 text-center">
                       <div className="p-3 bg-muted/50 rounded-lg">
                         <div className="text-2xl font-bold text-emerald-500">{stats.approved}</div>
                         <div className="text-xs text-muted-foreground">Approved</div>
@@ -318,17 +375,58 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
                         <div className="text-xs text-muted-foreground">Rejected</div>
                       </div>
                     </div>
+                  </div>
 
-                    <div className="pt-4 border-t border-border/50">
-                      <div className="flex justify-between text-sm mb-2">
-                        <span className="text-muted-foreground">Progress to Moderator</span>
-                        <span className="font-medium">{stats.approved}/50</span>
-                      </div>
-                      <Progress value={(stats.approved / 50) * 100} className="h-2" />
-                      <p className="text-xs text-muted-foreground mt-2">
-                        {50 - stats.approved} more approved suggestions needed
-                      </p>
+                  {/* Moderator Application Section */}
+                  <div className="rounded-md border p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Shield className="h-4 w-4 text-primary" />
+                      <h3 className="text-sm font-medium">Become a Moderator</h3>
                     </div>
+                    
+                    {existingApplication ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground">Application Status:</span>
+                          <Badge 
+                            variant={existingApplication.status === 'approved' ? 'default' : existingApplication.status === 'rejected' ? 'destructive' : 'secondary'}
+                            className={existingApplication.status === 'approved' ? 'bg-emerald-600' : ''}
+                          >
+                            {existingApplication.status === 'pending' && <Clock className="h-3 w-3 mr-1" />}
+                            {existingApplication.status === 'approved' && <CheckCircle className="h-3 w-3 mr-1" />}
+                            {existingApplication.status === 'rejected' && <XCircle className="h-3 w-3 mr-1" />}
+                            {existingApplication.status.charAt(0).toUpperCase() + existingApplication.status.slice(1)}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Submitted on {formatDate(existingApplication.created_at)}
+                        </p>
+                        {existingApplication.status === 'rejected' && (
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => setShowModeratorApplicationDialog(true)}
+                            className="mt-2"
+                          >
+                            Submit New Application
+                          </Button>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <p className="text-xs text-muted-foreground">
+                          Ready to take on more responsibility? As a Moderator, you'll help review and approve channel submissions from other users.
+                        </p>
+                        <Button 
+                          size="sm" 
+                          onClick={() => setShowModeratorApplicationDialog(true)}
+                          className="gap-2"
+                        >
+                          <Shield className="h-4 w-4" />
+                          Apply to Become a Moderator
+                        </Button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Activity Summary */}
@@ -478,9 +576,8 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
                           <TableRow>
                             <TableHead className="w-[60px]">Rank</TableHead>
                             <TableHead>Contributor</TableHead>
-                            <TableHead className="text-center">Streak</TableHead>
-                            <TableHead className="text-center">Approved</TableHead>
                             <TableHead className="text-center">Score</TableHead>
+                            <TableHead className="text-center">Approved</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -507,8 +604,8 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
                               </TableCell>
                               <TableCell className="text-center">
                                 <div className="flex items-center justify-center gap-1">
-                                  <Flame className="h-4 w-4 text-orange-500" />
-                                  {entry.current_streak}
+                                  <TrendingUp className="h-4 w-4 text-emerald-500" />
+                                  {entry.engagement_score}
                                 </div>
                               </TableCell>
                               <TableCell className="text-center">
@@ -516,9 +613,6 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
                                   <CheckCircle className="h-4 w-4 text-green-500" />
                                   {entry.approved_suggestions}
                                 </div>
-                              </TableCell>
-                              <TableCell className="text-center">
-                                <Badge variant="secondary">{entry.engagement_score}</Badge>
                               </TableCell>
                             </TableRow>
                           ))}
@@ -641,6 +735,53 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Moderator Application Dialog */}
+        <Dialog open={showModeratorApplicationDialog} onOpenChange={setShowModeratorApplicationDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-primary" />
+                Apply to Become a Moderator
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                As a Moderator, you'll help review and approve channel submissions from other users. 
+                Please tell us why you'd like to become a moderator and how you can contribute.
+              </p>
+              <div className="space-y-2">
+                <Label htmlFor="moderator-message">Your Application</Label>
+                <Textarea
+                  id="moderator-message"
+                  value={moderatorApplicationMessage}
+                  onChange={(e) => setModeratorApplicationMessage(e.target.value)}
+                  placeholder="Tell us about your experience and why you'd like to help moderate..."
+                  rows={4}
+                  maxLength={1000}
+                />
+                <p className="text-xs text-muted-foreground text-right">
+                  {moderatorApplicationMessage.length}/1000
+                </p>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                onClick={() => setShowModeratorApplicationDialog(false)}
+                disabled={submittingApplication}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleModeratorApplication}
+                disabled={submittingApplication || !moderatorApplicationMessage.trim()}
+              >
+                {submittingApplication ? 'Submitting...' : 'Submit Application'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </DialogContent>
     </Dialog>
   );
