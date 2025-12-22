@@ -62,6 +62,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import ContributorCelebration from '@/components/ContributorCelebration';
+import { Eye, PartyPopper, BellRing } from 'lucide-react';
 
 interface Channel {
   id: string;
@@ -386,6 +388,10 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   const [selectedNews, setSelectedNews] = useState<Set<string>>(new Set());
   const [selectedPositionAnalyses, setSelectedPositionAnalyses] = useState<Set<string>>(new Set());
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
+
+  // Feature preview state
+  const [showCelebrationPreview, setShowCelebrationPreview] = useState(false);
+  const [showApprovalNotificationPreview, setShowApprovalNotificationPreview] = useState(false);
 
   // Settings state
   const DEFAULT_SYSTEM_PROMPT = `You are an expert media analyst specializing in audience measurement, cross-platform reach estimation, and political media classification. Your task is to:
@@ -3818,6 +3824,69 @@ Make sure questions are specific to {country}'s current political landscape and 
                     </CardContent>
                   </Card>
 
+                  {/* Feature Previews */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Eye className="h-5 w-5" />
+                        Feature Previews
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-xs text-muted-foreground">
+                        Preview features that require objective completion to test their appearance and functionality.
+                      </p>
+                      
+                      <div className="grid gap-3">
+                        {/* Contributor Celebration Preview */}
+                        <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                              <PartyPopper className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-sm">Congratulations Card</p>
+                              <p className="text-xs text-muted-foreground">
+                                Shown after 10 approved submissions
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowCelebrationPreview(true)}
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            Preview
+                          </Button>
+                        </div>
+
+                        {/* Approval Notification Preview */}
+                        <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                              <BellRing className="h-5 w-5 text-emerald-600" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-sm">Approval Notification</p>
+                              <p className="text-xs text-muted-foreground">
+                                Shown in comments bar when submission is approved
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowApprovalNotificationPreview(true)}
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            Preview
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
                   <Card>
                     <CardHeader>
                     </CardHeader>
@@ -4910,6 +4979,66 @@ Make sure questions are specific to {country}'s current political landscape and 
                 </div>
               ) : null}
             </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Contributor Celebration Preview */}
+        <ContributorCelebration
+          open={showCelebrationPreview}
+          onOpenChange={setShowCelebrationPreview}
+          userName="Preview User"
+        />
+
+        {/* Approval Notification Preview Dialog */}
+        <Dialog open={showApprovalNotificationPreview} onOpenChange={setShowApprovalNotificationPreview}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <BellRing className="h-5 w-5 text-emerald-600" />
+                Approval Notification Preview
+              </DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                This is how the approval notification appears in the comments bar when a user's submission is approved:
+              </p>
+              
+              {/* Mock notification preview */}
+              <div className="border rounded-lg overflow-hidden">
+                <div className="bg-muted/50 px-3 py-2 border-b">
+                  <span className="text-xs text-muted-foreground">Comments Bar Preview</span>
+                </div>
+                <div className="p-4 bg-gradient-to-r from-emerald-500/10 to-transparent">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                      <Check className="h-4 w-4 text-emerald-600" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                        🎉 Your submission was approved!
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        "Example Channel Name" has been added to the map.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-muted/50 rounded-lg p-3 text-sm">
+                <p className="font-medium mb-1">Display behavior:</p>
+                <ul className="text-xs text-muted-foreground space-y-1">
+                  <li>• Shows in comments bar for 15 seconds per notification</li>
+                  <li>• Multiple approvals cycle through automatically</li>
+                  <li>• Marked as read after being displayed</li>
+                </ul>
+              </div>
+            </div>
+
+            <Button onClick={() => setShowApprovalNotificationPreview(false)} className="w-full">
+              Close Preview
+            </Button>
           </DialogContent>
         </Dialog>
       </DialogContent>
