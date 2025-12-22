@@ -3787,6 +3787,76 @@ Make sure questions are specific to {country}'s current political landscape and 
                     </CardContent>
                   </Card>
 
+                  {/* Search Flow Methodology */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Search className="h-5 w-5" />
+                        Channel Discovery Search Methodology
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-sm text-muted-foreground">
+                        How the Channel Discovery feature searches for and identifies media channels.
+                      </p>
+                      
+                      <div className="space-y-4">
+                        {/* Primary: Perplexity */}
+                        <div className="border rounded-lg p-4 space-y-2">
+                          <div className="flex items-center gap-2">
+                            <img src={perplexityLogo} alt="Perplexity" className="h-5 w-5" />
+                            <h4 className="font-medium">Primary: Perplexity AI</h4>
+                            <Badge variant="default" className="ml-auto">Active</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            Uses Perplexity's Sonar model for AI-powered research that:
+                          </p>
+                          <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1 ml-2">
+                            <li>Searches for media channels by country and category</li>
+                            <li>Returns structured data: name, description, political lean, founding year, etc.</li>
+                            <li>Provides reasoning and source URLs for verification</li>
+                            <li>Identifies up to 10 channels per search</li>
+                          </ul>
+                        </div>
+
+                        {/* Fallback: Firecrawl */}
+                        <div className="border rounded-lg p-4 space-y-2 opacity-75">
+                          <div className="flex items-center gap-2">
+                            <Sparkles className="h-5 w-5 text-orange-500" />
+                            <h4 className="font-medium">Fallback: Firecrawl</h4>
+                            <Badge variant="secondary" className="ml-auto">Backup</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            If Perplexity fails or returns no results, Firecrawl provides a backup:
+                          </p>
+                          <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1 ml-2">
+                            <li>Performs direct web search for media channels</li>
+                            <li>Extracts basic information: title, URL, description</li>
+                            <li>Less structured than Perplexity but ensures results</li>
+                          </ul>
+                        </div>
+
+                        {/* Deduplication */}
+                        <div className="border rounded-lg p-4 space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Database className="h-5 w-5 text-blue-500" />
+                            <h4 className="font-medium">Deduplication</h4>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            Before saving, discovered channels are checked against:
+                          </p>
+                          <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1 ml-2">
+                            <li><strong>channel_discoveries</strong> - Existing pending/reviewed discoveries</li>
+                            <li><strong>user_channels</strong> - Already approved channels in the system</li>
+                          </ul>
+                          <p className="text-sm text-muted-foreground mt-2">
+                            Only unique channels are added to the staging table with "pending" status.
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
                   <Card>
                     <CardHeader>
                       <CardTitle className="text-lg">Features</CardTitle>
