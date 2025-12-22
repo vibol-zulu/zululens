@@ -392,6 +392,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   // Feature preview state
   const [showCelebrationPreview, setShowCelebrationPreview] = useState(false);
   const [showApprovalNotificationPreview, setShowApprovalNotificationPreview] = useState(false);
+  const [approvalNotificationDuration, setApprovalNotificationDuration] = useState('15');
 
   // Settings state
   const DEFAULT_SYSTEM_PROMPT = `You are an expert media analyst specializing in audience measurement, cross-platform reach estimation, and political media classification. Your task is to:
@@ -633,6 +634,9 @@ Make sure questions are specific to {country}'s current political landscape and 
       if (settingsMap['default_view_mode']) {
         setDefaultViewMode(settingsMap['default_view_mode'] as 'default' | 'compass');
       }
+      if (settingsMap['approval_notification_duration']) {
+        setApprovalNotificationDuration(settingsMap['approval_notification_duration']);
+      }
     } catch (error) {
       console.error('Error fetching settings:', error);
     } finally {
@@ -650,6 +654,7 @@ Make sure questions are specific to {country}'s current political landscape and 
         { key: 'default_view_mode', value: defaultViewMode },
         { key: 'px_factor_global', value: pxFactorGlobal },
         { key: 'px_factor_all_countries', value: pxFactorAllCountries },
+        { key: 'approval_notification_duration', value: approvalNotificationDuration },
       ];
       
       // Only save prompts if they have content
@@ -3862,26 +3867,42 @@ Make sure questions are specific to {country}'s current political landscape and 
                         </div>
 
                         {/* Approval Notification Preview */}
-                        <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                              <BellRing className="h-5 w-5 text-emerald-600" />
+                        <div className="flex flex-col gap-3 p-3 rounded-lg border bg-muted/30">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                                <BellRing className="h-5 w-5 text-emerald-600" />
+                              </div>
+                              <div>
+                                <p className="font-medium text-sm">Approval Notification</p>
+                                <p className="text-xs text-muted-foreground">
+                                  Shown in comments bar when submission is approved
+                                </p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="font-medium text-sm">Approval Notification</p>
-                              <p className="text-xs text-muted-foreground">
-                                Shown in comments bar when submission is approved
-                              </p>
-                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setShowApprovalNotificationPreview(true)}
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              Preview
+                            </Button>
                           </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setShowApprovalNotificationPreview(true)}
-                          >
-                            <Eye className="h-4 w-4 mr-2" />
-                            Preview
-                          </Button>
+                          <div className="flex items-center gap-3 pt-2 border-t">
+                            <Label htmlFor="approval-duration" className="text-xs whitespace-nowrap">Display time:</Label>
+                            <Input
+                              id="approval-duration"
+                              type="number"
+                              min="5"
+                              max="120"
+                              step="1"
+                              value={approvalNotificationDuration}
+                              onChange={(e) => setApprovalNotificationDuration(e.target.value)}
+                              className="w-20 h-8 text-sm"
+                            />
+                            <span className="text-xs text-muted-foreground">seconds</span>
+                          </div>
                         </div>
                       </div>
                     </CardContent>
@@ -5029,7 +5050,7 @@ Make sure questions are specific to {country}'s current political landscape and 
               <div className="bg-muted/50 rounded-lg p-3 text-sm">
                 <p className="font-medium mb-1">Display behavior:</p>
                 <ul className="text-xs text-muted-foreground space-y-1">
-                  <li>• Shows in comments bar for 15 seconds per notification</li>
+                  <li>• Shows in comments bar for {approvalNotificationDuration} seconds per notification</li>
                   <li>• Multiple approvals cycle through automatically</li>
                   <li>• Marked as read after being displayed</li>
                 </ul>
