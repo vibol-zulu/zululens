@@ -103,22 +103,8 @@ const ContributorCelebration: React.FC<ContributorCelebrationProps> = ({
 
         <div className="space-y-4 py-4">
           <div className="flex items-center justify-center gap-2">
-            <span className="text-lg">You're now eligible to become a</span>
-            <Badge className="text-base px-3 py-1 bg-primary">Contributor</Badge>
-          </div>
-          
-          <p className="text-sm text-muted-foreground">
-            As a Contributor, you'll have enhanced privileges and your contributions 
-            will help shape the media landscape visualization for everyone.
-          </p>
-
-          <div className="bg-muted/50 rounded-lg p-4 text-left">
-            <h4 className="font-semibold text-sm mb-2">What's next?</h4>
-            <ul className="text-sm text-muted-foreground space-y-1">
-              <li>• An admin will review your contributions</li>
-              <li>• You'll be promoted to Contributor status</li>
-              <li>• Keep contributing to become a Moderator!</li>
-            </ul>
+            <span className="text-lg">New Member status:</span>
+            <Badge className="text-base px-3 py-1 bg-primary shimmer-text">Contributor</Badge>
           </div>
         </div>
 
