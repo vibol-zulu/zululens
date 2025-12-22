@@ -61,7 +61,7 @@ const MissionModal: React.FC<MissionModalProps> = ({
 
               <div>
                 <h5 className="font-medium text-foreground">Contributor</h5>
-                <p>Consistent Contributors will be invited to become Moderators!</p>
+                <p>Contributors can apply to become Moderators and help review submissions!</p>
               </div>
 
               <div>
