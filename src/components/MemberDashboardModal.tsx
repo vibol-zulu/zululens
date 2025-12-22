@@ -218,6 +218,27 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
             {/* Overview Tab */}
             <TabsContent value="overview" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
               <div className="flex-1 overflow-auto p-4 space-y-4">
+                {/* Welcome & Explanation Section */}
+                <div className="rounded-md border border-primary/20 bg-primary/5 p-4">
+                  <h3 className="text-sm font-semibold mb-2 text-primary">Welcome to Your Dashboard</h3>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    As a Member, you can submit new media channels for review. Once approved, channels become part of the public visualization.
+                  </p>
+                  <div className="space-y-2 text-xs">
+                    <div className="flex items-start gap-2">
+                      <CheckCircle className="h-3.5 w-3.5 text-emerald-500 mt-0.5 shrink-0" />
+                      <span><strong>Submit Channels:</strong> Add new media channels via the "+ Add Channel" button on the main page</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Clock className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
+                      <span><strong>Track Progress:</strong> View your pending, approved, and rejected submissions</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <TrendingUp className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+                      <span><strong>Become a Contributor:</strong> Get 10 channels approved to unlock Contributor status with more features</span>
+                    </div>
+                  </div>
+                </div>
                 {/* Progress Section */}
                 <div className="rounded-md border p-4">
                   <div className="flex items-center justify-between mb-3">

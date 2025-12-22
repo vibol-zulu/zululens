@@ -232,6 +232,32 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
               {/* Overview Tab */}
               <TabsContent value="overview" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
                 <div className="flex-1 overflow-auto p-4 space-y-4">
+                  {/* Welcome & Explanation Section */}
+                  <div className="rounded-md border border-primary/20 bg-primary/5 p-4">
+                    <h3 className="text-sm font-semibold mb-2 text-primary">Welcome, Contributor!</h3>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      As a Contributor, you have enhanced privileges and are recognized for your valuable contributions to the platform.
+                    </p>
+                    <div className="space-y-2 text-xs">
+                      <div className="flex items-start gap-2">
+                        <CheckCircle className="h-3.5 w-3.5 text-emerald-500 mt-0.5 shrink-0" />
+                        <span><strong>Submit Channels:</strong> Continue adding new media channels to grow the database</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Trophy className="h-3.5 w-3.5 text-yellow-500 mt-0.5 shrink-0" />
+                        <span><strong>Leaderboard:</strong> Compete with other contributors based on your engagement score</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Flame className="h-3.5 w-3.5 text-orange-500 mt-0.5 shrink-0" />
+                        <span><strong>Build Streaks:</strong> Stay active daily to increase your streak and engagement score</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Target className="h-3.5 w-3.5 text-blue-500 mt-0.5 shrink-0" />
+                        <span><strong>Become a Moderator:</strong> Get 50 channels approved to unlock Moderator status with review privileges</span>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Stats Row */}
                   <div className="grid grid-cols-4 gap-3">
                     <div className="rounded-md border p-4 text-center">
