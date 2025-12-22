@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useComments, Comment } from '@/hooks/useComments';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAppSettings } from '@/hooks/useAppSettings';
 import { toast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
@@ -172,6 +173,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
   
   const isMobile = useIsMobile();
   const { user, isAdmin } = useAuth();
+  const { settings } = useAppSettings();
   const { comments, loading, addComment, updateComment, deleteComment } = useComments(country);
 
   // Check if user has moderator role (similar to admin check in useAuth)
@@ -309,7 +311,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
           }
           return nextIndex;
         });
-      }, 15000); // Show each approval for 15 seconds
+      }, settings.approvalNotificationDuration * 1000); // Use configurable duration
       
       return () => clearInterval(interval);
     }
@@ -320,7 +322,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
     }, 4000);
     
     return () => clearInterval(interval);
-  }, [isExpanded, showingApproval, approvalNotifications, user]);
+  }, [isExpanded, showingApproval, approvalNotifications, user, settings.approvalNotificationDuration]);
 
   const handleSubmit = async () => {
     if (!newComment.trim()) return;

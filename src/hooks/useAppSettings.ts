@@ -7,6 +7,7 @@ interface AppSettings {
   pxFactorGlobal: number;
   pxFactorAllCountries: number;
   defaultViewMode: 'default' | 'compass';
+  approvalNotificationDuration: number;
 }
 
 // Decode HTML entities in URLs (e.g., &amp; -> &)
@@ -19,6 +20,7 @@ const decodeHtmlEntities = (str: string): string => {
 const DEFAULT_MAILCHIMP_URL = 'https://group.us12.list-manage.com/subscribe/post?u=8cebbb69cb233fee8e96a59fe&id=de54a87f37&f_id=005e9fe0f0';
 const DEFAULT_PX_FACTOR_GLOBAL = 1.0;
 const DEFAULT_PX_FACTOR_ALL_COUNTRIES = 2.24;
+const DEFAULT_APPROVAL_NOTIFICATION_DURATION = 15;
 
 export const useAppSettings = () => {
   const [settings, setSettings] = useState<AppSettings>({
@@ -26,7 +28,8 @@ export const useAppSettings = () => {
     guidedTourEnabled: false,
     pxFactorGlobal: DEFAULT_PX_FACTOR_GLOBAL,
     pxFactorAllCountries: DEFAULT_PX_FACTOR_ALL_COUNTRIES,
-    defaultViewMode: 'compass'
+    defaultViewMode: 'compass',
+    approvalNotificationDuration: DEFAULT_APPROVAL_NOTIFICATION_DURATION
   });
   const [loading, setLoading] = useState(true);
 
@@ -50,7 +53,8 @@ export const useAppSettings = () => {
           guidedTourEnabled: settingsMap['guided_tour_enabled'] === 'true',
           pxFactorGlobal: settingsMap['px_factor_global'] ? parseFloat(settingsMap['px_factor_global']) : DEFAULT_PX_FACTOR_GLOBAL,
           pxFactorAllCountries: settingsMap['px_factor_all_countries'] ? parseFloat(settingsMap['px_factor_all_countries']) : DEFAULT_PX_FACTOR_ALL_COUNTRIES,
-          defaultViewMode: (settingsMap['default_view_mode'] as 'default' | 'compass') || 'compass'
+          defaultViewMode: (settingsMap['default_view_mode'] as 'default' | 'compass') || 'compass',
+          approvalNotificationDuration: settingsMap['approval_notification_duration'] ? parseInt(settingsMap['approval_notification_duration']) : DEFAULT_APPROVAL_NOTIFICATION_DURATION
         });
       } catch (error) {
         console.error('Error fetching app settings:', error);
