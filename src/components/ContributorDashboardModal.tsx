@@ -324,39 +324,6 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
                     </div>
                   </div>
 
-                  {/* Stats Row */}
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="rounded-md border p-4 text-center">
-                      <div className="flex items-center justify-center gap-1.5 mb-1">
-                        <TrendingUp className="h-4 w-4 text-emerald-500" />
-                        <span className="text-xs text-muted-foreground">Score</span>
-                      </div>
-                      <div className="text-2xl font-bold">{metrics?.engagement_score || 0}</div>
-                      <div className="text-[10px] text-muted-foreground">points</div>
-                    </div>
-
-                    <div className="rounded-md border p-4 text-center">
-                      <div className="flex items-center justify-center gap-1.5 mb-1">
-                        <Target className="h-4 w-4 text-blue-500" />
-                        <span className="text-xs text-muted-foreground">Rank</span>
-                      </div>
-                      <div className="text-2xl font-bold">
-                        {userRank ? `#${userRank}` : '-'}
-                      </div>
-                      <div className="text-[10px] text-muted-foreground">
-                        {leaderboard.length > 0 ? `of ${leaderboard.length}` : ''}
-                      </div>
-                    </div>
-
-                    <div className="rounded-md border p-4 text-center">
-                      <div className="flex items-center justify-center gap-1.5 mb-1">
-                        <CheckCircle className="h-4 w-4 text-emerald-500" />
-                        <span className="text-xs text-muted-foreground">Approved</span>
-                      </div>
-                      <div className="text-2xl font-bold">{stats.approved}</div>
-                      <div className="text-[10px] text-muted-foreground">channels</div>
-                    </div>
-                  </div>
 
                   {/* Submission Stats */}
                   <div className="rounded-md border p-4">
