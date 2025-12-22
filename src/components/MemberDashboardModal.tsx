@@ -227,7 +227,7 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
                   <div className="space-y-2 text-xs">
                     <div className="flex items-start gap-2">
                       <CheckCircle className="h-3.5 w-3.5 text-emerald-500 mt-0.5 shrink-0" />
-                      <span><strong>Submit Channels:</strong> Add new media channels via the "+ Add Channel" button on the main page</span>
+                      <span><strong>Submit Channels:</strong> Add new media channels via the "Add Channel" button on the main page</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <Clock className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
