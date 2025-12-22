@@ -46,8 +46,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Menu, Check, ChevronsUpDown } from 'lucide-react';
+import { Menu, Check, ChevronsUpDown, Sparkles } from 'lucide-react';
 import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
+import { useNavigate } from 'react-router-dom';
 import { COLORS } from '@/types/media';
 import { useUserChannels } from '@/hooks/useUserChannels';
 import { useAuth } from '@/hooks/useAuth';
@@ -552,6 +553,15 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                   {pendingSubmissionsCount > 0 && (
                     <span className="h-2 w-2 rounded-full bg-destructive" />
                   )}
+                </DropdownMenuItem>
+              )}
+              {user && (isContributor || isModerator || isAdmin) && (
+                <DropdownMenuItem 
+                  onClick={() => window.location.href = '/discovery'}
+                  className="flex items-center gap-2"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  Channel Discovery
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem onClick={() => setShowMission(true)}>
