@@ -299,13 +299,28 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({
       
       onChannelAdded();
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding channel:', error);
-      toast({
-        title: "Error",
-        description: "Failed to add channel. Please try again.",
-        variant: "destructive"
-      });
+      
+      // Check if it's a rate limit error (RLS policy violation from check_rate_limit returning false)
+      const isRateLimitError = error?.message?.includes('row-level security') || 
+                               error?.code === '42501' ||
+                               error?.message?.includes('policy');
+      
+      if (isRateLimitError && !isAdmin && !isModerator) {
+        toast({
+          title: "Rate limit reached",
+          description: "You can submit up to 5 channels every 10 minutes. Please wait a few minutes before submitting again.",
+          variant: "destructive",
+          duration: 8000
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to add channel. Please try again.",
+          variant: "destructive"
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
