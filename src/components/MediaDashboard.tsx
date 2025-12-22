@@ -358,6 +358,29 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
                     <CommandInput placeholder="Search country..." />
                     <CommandList>
                       <CommandEmpty>No country found.</CommandEmpty>
+                      
+                      {/* TEST Environment - Admin/Moderator only */}
+                      {(isAdmin || isModerator) && (
+                        <>
+                          <CommandGroup heading="🧪 Test Environment">
+                            <CommandItem
+                              key="TEST"
+                              value="TEST"
+                              onSelect={() => {
+                                handleCountryChange("TEST");
+                                setCountryOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={`mr-2 h-4 w-4 ${country === "TEST" ? "opacity-100" : "opacity-0"}`}
+                              />
+                              <span className="text-amber-600 dark:text-amber-400 font-medium">TEST</span>
+                            </CommandItem>
+                          </CommandGroup>
+                          <CommandSeparator />
+                        </>
+                      )}
+                      
                       {/* Countries with datasets */}
                       <CommandGroup heading="With Datasets">
                         {COUNTRIES_WITH_DATA.map((c) => (
