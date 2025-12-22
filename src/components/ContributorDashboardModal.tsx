@@ -38,8 +38,9 @@ import { useContributorMetrics, LeaderboardEntry } from '@/hooks/useContributorM
 import { useMySubmissions, ChannelSubmission } from '@/hooks/useMySubmissions';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Flame, Trophy, Target, TrendingUp, Clock, CheckCircle, XCircle, Loader2, BarChart3, FileText, Users, Pencil, Trash2, Bell } from 'lucide-react';
+import { Flame, Trophy, Target, TrendingUp, Clock, CheckCircle, XCircle, Loader2, BarChart3, FileText, Users, Pencil, Trash2, Bell, Settings } from 'lucide-react';
 import NotificationsTab from '@/components/NotificationsTab';
+import AccountSettingsTab from '@/components/AccountSettingsTab';
 
 interface ContributorDashboardModalProps {
   open: boolean;
@@ -220,6 +221,10 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
                   <TabsTrigger value="notifications" className="gap-2">
                     <Bell className="h-4 w-4" />
                     Notifications
+                  </TabsTrigger>
+                  <TabsTrigger value="settings" className="gap-2">
+                    <Settings className="h-4 w-4" />
+                    Settings
                   </TabsTrigger>
                 </TabsList>
               </div>
@@ -502,6 +507,13 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
               <TabsContent value="notifications" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
                 <div className="flex-1 overflow-auto p-4">
                   <NotificationsTab isActive={activeTab === 'notifications'} />
+                </div>
+              </TabsContent>
+
+              {/* Settings Tab */}
+              <TabsContent value="settings" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
+                <div className="flex-1 overflow-auto p-4">
+                  <AccountSettingsTab isActive={activeTab === 'settings'} />
                 </div>
               </TabsContent>
             </Tabs>
