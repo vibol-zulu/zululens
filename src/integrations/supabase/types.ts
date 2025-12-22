@@ -35,6 +35,84 @@ export type Database = {
         }
         Relationships: []
       }
+      channel_discoveries: {
+        Row: {
+          category: string
+          content_type: string | null
+          country: string
+          created_at: string
+          description: string | null
+          discovered_at: string
+          discovered_by: string | null
+          discovery_method: string
+          founding_year: number | null
+          headquarters: string | null
+          id: string
+          name: string
+          parent_company: string | null
+          platform: string | null
+          political_lean: string | null
+          raw_data: Json | null
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          source_url: string | null
+          status: string
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          category?: string
+          content_type?: string | null
+          country: string
+          created_at?: string
+          description?: string | null
+          discovered_at?: string
+          discovered_by?: string | null
+          discovery_method?: string
+          founding_year?: number | null
+          headquarters?: string | null
+          id?: string
+          name: string
+          parent_company?: string | null
+          platform?: string | null
+          political_lean?: string | null
+          raw_data?: Json | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_url?: string | null
+          status?: string
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          category?: string
+          content_type?: string | null
+          country?: string
+          created_at?: string
+          description?: string | null
+          discovered_at?: string
+          discovered_by?: string | null
+          discovery_method?: string
+          founding_year?: number | null
+          headquarters?: string | null
+          id?: string
+          name?: string
+          parent_company?: string | null
+          platform?: string | null
+          political_lean?: string | null
+          raw_data?: Json | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_url?: string | null
+          status?: string
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       channel_profile_suggestions: {
         Row: {
           channel_id: string
