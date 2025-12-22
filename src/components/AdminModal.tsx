@@ -15,6 +15,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import NotificationsTab from '@/components/NotificationsTab';
+import AccountSettingsTab from '@/components/AccountSettingsTab';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
@@ -3526,6 +3527,15 @@ Make sure questions are specific to {country}'s current political landscape and 
               {/* Settings Tab */}
               <TabsContent value="settings" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
                 <div className="flex-1 overflow-auto p-4 space-y-4">
+                  {/* Account Settings */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Account Settings</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <AccountSettingsTab isActive={activeTab === 'settings'} />
+                    </CardContent>
+                  </Card>
                   <Card>
                     <CardHeader>
                       <CardTitle className="text-lg">Integrations</CardTitle>

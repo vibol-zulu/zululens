@@ -64,10 +64,12 @@ import {
   ChevronDown,
   Bell,
   RefreshCw,
-  AlertTriangle
+  AlertTriangle,
+  Settings
 } from 'lucide-react';
 import perplexityLogo from '@/assets/perplexity-color.svg';
 import NotificationsTab from '@/components/NotificationsTab';
+import AccountSettingsTab from '@/components/AccountSettingsTab';
 
 interface SimilarChannel {
   id: string;
@@ -1168,6 +1170,10 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                   <Bell className="h-4 w-4" />
                   Notifications
                 </TabsTrigger>
+                <TabsTrigger value="settings" className="gap-2">
+                  <Settings className="h-4 w-4" />
+                  Settings
+                </TabsTrigger>
               </TabsList>
             </div>
 
@@ -1741,6 +1747,13 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
             <TabsContent value="notifications" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
               <div className="flex-1 overflow-auto p-4">
                 <NotificationsTab isActive={activeTab === 'notifications'} />
+              </div>
+            </TabsContent>
+
+            {/* Settings Tab */}
+            <TabsContent value="settings" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
+              <div className="flex-1 overflow-auto p-4">
+                <AccountSettingsTab isActive={activeTab === 'settings'} />
               </div>
             </TabsContent>
           </Tabs>

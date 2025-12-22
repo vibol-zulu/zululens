@@ -36,9 +36,10 @@ import {
 import { useMySubmissions, ChannelSubmission } from '@/hooks/useMySubmissions';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Clock, CheckCircle, XCircle, TrendingUp, Sparkles, FileText, BarChart3, Pencil, Trash2, Bell } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, TrendingUp, Sparkles, FileText, BarChart3, Pencil, Trash2, Bell, Settings } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import NotificationsTab from '@/components/NotificationsTab';
+import AccountSettingsTab from '@/components/AccountSettingsTab';
 
 interface MemberDashboardModalProps {
   open: boolean;
@@ -207,6 +208,10 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
                   <Bell className="h-4 w-4" />
                   Notifications
                 </TabsTrigger>
+                <TabsTrigger value="settings" className="gap-2">
+                  <Settings className="h-4 w-4" />
+                  Settings
+                </TabsTrigger>
               </TabsList>
             </div>
 
@@ -336,6 +341,13 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
             <TabsContent value="notifications" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
               <div className="flex-1 overflow-auto p-4">
                 <NotificationsTab isActive={activeTab === 'notifications'} />
+              </div>
+            </TabsContent>
+
+            {/* Settings Tab */}
+            <TabsContent value="settings" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
+              <div className="flex-1 overflow-auto p-4">
+                <AccountSettingsTab isActive={activeTab === 'settings'} />
               </div>
             </TabsContent>
           </Tabs>
