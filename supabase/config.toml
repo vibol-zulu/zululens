@@ -38,3 +38,9 @@ verify_jwt = false
 
 [functions.questionnaire-chat]
 verify_jwt = false
+
+[functions.detect-country]
+verify_jwt = false
+
+[functions.discover-channels]
+verify_jwt = false

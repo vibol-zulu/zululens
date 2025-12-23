@@ -17,6 +17,7 @@ import {
 import { YearData, ViewMode, COLORS } from '@/types/media';
 import { BrandCircle, INNER_CONTAINER_RADIUS, SPECTRUM_BIN_WIDTH, SPECTRUM_BIN_HEIGHT, getSpectrumBinIndex } from '@/lib/BrandCircle';
 import PoliticalQuestionnaire, { RefinedResult } from '@/components/PoliticalQuestionnaire';
+import CountryConfirmationDialog from '@/components/CountryConfirmationDialog';
 interface ChannelSuggestion {
   id: string;
   name: string;
@@ -135,6 +136,8 @@ const ReasoningPanel: React.FC<{
   onExpandedChange
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [showCountryConfirmation, setShowCountryConfirmation] = useState(false);
+  const [confirmedCountry, setConfirmedCountry] = useState(country);
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const [refinedResult, setRefinedResult] = useState<RefinedResult | null>(null);
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
@@ -170,8 +173,19 @@ const ReasoningPanel: React.FC<{
   };
 
   const handleStartQuestionnaire = () => {
+    // Show country confirmation dialog first
+    setShowCountryConfirmation(true);
+  };
+
+  const handleCountryConfirmed = (selectedCountry: string) => {
+    setConfirmedCountry(selectedCountry);
+    setShowCountryConfirmation(false);
     setShowQuestionnaire(true);
     setHasStartedQuestionnaire(true);
+  };
+
+  const handleCountryConfirmationCancel = () => {
+    setShowCountryConfirmation(false);
   };
 
   const confirmQuestionnaireExit = () => {
@@ -338,12 +352,20 @@ const ReasoningPanel: React.FC<{
         )}
       </div>
 
+      {/* Country Confirmation Dialog */}
+      <CountryConfirmationDialog
+        open={showCountryConfirmation}
+        onConfirm={handleCountryConfirmed}
+        onCancel={handleCountryConfirmationCancel}
+        currentCountry={country}
+      />
+
       {/* Questionnaire Modal */}
       <Dialog open={showQuestionnaire} onOpenChange={handleQuestionnaireOpenChange}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <PoliticalQuestionnaire
             originalScore={originalScore}
-            country={country}
+            country={confirmedCountry}
             visitorName={userName}
             visitorEmail={visitorEmail}
             onComplete={handleQuestionnaireComplete}
