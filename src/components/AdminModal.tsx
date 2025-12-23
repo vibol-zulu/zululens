@@ -4221,48 +4221,48 @@ Make sure questions are specific to {country}'s current political landscape and 
                           <div className="flex items-center gap-3">
                             <div className="w-24 text-xs text-right text-muted-foreground">Personal</div>
                             <div className="flex-1 bg-muted rounded-full h-4 overflow-hidden">
-                              <div className="bg-primary/40 h-full" style={{ width: '16.7%' }}></div>
+                              <div className="bg-primary/40 h-full" style={{ width: '10%' }}></div>
                             </div>
-                            <div className="w-20 text-xs"><span className="font-medium">1 Q</span> · 5% weight</div>
+                            <div className="w-20 text-xs"><span className="font-medium">1 Q</span> · 10% weight</div>
                           </div>
                           <div className="flex items-center gap-3">
                             <div className="w-24 text-xs text-right text-muted-foreground">Social</div>
                             <div className="flex-1 bg-muted rounded-full h-4 overflow-hidden">
-                              <div className="bg-primary/50 h-full" style={{ width: '25%' }}></div>
+                              <div className="bg-primary/50 h-full" style={{ width: '10%' }}></div>
                             </div>
-                            <div className="w-20 text-xs"><span className="font-medium">1 Q</span> · 8% weight</div>
+                            <div className="w-20 text-xs"><span className="font-medium">1 Q</span> · 10% weight</div>
                           </div>
                           <div className="flex items-center gap-3">
                             <div className="w-24 text-xs text-right text-muted-foreground">Professional</div>
                             <div className="flex-1 bg-muted rounded-full h-4 overflow-hidden">
-                              <div className="bg-primary/60 h-full" style={{ width: '33.3%' }}></div>
+                              <div className="bg-primary/60 h-full" style={{ width: '15%' }}></div>
                             </div>
-                            <div className="w-20 text-xs"><span className="font-medium">2 Q</span> · 12% weight</div>
+                            <div className="w-20 text-xs"><span className="font-medium">1 Q</span> · 15% weight</div>
                           </div>
                           <div className="flex items-center gap-3">
                             <div className="w-24 text-xs text-right text-muted-foreground">Local</div>
                             <div className="flex-1 bg-muted rounded-full h-4 overflow-hidden">
-                              <div className="bg-primary/70 h-full" style={{ width: '50%' }}></div>
+                              <div className="bg-primary/70 h-full" style={{ width: '15%' }}></div>
                             </div>
                             <div className="w-20 text-xs"><span className="font-medium">2 Q</span> · 15% weight</div>
                           </div>
                           <div className="flex items-center gap-3">
                             <div className="w-24 text-xs text-right text-muted-foreground">National</div>
                             <div className="flex-1 bg-muted rounded-full h-4 overflow-hidden">
-                              <div className="bg-primary/85 h-full" style={{ width: '75%' }}></div>
+                              <div className="bg-primary/85 h-full" style={{ width: '25%' }}></div>
                             </div>
-                            <div className="w-20 text-xs"><span className="font-medium">3 Q</span> · 25% weight</div>
+                            <div className="w-20 text-xs"><span className="font-medium">2 Q</span> · 25% weight</div>
                           </div>
                           <div className="flex items-center gap-3">
                             <div className="w-24 text-xs text-right text-muted-foreground">International</div>
                             <div className="flex-1 bg-muted rounded-full h-4 overflow-hidden">
-                              <div className="bg-primary h-full" style={{ width: '100%' }}></div>
+                              <div className="bg-primary h-full" style={{ width: '25%' }}></div>
                             </div>
-                            <div className="w-20 text-xs"><span className="font-medium">3 Q</span> · 35% weight</div>
+                            <div className="w-20 text-xs"><span className="font-medium">3 Q</span> · 25% weight</div>
                           </div>
                         </div>
                         <p className="text-xs text-muted-foreground mt-2">
-                          Total: 12 questions per session. International and National domains carry more weight in the final composite score.
+                          Total: 10 questions per session. Questions are short and concise with detailed "Learn More" explanations. International and National domains carry more weight.
                         </p>
                       </div>
 
