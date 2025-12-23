@@ -6,6 +6,16 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Governance domains with pyramid weighting (more questions for macro-level)
+const GOVERNANCE_DOMAINS = [
+  { id: 'personal', name: 'Personal & Home', weight: 0.10, questionCount: 1 },
+  { id: 'social', name: 'Social Circles', weight: 0.10, questionCount: 1 },
+  { id: 'professional', name: 'Professional', weight: 0.15, questionCount: 2 },
+  { id: 'local', name: 'Local & Civic', weight: 0.15, questionCount: 2 },
+  { id: 'national', name: 'National', weight: 0.25, questionCount: 3 },
+  { id: 'international', name: 'International', weight: 0.25, questionCount: 3 },
+];
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -43,69 +53,76 @@ serve(async (req) => {
 
     // Generate a random seed to encourage question variety
     const randomSeed = Math.random().toString(36).substring(2, 10);
-    const topicVariants = [
-      'healthcare, taxation, immigration',
-      'education, climate policy, trade',
-      'criminal justice, housing, labor rights',
-      'technology regulation, foreign policy, welfare',
-      'gun policy, civil liberties, infrastructure',
-      'media freedom, electoral reform, military spending'
-    ];
-    const selectedTopics = topicVariants[Math.floor(Math.random() * topicVariants.length)];
 
-    // Use custom prompt if available, otherwise use default
+    // Use custom prompt if available, otherwise use default multi-domain prompt
     let systemPrompt: string;
     
     if (customPrompt) {
-      // Replace {country} placeholder in custom prompt
       systemPrompt = customPrompt
         .replace(/\{country\}/g, country || 'the United States')
-        + `\n\nFor this generation, prioritize topics related to: ${selectedTopics}\nRandom seed for variety: ${randomSeed}`;
+        + `\n\nRandom seed for variety: ${randomSeed}`;
     } else {
-      systemPrompt = `You are a political analyst expert. Generate exactly 8 politically relevant questions for someone in ${country || 'the United States'}.
+      systemPrompt = `You are a political philosophy analyst. Generate exactly 12 questions across 6 governance domains to assess someone's political ideology at different scales of governance in ${country || 'the United States'}.
 
-IMPORTANT: Generate UNIQUE and VARIED questions each time. Do not repeat common generic questions. Focus on specific, nuanced policy topics.
+GOVERNANCE DOMAINS (generate the specified number of questions for each):
 
-For this generation, prioritize topics related to: ${selectedTopics}
+1. PERSONAL & HOME (1 question) - Self-governance, family decision-making, parenting philosophy, household rules
+   Example topics: parenting discipline, household budgeting control, personal habits regulation
+   
+2. SOCIAL CIRCLES (1 question) - Peer groups, friendships, community involvement, social accountability
+   Example topics: friend group decision dynamics, community volunteering, social conformity
+   
+3. PROFESSIONAL (2 questions) - Workplace governance, labor relations, hierarchy preferences, merit vs equality
+   Example topics: boss authority, workplace democracy, performance-based pay, union membership
+   
+4. LOCAL & CIVIC (2 questions) - Neighborhood rules, local government, municipal services, community policing
+   Example topics: HOA rules, local taxes, zoning laws, neighborhood watch
+   
+5. NATIONAL (3 questions) - Federal policy, constitutional interpretation, national welfare, domestic policy
+   Example topics: federal vs state power, national healthcare, gun regulations, electoral systems
+   
+6. INTERNATIONAL (3 questions) - Foreign policy, sovereignty, global institutions, international cooperation
+   Example topics: UN authority, trade agreements, military intervention, climate treaties
+
 Random seed for variety: ${randomSeed}
 
-The questions should:
-1. Be relevant to current political topics and debates in that specific region
-2. Cover economic, social, and governance categories (aim for variety)
-3. Be phrased as SHORT, SIMPLE statements (under 15 words) that someone can agree or disagree with
-4. Be balanced - some should lean left when agreed with, some should lean right
-5. Avoid extremely polarizing or offensive topics
-6. Be neutral in tone
-7. Be DIFFERENT from typical generic political questions - get creative and specific!
+IMPORTANT GUIDELINES:
+- Each question must be a SHORT statement (under 15 words) someone can agree/disagree with
+- Questions should reveal governance philosophy (authoritarian vs libertarian, collectivist vs individualist)
+- Be balanced: some statements should lean left when agreed, others right when agreed
+- Make questions specific and nuanced, not generic
+- Avoid offensive or extremely polarizing content
+- Questions should work for ${country || 'the United States'}'s cultural context
 
-CRITICAL FORMAT REQUIREMENTS:
-- "text" must be a SHORT, SIMPLE statement (under 15 words) - easy to read at a glance
-- "explanation" must be a JSON object with three fields:
-  - "summary": A brief one-liner explaining what this statement is about (1 sentence)
-  - "agreement": What agreeing with this statement typically means politically (1-2 sentences)
-  - "disagreement": What disagreeing with this statement typically means politically (1-2 sentences)
-
-Return ONLY a valid JSON array with this exact structure, no other text:
+CRITICAL FORMAT - Return ONLY valid JSON array:
 [
   {
     "id": "q1",
-    "text": "Short simple statement here",
+    "text": "Short statement here",
+    "domain": "personal|social|professional|local|national|international",
+    "domainName": "Personal & Home|Social Circles|Professional|Local & Civic|National|International",
     "explanation": {
-      "summary": "Brief one-liner about what this question explores.",
-      "agreement": "What agreeing with this statement typically indicates about your political views.",
-      "disagreement": "What disagreeing with this statement typically indicates about your political views."
+      "summary": "One-line explanation of what this explores.",
+      "agreement": "What agreeing indicates about governance philosophy (1-2 sentences).",
+      "disagreement": "What disagreeing indicates about governance philosophy (1-2 sentences)."
     },
     "category": "economic|social|governance",
     "weight": 1 or -1
   }
 ]
 
-weight: 1 means agreeing leans left, -1 means agreeing leans right.
+DISTRIBUTION:
+- q1: personal domain (1)
+- q2: social domain (1)  
+- q3-q4: professional domain (2)
+- q5-q6: local domain (2)
+- q7-q9: national domain (3)
+- q10-q12: international domain (3)
 
-Make sure questions are specific to ${country || 'the United States'}'s current political landscape and are UNIQUE to this session.`;
+weight: 1 means agreeing leans left/progressive, -1 means agreeing leans right/conservative`;
     }
 
-    console.log(`Generating questions for country: ${country}`);
+    console.log(`Generating multi-domain questions for country: ${country}`);
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -117,7 +134,7 @@ Make sure questions are specific to ${country || 'the United States'}'s current 
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Generate 8 politically relevant questions for ${country || 'the United States'}. Return only the JSON array.` }
+          { role: "user", content: `Generate 12 multi-domain political philosophy questions for ${country || 'the United States'}. Return only the JSON array.` }
         ],
       }),
     });
@@ -148,7 +165,6 @@ Make sure questions are specific to ${country || 'the United States'}'s current 
     // Parse the JSON from the response
     let questions;
     try {
-      // Try to extract JSON from the response (it might be wrapped in markdown code blocks)
       const jsonMatch = content.match(/\[[\s\S]*\]/);
       if (jsonMatch) {
         questions = JSON.parse(jsonMatch[0]);
@@ -161,12 +177,19 @@ Make sure questions are specific to ${country || 'the United States'}'s current 
     }
 
     // Validate the structure
-    if (!Array.isArray(questions) || questions.length !== 8) {
-      console.error("Invalid questions structure:", questions);
+    if (!Array.isArray(questions) || questions.length !== 12) {
+      console.error("Invalid questions structure, expected 12, got:", questions?.length);
       throw new Error("Invalid questions format returned");
     }
 
-    return new Response(JSON.stringify({ questions, country }), {
+    // Ensure domain info is present on all questions
+    const domainsInfo = GOVERNANCE_DOMAINS.map(d => ({ id: d.id, name: d.name, weight: d.weight }));
+
+    return new Response(JSON.stringify({ 
+      questions, 
+      country,
+      domains: domainsInfo
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
 

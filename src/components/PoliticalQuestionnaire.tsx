@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowRight, Check, Loader2, Sparkles, HelpCircle, ChevronRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Loader2, Sparkles, HelpCircle, ChevronRight, Home, Users, Briefcase, Building2, Flag, Globe } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import QuestionnaireChat from './QuestionnaireChat';
+import GovernanceRadarChart, { DomainScore } from './GovernanceRadarChart';
 import {
   Tooltip,
   TooltipContent,
@@ -25,6 +26,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+
 interface ExplanationStructured {
   summary: string;
   agreement: string;
@@ -37,18 +39,44 @@ interface PoliticalQuestion {
   explanation: string | ExplanationStructured;
   category: 'economic' | 'social' | 'governance';
   weight: number;
+  domain?: string;
+  domainName?: string;
 }
 
-// Fallback questions if AI generation fails
+// Domain icons mapping
+const DOMAIN_ICONS: Record<string, React.ReactNode> = {
+  personal: <Home className="h-3 w-3" />,
+  social: <Users className="h-3 w-3" />,
+  professional: <Briefcase className="h-3 w-3" />,
+  local: <Building2 className="h-3 w-3" />,
+  national: <Flag className="h-3 w-3" />,
+  international: <Globe className="h-3 w-3" />,
+};
+
+// Domain weights for composite score calculation
+const DOMAIN_WEIGHTS: Record<string, number> = {
+  personal: 0.10,
+  social: 0.10,
+  professional: 0.15,
+  local: 0.15,
+  national: 0.25,
+  international: 0.25,
+};
+
+// Fallback questions if AI generation fails (now with domains)
 const FALLBACK_QUESTIONS: PoliticalQuestion[] = [
-  { id: 'q1', text: 'Government should regulate the economy more.', explanation: { summary: 'This asks whether government oversight of businesses and markets leads to better outcomes.', agreement: 'Agreeing suggests you believe government intervention can correct market failures and protect consumers.', disagreement: 'Disagreeing suggests you prefer free market principles with minimal government involvement.' }, category: 'economic', weight: 1 },
-  { id: 'q2', text: 'Traditional values should be preserved.', explanation: { summary: 'This explores your views on maintaining established social norms versus embracing change.', agreement: 'Agreeing suggests you value cultural continuity and established institutions.', disagreement: 'Disagreeing suggests you favor progressive social reforms and cultural evolution.' }, category: 'social', weight: -1 },
-  { id: 'q3', text: 'The wealthy should pay much higher taxes.', explanation: { summary: 'This addresses income redistribution and tax policy for high earners.', agreement: 'Agreeing suggests you support using taxation to reduce inequality and fund public services.', disagreement: 'Disagreeing suggests you believe lower taxes encourage investment and economic growth.' }, category: 'economic', weight: 1 },
-  { id: 'q4', text: 'Immigration needs stricter controls.', explanation: { summary: 'This weighs border security against more welcoming immigration policies.', agreement: 'Agreeing suggests you prioritize national security and controlled immigration processes.', disagreement: 'Disagreeing suggests you favor more open borders and pathways for migrants.' }, category: 'social', weight: -1 },
-  { id: 'q5', text: 'Climate action is worth economic costs.', explanation: { summary: 'This asks if environmental protection should take precedence over economic concerns.', agreement: 'Agreeing suggests you believe addressing climate change is an urgent priority worth sacrifices.', disagreement: 'Disagreeing suggests you prioritize economic stability over environmental regulations.' }, category: 'governance', weight: 1 },
-  { id: 'q6', text: 'Free markets solve problems better than government.', explanation: { summary: 'This tests your belief in private sector efficiency versus government solutions.', agreement: 'Agreeing suggests you trust market mechanisms to allocate resources effectively.', disagreement: 'Disagreeing suggests you believe government intervention is necessary to address societal issues.' }, category: 'economic', weight: -1 },
-  { id: 'q7', text: 'Social programs should be expanded.', explanation: { summary: 'This asks about government support through healthcare, education, and welfare.', agreement: 'Agreeing suggests you support a stronger social safety net funded by public resources.', disagreement: 'Disagreeing suggests you prefer limited government programs and personal responsibility.' }, category: 'social', weight: 1 },
-  { id: 'q8', text: 'Military strength matters more than diplomacy.', explanation: { summary: 'This explores whether defense capability or international cooperation is the better approach.', agreement: 'Agreeing suggests you believe a strong military is essential for national security.', disagreement: 'Disagreeing suggests you favor diplomatic solutions and international cooperation.' }, category: 'governance', weight: -1 },
+  { id: 'q1', text: 'Parents should strictly control their children\'s screen time.', explanation: { summary: 'This explores personal governance in the home regarding technology.', agreement: 'Agreeing suggests you favor more parental authority and structure in home life.', disagreement: 'Disagreeing suggests you prefer giving children more autonomy.' }, category: 'social', weight: -1, domain: 'personal', domainName: 'Personal & Home' },
+  { id: 'q2', text: 'Friend groups should openly challenge each other\'s beliefs.', explanation: { summary: 'This explores social dynamics and accountability among peers.', agreement: 'Agreeing suggests you value intellectual discourse and growth through challenge.', disagreement: 'Disagreeing suggests you prefer harmony and respecting personal boundaries.' }, category: 'social', weight: 1, domain: 'social', domainName: 'Social Circles' },
+  { id: 'q3', text: 'Bosses should make final decisions without team consensus.', explanation: { summary: 'This explores workplace governance and authority structures.', agreement: 'Agreeing suggests you favor hierarchical efficiency in professional settings.', disagreement: 'Disagreeing suggests you prefer democratic workplace governance.' }, category: 'governance', weight: -1, domain: 'professional', domainName: 'Professional' },
+  { id: 'q4', text: 'Pay should be primarily based on individual performance.', explanation: { summary: 'This explores merit-based vs equality-based professional compensation.', agreement: 'Agreeing suggests you favor meritocracy in the workplace.', disagreement: 'Disagreeing suggests you favor more equal pay structures.' }, category: 'economic', weight: -1, domain: 'professional', domainName: 'Professional' },
+  { id: 'q5', text: 'HOAs should have strict enforcement powers.', explanation: { summary: 'This explores local governance and community rule enforcement.', agreement: 'Agreeing suggests you favor strong local community standards.', disagreement: 'Disagreeing suggests you prefer individual property rights.' }, category: 'governance', weight: -1, domain: 'local', domainName: 'Local & Civic' },
+  { id: 'q6', text: 'Local taxes should fund extensive public services.', explanation: { summary: 'This explores local government size and service provision.', agreement: 'Agreeing suggests you support robust local government services.', disagreement: 'Disagreeing suggests you prefer smaller local government.' }, category: 'economic', weight: 1, domain: 'local', domainName: 'Local & Civic' },
+  { id: 'q7', text: 'Government should regulate the economy more.', explanation: { summary: 'This asks whether government oversight leads to better outcomes.', agreement: 'Agreeing suggests you believe government intervention corrects market failures.', disagreement: 'Disagreeing suggests you prefer free market principles.' }, category: 'economic', weight: 1, domain: 'national', domainName: 'National' },
+  { id: 'q8', text: 'The wealthy should pay much higher taxes.', explanation: { summary: 'This addresses income redistribution and tax policy.', agreement: 'Agreeing suggests you support using taxation to reduce inequality.', disagreement: 'Disagreeing suggests you believe lower taxes encourage growth.' }, category: 'economic', weight: 1, domain: 'national', domainName: 'National' },
+  { id: 'q9', text: 'Immigration needs stricter controls.', explanation: { summary: 'This weighs border security against welcoming policies.', agreement: 'Agreeing suggests you prioritize national security and controlled immigration.', disagreement: 'Disagreeing suggests you favor more open borders.' }, category: 'social', weight: -1, domain: 'national', domainName: 'National' },
+  { id: 'q10', text: 'International bodies should override national laws.', explanation: { summary: 'This explores sovereignty vs global governance.', agreement: 'Agreeing suggests you favor global cooperation over national sovereignty.', disagreement: 'Disagreeing suggests you prioritize national independence.' }, category: 'governance', weight: 1, domain: 'international', domainName: 'International' },
+  { id: 'q11', text: 'Military intervention is justified to protect human rights abroad.', explanation: { summary: 'This explores interventionism in foreign policy.', agreement: 'Agreeing suggests you support active international engagement.', disagreement: 'Disagreeing suggests you prefer non-interventionist policies.' }, category: 'governance', weight: 1, domain: 'international', domainName: 'International' },
+  { id: 'q12', text: 'Trade agreements benefit all participating nations equally.', explanation: { summary: 'This explores views on international economic cooperation.', agreement: 'Agreeing suggests you support free trade and globalization.', disagreement: 'Disagreeing suggests you favor protectionist policies.' }, category: 'economic', weight: 1, domain: 'international', domainName: 'International' },
 ];
 
 const SCALE_OPTIONS = [
@@ -61,12 +89,13 @@ const SCALE_OPTIONS = [
 
 const CALCULATING_MESSAGES = [
   'Analyzing your responses...',
-  'Comparing political perspectives...',
-  'Calculating your position...',
+  'Mapping governance philosophy...',
+  'Calculating domain scores...',
+  'Building your profile...',
   'Finalizing results...',
 ];
 
-// Add shimmer-slide keyframe to document if not already present (named differently to avoid conflict with shimmer-text)
+// Add shimmer-slide keyframe to document if not already present
 if (typeof document !== 'undefined' && !document.getElementById('shimmer-slide-keyframes')) {
   const style = document.createElement('style');
   style.id = 'shimmer-slide-keyframes';
@@ -84,6 +113,59 @@ interface RefinedResult {
   label: string;
   description: string;
   confidence: 'high' | 'medium' | 'low';
+  domainScores?: DomainScore[];
+  consistencyScore?: number;
+}
+
+function calculateDomainScores(
+  answers: Record<string, number>,
+  questions: PoliticalQuestion[]
+): DomainScore[] {
+  const domainTotals: Record<string, { score: number; count: number; name: string }> = {};
+  
+  // Initialize domains
+  questions.forEach(q => {
+    if (q.domain && !domainTotals[q.domain]) {
+      domainTotals[q.domain] = { score: 0, count: 0, name: q.domainName || q.domain };
+    }
+  });
+  
+  // Calculate scores per domain
+  Object.entries(answers).forEach(([questionId, answer]) => {
+    const question = questions.find(q => q.id === questionId);
+    if (question?.domain) {
+      const weight = question.weight || 0;
+      domainTotals[question.domain].score += answer * weight;
+      domainTotals[question.domain].count++;
+    }
+  });
+  
+  // Convert to DomainScore array
+  return Object.entries(domainTotals).map(([domain, data]) => {
+    const maxPossible = data.count * 2; // max answer is 2
+    const normalizedScore = maxPossible > 0 ? (data.score / maxPossible) * 100 : 0;
+    return {
+      domain,
+      domainName: data.name,
+      score: Math.round(normalizedScore),
+      normalizedScore: Math.round(((normalizedScore + 100) / 2)), // 0-100 for chart
+      questionsAnswered: data.count,
+    };
+  });
+}
+
+function calculateConsistencyScore(domainScores: DomainScore[]): number {
+  if (domainScores.length < 2) return 100;
+  
+  const scores = domainScores.map(d => d.score);
+  const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
+  const variance = scores.reduce((sum, s) => sum + Math.pow(s - mean, 2), 0) / scores.length;
+  const stdDev = Math.sqrt(variance);
+  
+  // Lower std dev = higher consistency
+  // Max std dev for -100 to +100 range is 100
+  const consistencyRaw = Math.max(0, 100 - stdDev);
+  return Math.round(consistencyRaw);
 }
 
 function calculateRefinedPosition(
@@ -91,15 +173,10 @@ function calculateRefinedPosition(
   questions: PoliticalQuestion[],
   originalScore: number
 ): RefinedResult {
-  let totalScore = 0;
-  let answeredCount = 0;
-
-  Object.entries(answers).forEach(([questionId, answer]) => {
-    const question = questions.find(q => q.id === questionId);
-    const weight = question?.weight || 0;
-    totalScore += answer * weight;
-    answeredCount++;
-  });
+  const domainScores = calculateDomainScores(answers, questions);
+  const consistencyScore = calculateConsistencyScore(domainScores);
+  
+  let answeredCount = Object.keys(answers).length;
 
   if (answeredCount === 0) {
     return {
@@ -107,40 +184,51 @@ function calculateRefinedPosition(
       label: 'Unable to determine',
       description: 'Please answer at least one question to refine your position.',
       confidence: 'low',
+      domainScores: [],
+      consistencyScore: 0,
     };
   }
 
-  // Normalize the questionnaire score to -100 to +100 range
-  const maxPossibleScore = questions.length * 2;
-  const normalizedQuestionnaireScore = (totalScore / maxPossibleScore) * 100;
+  // Calculate weighted composite score
+  let weightedSum = 0;
+  let totalWeight = 0;
+  
+  domainScores.forEach(ds => {
+    const weight = DOMAIN_WEIGHTS[ds.domain] || 0.1;
+    weightedSum += ds.score * weight;
+    totalWeight += weight;
+  });
+  
+  const questionnaireScore = totalWeight > 0 ? weightedSum / totalWeight : 0;
 
   // Blend original channel-based score with questionnaire score (40/60)
-  const blendedScore = originalScore * 0.4 + normalizedQuestionnaireScore * 0.6;
+  const blendedScore = originalScore * 0.4 + questionnaireScore * 0.6;
   const finalScore = Math.max(-100, Math.min(100, blendedScore));
 
-  // Determine confidence based on answer consistency
+  // Determine confidence based on answer variance and question count
   const answerVariance = Object.values(answers).reduce((sum, a) => sum + Math.abs(a), 0) / answeredCount;
   const confidence: 'high' | 'medium' | 'low' = 
-    answerVariance >= 1.5 ? 'high' : answerVariance >= 0.8 ? 'medium' : 'low';
+    answerVariance >= 1.5 && answeredCount >= 10 ? 'high' : 
+    answerVariance >= 0.8 && answeredCount >= 6 ? 'medium' : 'low';
 
   let label: string;
   let description: string;
 
   if (finalScore <= -60) {
     label = 'Far Left';
-    description = 'Your responses indicate strong progressive values. You favor significant government intervention in the economy, robust social programs, and prioritize social equality and environmental protection.';
+    description = 'Your responses indicate strong progressive values across governance scales. You favor collective decision-making, robust social programs, and prioritize equality and environmental protection.';
   } else if (finalScore <= -20) {
     label = 'Left-Leaning';
-    description = 'Your responses suggest center-left values. You generally support government programs to address inequality while maintaining market-based solutions for some issues.';
+    description = 'Your responses suggest center-left values. You generally support collaborative governance and social programs while maintaining some preference for individual autonomy.';
   } else if (finalScore <= 20) {
     label = 'Center';
-    description = 'Your responses reflect a balanced perspective. You draw from both progressive and conservative viewpoints depending on the specific issue, valuing pragmatic solutions.';
+    description = 'Your responses reflect a balanced perspective across governance scales. You draw from both progressive and conservative viewpoints depending on the specific context and issue.';
   } else if (finalScore <= 60) {
     label = 'Right-Leaning';
-    description = 'Your responses indicate center-right values. You generally favor free market solutions, traditional institutions, and limited government intervention.';
+    description = 'Your responses indicate center-right values. You generally favor individual autonomy, traditional structures, and limited external governance at various scales.';
   } else {
     label = 'Far Right';
-    description = 'Your responses indicate strong conservative values. You favor minimal government intervention in the economy, traditional values, and prioritize national security and individual liberty.';
+    description = 'Your responses indicate strong conservative values across governance scales. You favor individual liberty, minimal external governance, and traditional institutional structures.';
   }
 
   return {
@@ -148,6 +236,8 @@ function calculateRefinedPosition(
     label,
     description,
     confidence,
+    domainScores,
+    consistencyScore,
   };
 }
 
@@ -218,7 +308,7 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
 
         if (data?.questions && Array.isArray(data.questions)) {
           setQuestions(data.questions);
-          console.log(`Loaded ${data.questions.length} AI-generated questions for ${country}`);
+          console.log(`Loaded ${data.questions.length} AI-generated multi-domain questions for ${country}`);
         } else {
           throw new Error('Invalid response format');
         }
@@ -239,10 +329,9 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
     if (isCalculating && calculatingStep < CALCULATING_MESSAGES.length) {
       const timer = setTimeout(() => {
         setCalculatingStep(prev => prev + 1);
-      }, 700);
+      }, 600);
       return () => clearTimeout(timer);
     } else if (isCalculating && calculatingStep >= CALCULATING_MESSAGES.length) {
-      // Show result after all messages
       setTimeout(() => {
         setIsCalculating(false);
         setShowResult(true);
@@ -283,13 +372,11 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
     if (calculatedResult && !isSaving) {
       setIsSaving(true);
       try {
-        // Get current user if authenticated
         const { data: { user } } = await supabase.auth.getUser();
         
-        // Save questionnaire response to database
         const responseData: any = {
           country,
-          questions: JSON.stringify(questions.map(q => ({ id: q.id, text: q.text, category: q.category, weight: q.weight }))),
+          questions: JSON.stringify(questions.map(q => ({ id: q.id, text: q.text, category: q.category, weight: q.weight, domain: q.domain }))),
           answers: JSON.stringify(answers),
           original_score: originalScore,
           refined_score: calculatedResult.numericValue,
@@ -304,7 +391,6 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
           responseData.visitor_email = visitorEmail;
         }
         
-        // Only save if we have either a user or visitor email
         if (user || visitorEmail) {
           const { error } = await supabase
             .from('questionnaire_responses')
@@ -330,7 +416,7 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
       <div className="flex flex-col items-center justify-center py-8 space-y-3">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
         <p className="text-sm text-muted-foreground">
-          Generating questions for {country}...
+          Generating multi-domain questions for {country}...
         </p>
       </div>
     );
@@ -368,7 +454,7 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
           {CALCULATING_MESSAGES.map((_, idx) => (
             <div 
               key={idx}
-              className={`h-1.5 w-6 rounded-full transition-all duration-300 ${
+              className={`h-1.5 w-5 rounded-full transition-all duration-300 ${
                 idx <= calculatingStep ? 'bg-primary' : 'bg-muted'
               }`}
             />
@@ -378,21 +464,21 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
     );
   }
 
-  // Result reveal screen
+  // Result reveal screen with radar chart
   if (showResult && calculatedResult) {
     const confidenceTitle = `${calculatedResult.confidence.charAt(0).toUpperCase() + calculatedResult.confidence.slice(1)} Confidence`;
     const confidenceDescription = calculatedResult.confidence === 'high' 
-      ? 'Strong opinions on most questions give high confidence in this result.'
+      ? 'Strong opinions across domains give high confidence.'
       : calculatedResult.confidence === 'medium'
-      ? 'A mix of strong and moderate opinions gives medium confidence in this result.'
-      : 'Mostly neutral answers result in lower confidence in this result.';
+      ? 'Mixed strength of opinions gives medium confidence.'
+      : 'Mostly neutral answers result in lower confidence.';
 
     return (
       <div className="py-4 space-y-4 animate-fade-in">
-        {/* Header with confidence info */}
+        {/* Header */}
         <div className="space-y-1.5 text-center">
-          <h2 className="text-lg font-semibold leading-none tracking-tight">{confidenceTitle}</h2>
-          <p className="text-sm text-muted-foreground">{confidenceDescription}</p>
+          <h2 className="text-lg font-semibold leading-none tracking-tight">Your Governance Profile</h2>
+          <p className="text-xs text-muted-foreground">{confidenceDescription}</p>
         </div>
 
         {/* Result badge */}
@@ -405,7 +491,6 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
                 ? 'bg-yellow-500/20 border border-yellow-500/30'
                 : 'bg-red-500/20 border border-red-500/30'
             }`}>
-              {/* Shimmer effect */}
               <span 
                 className="absolute inset-0 -translate-x-full animate-[shimmer-slide_2s_infinite]"
                 style={{
@@ -427,15 +512,41 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
               </span>
             </div>
           </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Composite Score: {calculatedResult.numericValue > 0 ? '+' : ''}{calculatedResult.numericValue}
+          </p>
         </div>
 
+        {/* Radar Chart */}
+        {calculatedResult.domainScores && calculatedResult.domainScores.length > 0 && (
+          <GovernanceRadarChart domainScores={calculatedResult.domainScores} />
+        )}
+
+        {/* Consistency Score */}
+        {calculatedResult.consistencyScore !== undefined && (
+          <div className="text-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-full text-xs">
+              <span className="text-muted-foreground">Ideological Consistency:</span>
+              <span className={`font-semibold ${
+                calculatedResult.consistencyScore >= 70 ? 'text-green-600 dark:text-green-400' :
+                calculatedResult.consistencyScore >= 40 ? 'text-yellow-600 dark:text-yellow-400' :
+                'text-red-600 dark:text-red-400'
+              }`}>
+                {calculatedResult.consistencyScore}%
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {calculatedResult.consistencyScore >= 70 
+                ? 'Your views are highly consistent across governance scales.'
+                : calculatedResult.consistencyScore >= 40
+                ? 'Your views vary somewhat depending on the governance scale.'
+                : 'Your governance philosophy differs significantly across scales.'}
+            </p>
+          </div>
+        )}
+
         {/* Description */}
-        <p 
-          className="text-sm text-muted-foreground text-center leading-relaxed"
-          style={{
-            animation: 'fade-in 0.5s ease-out 0.6s both',
-          }}
-        >
+        <p className="text-sm text-muted-foreground text-center leading-relaxed">
           {calculatedResult.description}
         </p>
 
@@ -443,9 +554,6 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
         <Button
           onClick={handleRevealComplete}
           className="w-full mt-4"
-          style={{
-            animation: 'fade-in 0.5s ease-out 0.8s both',
-          }}
         >
           <Check className="h-4 w-4 mr-2" />
           Continue
@@ -474,7 +582,7 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
       {/* Header */}
       <div className="space-y-1.5 text-center">
         <h2 className="text-lg font-semibold leading-none tracking-tight">Refine Your Political Position</h2>
-        <p className="text-sm text-muted-foreground">Answer these questions to get a more accurate assessment of your political position.</p>
+        <p className="text-sm text-muted-foreground">Answer questions across 6 governance domains for a multi-dimensional profile.</p>
       </div>
 
       {/* Region indicator */}
@@ -495,6 +603,16 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
           />
         </div>
       </div>
+
+      {/* Domain indicator */}
+      {currentQuestion.domain && (
+        <div className="flex items-center justify-center gap-2">
+          <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium">
+            {DOMAIN_ICONS[currentQuestion.domain]}
+            <span>{currentQuestion.domainName || currentQuestion.domain}</span>
+          </div>
+        </div>
+      )}
 
       {/* Question */}
       <div className="py-3 space-y-2">
@@ -605,4 +723,4 @@ const PoliticalQuestionnaire: React.FC<PoliticalQuestionnaireProps> = ({
 };
 
 export default PoliticalQuestionnaire;
-export type { RefinedResult, ExplanationStructured };
+export type { RefinedResult, ExplanationStructured, DomainScore };
