@@ -553,6 +553,20 @@ Make sure questions are specific to {country}'s current political landscape and 
 
   const [questionnairePrompt, setQuestionnairePrompt] = useState(DEFAULT_QUESTIONNAIRE_PROMPT);
   
+  // Question preview state
+  const [previewQuestions, setPreviewQuestions] = useState<Array<{
+    id: string;
+    text: string;
+    domain?: string;
+    domainName?: string;
+    explanation: { summary: string; agreement: string; disagreement: string } | string;
+    category: string;
+    weight: number;
+  }>>([]);
+  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
+  const [previewCountry, setPreviewCountry] = useState('United States');
+  const [expandedQuestionId, setExpandedQuestionId] = useState<string | null>(null);
+  
   const [settingsLoading, setSettingsLoading] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
   const [savingCanvasSettings, setSavingCanvasSettings] = useState(false);
@@ -1286,7 +1300,34 @@ Make sure questions are specific to {country}'s current political landscape and 
     }
   };
 
-  // Fetch news items
+  // Generate preview questions for quality review
+  const generatePreviewQuestions = async () => {
+    setIsGeneratingPreview(true);
+    setPreviewQuestions([]);
+    setExpandedQuestionId(null);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-political-questions', {
+        body: { country: previewCountry }
+      });
+
+      if (error) throw error;
+
+      if (data?.questions && Array.isArray(data.questions)) {
+        setPreviewQuestions(data.questions);
+        toast({ title: `Generated ${data.questions.length} questions for review` });
+      } else if (data?.fallback) {
+        toast({ title: 'AI generation failed, using fallback questions', variant: 'destructive' });
+      } else {
+        throw new Error('Invalid response format');
+      }
+    } catch (error) {
+      console.error('Error generating preview questions:', error);
+      toast({ title: 'Failed to generate questions', variant: 'destructive' });
+    } finally {
+      setIsGeneratingPreview(false);
+    }
+  };
   const fetchNews = async () => {
     if (!isAdmin) return;
     
@@ -4155,6 +4196,140 @@ Make sure questions are specific to {country}'s current political landscape and 
                         <RefreshCw className="h-3 w-3" />
                         Reset to Default
                       </Button>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Question Preview & Quality Review Card */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Eye className="h-4 w-4 text-primary" />
+                        Question Preview & Quality Review
+                        <Badge variant="outline" className="text-xs">Testing</Badge>
+                      </CardTitle>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Generate sample questions to review accuracy and quality before they reach users.
+                      </p>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-end gap-3">
+                        <div className="flex-1 space-y-2">
+                          <Label>Test Country</Label>
+                          <Select value={previewCountry} onValueChange={setPreviewCountry}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {COUNTRIES.map(country => (
+                                <SelectItem key={country} value={country}>{country}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <Button 
+                          onClick={generatePreviewQuestions}
+                          disabled={isGeneratingPreview}
+                          className="gap-2"
+                        >
+                          {isGeneratingPreview ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              Generating...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="h-4 w-4" />
+                              Generate Preview
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                      
+                      {previewQuestions.length > 0 && (
+                        <div className="space-y-3 mt-4">
+                          <div className="flex items-center justify-between">
+                            <h4 className="text-sm font-medium">Generated Questions ({previewQuestions.length})</h4>
+                            <Badge variant="secondary" className="text-xs">
+                              Review for accuracy & quality
+                            </Badge>
+                          </div>
+                          <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
+                            {previewQuestions.map((q, idx) => (
+                              <div 
+                                key={q.id} 
+                                className="border rounded-lg p-3 space-y-2 bg-muted/30 hover:bg-muted/50 transition-colors"
+                              >
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <Badge variant="outline" className="text-xs">
+                                        {q.domainName || q.domain || 'General'}
+                                      </Badge>
+                                      <Badge 
+                                        variant={q.weight === 1 ? 'default' : 'secondary'}
+                                        className="text-xs"
+                                      >
+                                        {q.weight === 1 ? 'Agree → Left' : 'Agree → Right'}
+                                      </Badge>
+                                      <Badge variant="outline" className="text-xs capitalize">
+                                        {q.category}
+                                      </Badge>
+                                    </div>
+                                    <p className="text-sm font-medium">{idx + 1}. {q.text}</p>
+                                  </div>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setExpandedQuestionId(expandedQuestionId === q.id ? null : q.id)}
+                                    className="shrink-0"
+                                  >
+                                    <ChevronDown className={`h-4 w-4 transition-transform ${expandedQuestionId === q.id ? 'rotate-180' : ''}`} />
+                                  </Button>
+                                </div>
+                                
+                                {expandedQuestionId === q.id && (
+                                  <div className="pt-2 border-t space-y-2 text-xs text-muted-foreground">
+                                    {typeof q.explanation === 'object' && 'summary' in q.explanation ? (
+                                      <>
+                                        <div>
+                                          <span className="font-semibold text-foreground">Summary:</span> {q.explanation.summary}
+                                        </div>
+                                        <div>
+                                          <span className="font-semibold text-green-600 dark:text-green-400">If Agree:</span> {q.explanation.agreement}
+                                        </div>
+                                        <div>
+                                          <span className="font-semibold text-red-600 dark:text-red-400">If Disagree:</span> {q.explanation.disagreement}
+                                        </div>
+                                      </>
+                                    ) : (
+                                      <div>{q.explanation}</div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                          
+                          {/* Quality checklist */}
+                          <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 mt-3">
+                            <h5 className="text-xs font-semibold text-amber-700 dark:text-amber-400 mb-2">Quality Checklist</h5>
+                            <ul className="text-xs text-muted-foreground space-y-1">
+                              <li>• Are questions short and concise (max 10 words)?</li>
+                              <li>• Are explanations detailed and informative?</li>
+                              <li>• Is there good variety across all 6 domains?</li>
+                              <li>• Are questions balanced (some left, some right)?</li>
+                              <li>• Are questions relevant to {previewCountry}?</li>
+                              <li>• Are there no offensive or extremely polarizing topics?</li>
+                            </ul>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {!isGeneratingPreview && previewQuestions.length === 0 && (
+                        <div className="text-center py-6 text-muted-foreground text-sm">
+                          Click "Generate Preview" to see sample questions
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                   
