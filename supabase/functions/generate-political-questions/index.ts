@@ -10,9 +10,9 @@ const corsHeaders = {
 const GOVERNANCE_DOMAINS = [
   { id: 'personal', name: 'Personal & Home', weight: 0.10, questionCount: 1 },
   { id: 'social', name: 'Social Circles', weight: 0.10, questionCount: 1 },
-  { id: 'professional', name: 'Professional', weight: 0.15, questionCount: 2 },
+  { id: 'professional', name: 'Professional', weight: 0.15, questionCount: 1 },
   { id: 'local', name: 'Local & Civic', weight: 0.15, questionCount: 2 },
-  { id: 'national', name: 'National', weight: 0.25, questionCount: 3 },
+  { id: 'national', name: 'National', weight: 0.25, questionCount: 2 },
   { id: 'international', name: 'International', weight: 0.25, questionCount: 3 },
 ];
 
@@ -62,49 +62,43 @@ serve(async (req) => {
         .replace(/\{country\}/g, country || 'the United States')
         + `\n\nRandom seed for variety: ${randomSeed}`;
     } else {
-      systemPrompt = `You are a political philosophy analyst. Generate exactly 12 questions across 6 governance domains to assess someone's political ideology at different scales of governance in ${country || 'the United States'}.
+      systemPrompt = `You are a political philosophy analyst. Generate exactly 10 questions across 6 governance domains to assess someone's political ideology at different scales of governance in ${country || 'the United States'}.
 
 GOVERNANCE DOMAINS (generate the specified number of questions for each):
 
-1. PERSONAL & HOME (1 question) - Self-governance, family decision-making, parenting philosophy, household rules
-   Example topics: parenting discipline, household budgeting control, personal habits regulation
+1. PERSONAL & HOME (1 question) - Self-governance, family decision-making, parenting philosophy
    
-2. SOCIAL CIRCLES (1 question) - Peer groups, friendships, community involvement, social accountability
-   Example topics: friend group decision dynamics, community volunteering, social conformity
+2. SOCIAL CIRCLES (1 question) - Peer groups, friendships, community involvement
    
-3. PROFESSIONAL (2 questions) - Workplace governance, labor relations, hierarchy preferences, merit vs equality
-   Example topics: boss authority, workplace democracy, performance-based pay, union membership
+3. PROFESSIONAL (1 question) - Workplace governance, labor relations, hierarchy preferences
    
-4. LOCAL & CIVIC (2 questions) - Neighborhood rules, local government, municipal services, community policing
-   Example topics: HOA rules, local taxes, zoning laws, neighborhood watch
+4. LOCAL & CIVIC (2 questions) - Neighborhood rules, local government, municipal services
    
-5. NATIONAL (3 questions) - Federal policy, constitutional interpretation, national welfare, domestic policy
-   Example topics: federal vs state power, national healthcare, gun regulations, electoral systems
+5. NATIONAL (2 questions) - Federal policy, constitutional interpretation, domestic policy
    
-6. INTERNATIONAL (3 questions) - Foreign policy, sovereignty, global institutions, international cooperation
-   Example topics: UN authority, trade agreements, military intervention, climate treaties
+6. INTERNATIONAL (3 questions) - Foreign policy, sovereignty, global institutions
 
 Random seed for variety: ${randomSeed}
 
-IMPORTANT GUIDELINES:
-- Each question must be a SHORT statement (under 15 words) someone can agree/disagree with
+CRITICAL GUIDELINES:
+- The "text" field must be VERY CONCISE: maximum 10 words. Short, punchy statements only.
+- The "explanation" object must be DETAILED and COMPREHENSIVE for users who want to understand deeply.
 - Questions should reveal governance philosophy (authoritarian vs libertarian, collectivist vs individualist)
 - Be balanced: some statements should lean left when agreed, others right when agreed
 - Make questions specific and nuanced, not generic
-- Avoid offensive or extremely polarizing content
 - Questions should work for ${country || 'the United States'}'s cultural context
 
 CRITICAL FORMAT - Return ONLY valid JSON array:
 [
   {
     "id": "q1",
-    "text": "Short statement here",
+    "text": "Very short statement (max 10 words)",
     "domain": "personal|social|professional|local|national|international",
     "domainName": "Personal & Home|Social Circles|Professional|Local & Civic|National|International",
     "explanation": {
-      "summary": "One-line explanation of what this explores.",
-      "agreement": "What agreeing indicates about governance philosophy (1-2 sentences).",
-      "disagreement": "What disagreeing indicates about governance philosophy (1-2 sentences)."
+      "summary": "A 2-3 sentence overview explaining what this question explores and why it matters for understanding political philosophy.",
+      "agreement": "Detailed explanation (3-4 sentences) of what agreeing with this statement indicates about someone's governance philosophy, values, and worldview.",
+      "disagreement": "Detailed explanation (3-4 sentences) of what disagreeing with this statement indicates about someone's governance philosophy, values, and worldview."
     },
     "category": "economic|social|governance",
     "weight": 1 or -1
@@ -114,10 +108,10 @@ CRITICAL FORMAT - Return ONLY valid JSON array:
 DISTRIBUTION:
 - q1: personal domain (1)
 - q2: social domain (1)  
-- q3-q4: professional domain (2)
-- q5-q6: local domain (2)
-- q7-q9: national domain (3)
-- q10-q12: international domain (3)
+- q3: professional domain (1)
+- q4-q5: local domain (2)
+- q6-q7: national domain (2)
+- q8-q10: international domain (3)
 
 weight: 1 means agreeing leans left/progressive, -1 means agreeing leans right/conservative`;
     }
@@ -134,7 +128,7 @@ weight: 1 means agreeing leans left/progressive, -1 means agreeing leans right/c
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Generate 12 multi-domain political philosophy questions for ${country || 'the United States'}. Return only the JSON array.` }
+          { role: "user", content: `Generate 10 multi-domain political philosophy questions for ${country || 'the United States'}. Remember: question text must be very short (max 10 words), but explanations should be detailed. Return only the JSON array.` }
         ],
       }),
     });
@@ -177,8 +171,8 @@ weight: 1 means agreeing leans left/progressive, -1 means agreeing leans right/c
     }
 
     // Validate the structure
-    if (!Array.isArray(questions) || questions.length !== 12) {
-      console.error("Invalid questions structure, expected 12, got:", questions?.length);
+    if (!Array.isArray(questions) || questions.length !== 10) {
+      console.error("Invalid questions structure, expected 10, got:", questions?.length);
       throw new Error("Invalid questions format returned");
     }
 
