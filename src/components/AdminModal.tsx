@@ -4158,6 +4158,153 @@ Make sure questions are specific to {country}'s current political landscape and 
                     </CardContent>
                   </Card>
                   
+                  {/* Questionnaire Methodology Card */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <BarChart3 className="h-4 w-4 text-primary" />
+                        Questionnaire Calculation Methodology
+                        <Badge variant="default" className="text-xs">Multi-Dimensional</Badge>
+                      </CardTitle>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        How user political positions are calculated across governance domains.
+                      </p>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Scoring Method */}
+                      <div className="border rounded-lg p-4 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <TrendingUp className="h-5 w-5 text-green-500" />
+                          <h4 className="font-medium">Scoring Method: Multi-Dimensional Profile</h4>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Rather than a single left-right score, users receive a comprehensive profile across 6 governance domains:
+                        </p>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                          <div className="bg-muted/50 rounded-md p-2 text-center">
+                            <div className="text-xs font-medium text-primary">Personal</div>
+                            <div className="text-xs text-muted-foreground">Household governance</div>
+                          </div>
+                          <div className="bg-muted/50 rounded-md p-2 text-center">
+                            <div className="text-xs font-medium text-primary">Social</div>
+                            <div className="text-xs text-muted-foreground">Friend circles</div>
+                          </div>
+                          <div className="bg-muted/50 rounded-md p-2 text-center">
+                            <div className="text-xs font-medium text-primary">Professional</div>
+                            <div className="text-xs text-muted-foreground">Workplace views</div>
+                          </div>
+                          <div className="bg-muted/50 rounded-md p-2 text-center">
+                            <div className="text-xs font-medium text-primary">Local</div>
+                            <div className="text-xs text-muted-foreground">Community issues</div>
+                          </div>
+                          <div className="bg-muted/50 rounded-md p-2 text-center">
+                            <div className="text-xs font-medium text-primary">National</div>
+                            <div className="text-xs text-muted-foreground">Country policies</div>
+                          </div>
+                          <div className="bg-muted/50 rounded-md p-2 text-center">
+                            <div className="text-xs font-medium text-primary">International</div>
+                            <div className="text-xs text-muted-foreground">Global concerns</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Question Distribution */}
+                      <div className="border rounded-lg p-4 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Database className="h-5 w-5 text-blue-500" />
+                          <h4 className="font-medium">Question Distribution: Pyramid Weighting</h4>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Questions are distributed using a pyramid structure that emphasizes broader-impact domains:
+                        </p>
+                        <div className="space-y-2 mt-2">
+                          <div className="flex items-center gap-3">
+                            <div className="w-24 text-xs text-right text-muted-foreground">Personal</div>
+                            <div className="flex-1 bg-muted rounded-full h-4 overflow-hidden">
+                              <div className="bg-primary/40 h-full" style={{ width: '16.7%' }}></div>
+                            </div>
+                            <div className="w-20 text-xs"><span className="font-medium">1 Q</span> · 5% weight</div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="w-24 text-xs text-right text-muted-foreground">Social</div>
+                            <div className="flex-1 bg-muted rounded-full h-4 overflow-hidden">
+                              <div className="bg-primary/50 h-full" style={{ width: '25%' }}></div>
+                            </div>
+                            <div className="w-20 text-xs"><span className="font-medium">1 Q</span> · 8% weight</div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="w-24 text-xs text-right text-muted-foreground">Professional</div>
+                            <div className="flex-1 bg-muted rounded-full h-4 overflow-hidden">
+                              <div className="bg-primary/60 h-full" style={{ width: '33.3%' }}></div>
+                            </div>
+                            <div className="w-20 text-xs"><span className="font-medium">2 Q</span> · 12% weight</div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="w-24 text-xs text-right text-muted-foreground">Local</div>
+                            <div className="flex-1 bg-muted rounded-full h-4 overflow-hidden">
+                              <div className="bg-primary/70 h-full" style={{ width: '50%' }}></div>
+                            </div>
+                            <div className="w-20 text-xs"><span className="font-medium">2 Q</span> · 15% weight</div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="w-24 text-xs text-right text-muted-foreground">National</div>
+                            <div className="flex-1 bg-muted rounded-full h-4 overflow-hidden">
+                              <div className="bg-primary/85 h-full" style={{ width: '75%' }}></div>
+                            </div>
+                            <div className="w-20 text-xs"><span className="font-medium">3 Q</span> · 25% weight</div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="w-24 text-xs text-right text-muted-foreground">International</div>
+                            <div className="flex-1 bg-muted rounded-full h-4 overflow-hidden">
+                              <div className="bg-primary h-full" style={{ width: '100%' }}></div>
+                            </div>
+                            <div className="w-20 text-xs"><span className="font-medium">3 Q</span> · 35% weight</div>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Total: 12 questions per session. International and National domains carry more weight in the final composite score.
+                        </p>
+                      </div>
+
+                      {/* Calculation Details */}
+                      <div className="border rounded-lg p-4 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Trophy className="h-5 w-5 text-amber-500" />
+                          <h4 className="font-medium">Output Metrics</h4>
+                        </div>
+                        <ul className="text-sm text-muted-foreground space-y-2">
+                          <li className="flex items-start gap-2">
+                            <span className="text-primary font-medium">•</span>
+                            <span><strong>Domain Scores (0-100):</strong> Individual position for each governance level, displayed on a radar chart.</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-primary font-medium">•</span>
+                            <span><strong>Weighted Composite Score:</strong> Single 0-100 score using pyramid weights for overall positioning.</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-primary font-medium">•</span>
+                            <span><strong>Ideological Consistency:</strong> Standard deviation across domains - lower = more consistent ideology.</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-primary font-medium">•</span>
+                            <span><strong>Position Label:</strong> Derived from composite score (e.g., "Center-Left", "Right", "Far Left").</span>
+                          </li>
+                        </ul>
+                      </div>
+
+                      {/* Why This Approach */}
+                      <div className="bg-muted/30 rounded-lg p-4 space-y-2">
+                        <h4 className="font-medium text-sm">Why Multi-Dimensional + Pyramid?</h4>
+                        <p className="text-xs text-muted-foreground">
+                          This methodology reveals whether someone applies their political philosophy consistently across all life contexts 
+                          or holds different views at personal vs. societal levels. The pyramid weighting reflects that macro-level 
+                          positions (national/international) typically have more impact on public policy alignment, while micro-level 
+                          questions (personal/social) reveal deeper ideological foundations.
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
                   <Button
                     onClick={handleSaveSettings} 
                     disabled={savingSettings}
