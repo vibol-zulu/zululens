@@ -36,7 +36,7 @@ import {
 import { useMySubmissions, ChannelSubmission } from '@/hooks/useMySubmissions';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Clock, CheckCircle, XCircle, TrendingUp, Sparkles, FileText, BarChart3, Pencil, Trash2, Bell, Settings } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, TrendingUp, Sparkles, FileText, BarChart3, Pencil, Trash2, Bell, Settings, RefreshCw } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import NotificationsTab from '@/components/NotificationsTab';
 import AccountSettingsTab from '@/components/AccountSettingsTab';
@@ -181,7 +181,19 @@ const MemberDashboardModal: React.FC<MemberDashboardModalProps> = ({
       <DialogContent className="max-w-3xl max-h-[90vh] p-0 overflow-hidden">
         <div className="flex flex-col h-[70vh]">
           {/* Header */}
-          <div className="border-b p-4 flex items-center justify-between shrink-0">
+          <div className="border-b p-4 flex items-center gap-3 shrink-0">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => {
+                refetch();
+                toast({ title: 'Dashboard refreshed' });
+              }}
+              className="gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </Button>
             <div className="flex items-center gap-3">
               <h2 className="font-semibold text-lg">{userName}'s Dashboard</h2>
               <Badge className="bg-primary/10 text-primary border-0">Member</Badge>

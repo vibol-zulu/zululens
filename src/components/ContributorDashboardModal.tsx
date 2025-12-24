@@ -42,7 +42,7 @@ import { useMySubmissions, ChannelSubmission } from '@/hooks/useMySubmissions';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Trophy, Target, TrendingUp, Clock, CheckCircle, XCircle, Loader2, BarChart3, FileText, Users, Pencil, Trash2, Bell, Settings, Shield } from 'lucide-react';
+import { Trophy, Target, TrendingUp, Clock, CheckCircle, XCircle, Loader2, BarChart3, FileText, Users, Pencil, Trash2, Bell, Settings, Shield, RefreshCw } from 'lucide-react';
 import NotificationsTab from '@/components/NotificationsTab';
 import AccountSettingsTab from '@/components/AccountSettingsTab';
 
@@ -256,7 +256,20 @@ const ContributorDashboardModal: React.FC<ContributorDashboardModalProps> = ({
       <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden">
         <div className="flex flex-col h-[80vh]">
           {/* Header */}
-          <div className="border-b p-4 flex items-center justify-between shrink-0">
+          <div className="border-b p-4 flex items-center gap-3 shrink-0">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => {
+                refetchSubmissions();
+                fetchLeaderboard();
+                toast({ title: 'Dashboard refreshed' });
+              }}
+              className="gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </Button>
             <div className="flex items-center gap-3">
               <h2 className="font-semibold text-lg">{userName}'s Dashboard</h2>
               <Badge variant="outline">Contributor</Badge>
