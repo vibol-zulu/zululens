@@ -1,3 +1,4 @@
+// Analysis Reports Tab - PDF export captures modal as image
 import React, { useEffect, useState, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
