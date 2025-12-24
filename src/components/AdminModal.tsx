@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Search, Database, MoreVertical, MessageCircle, BarChart3, Trophy, Flame, TrendingUp, Newspaper, ChevronDown, Bell, Loader2, Settings, Save, RefreshCw, Sparkles } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Search, Database, MoreVertical, MessageCircle, BarChart3, Trophy, Flame, TrendingUp, Newspaper, ChevronDown, Bell, Loader2, Settings, Save, RefreshCw, Sparkles, ClipboardList } from 'lucide-react';
+import AnalysisReportsTab from '@/components/AnalysisReportsTab';
 import perplexityLogo from '@/assets/perplexity-color.svg';
 import { sendSubmissionEmail } from '@/lib/sendSubmissionEmail';
 import {
@@ -2489,6 +2490,10 @@ Make sure questions are specific to {country}'s current political landscape and 
                         <Newspaper className="h-4 w-4" />
                         News
                       </TabsTrigger>
+                      <TabsTrigger value="reports" className="gap-2">
+                        <ClipboardList className="h-4 w-4" />
+                        Reports
+                      </TabsTrigger>
                       <TabsTrigger value="notifications" className="gap-2">
                         <Bell className="h-4 w-4" />
                         Notifications
@@ -3897,6 +3902,11 @@ Make sure questions are specific to {country}'s current political landscape and 
                 </div>
               </TabsContent>
 
+              {/* Reports Tab */}
+              <TabsContent value="reports" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
+                <AnalysisReportsTab isOpen={activeTab === 'reports'} />
+              </TabsContent>
+
               {/* Settings Tab */}
               <TabsContent value="settings" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
                 <div className="flex-1 overflow-auto p-4 space-y-4">
@@ -5037,121 +5047,121 @@ Make sure questions are specific to {country}'s current political landscape and 
             
             {selectedSubmission && (
               <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                {/* Submission Details Table */}
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-1/3">Field</TableHead>
-                        <TableHead>Value</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell className="font-medium text-muted-foreground">Channel Name</TableCell>
-                        <TableCell className="font-semibold">{selectedSubmission.name}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="font-medium text-muted-foreground">Category</TableCell>
-                        <TableCell className="capitalize">{selectedSubmission.category}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="font-medium text-muted-foreground">Country</TableCell>
-                        <TableCell>{selectedSubmission.country}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="font-medium text-muted-foreground">Year</TableCell>
-                        <TableCell>{selectedSubmission.year}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="font-medium text-muted-foreground">Platform</TableCell>
-                        <TableCell>{selectedSubmission.platform}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="font-medium text-muted-foreground">Content Type</TableCell>
-                        <TableCell>{selectedSubmission.content_type}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="font-medium text-muted-foreground">Audience (Millions)</TableCell>
-                        <TableCell>{selectedSubmission.value_millions}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="font-medium text-muted-foreground">Political Lean</TableCell>
-                        <TableCell>{selectedSubmission.political_lean}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="font-medium text-muted-foreground">Submitted By</TableCell>
-                        <TableCell>{selectedSubmission.author_name || selectedSubmission.author_email || 'Unknown'}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="font-medium text-muted-foreground">Status</TableCell>
-                        <TableCell>
-                          <Badge variant={
-                            selectedSubmission.status === 'pending' ? 'secondary' : 
-                            selectedSubmission.status === 'approved' ? 'default' : 'destructive'
-                          }>
-                            {selectedSubmission.status}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
+                {/* Top Section: Submission Details Table (Left) | Methodology + Analyse Button (Right) */}
+                <div className="flex gap-6">
+                  {/* Left: Submission Details Table */}
+                  <div className="w-1/2 rounded-md border text-[10px]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-1/3 py-1 h-6 text-[10px]">Field</TableHead>
+                          <TableHead className="py-1 h-6 text-[10px]">Value</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        <TableRow>
+                          <TableCell className="font-medium text-muted-foreground py-1 px-2">Channel Name</TableCell>
+                          <TableCell className="font-semibold py-1 px-2">{selectedSubmission.name}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium text-muted-foreground py-1 px-2">Category</TableCell>
+                          <TableCell className="capitalize py-1 px-2">{selectedSubmission.category}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium text-muted-foreground py-1 px-2">Country</TableCell>
+                          <TableCell className="py-1 px-2">{selectedSubmission.country}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium text-muted-foreground py-1 px-2">Platform</TableCell>
+                          <TableCell className="py-1 px-2">{selectedSubmission.platform}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium text-muted-foreground py-1 px-2">Content Type</TableCell>
+                          <TableCell className="py-1 px-2">{selectedSubmission.content_type}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium text-muted-foreground py-1 px-2">Political Lean</TableCell>
+                          <TableCell className="py-1 px-2">{selectedSubmission.political_lean}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium text-muted-foreground py-1 px-2">Status</TableCell>
+                          <TableCell className="py-1 px-2">
+                            <Badge variant={
+                              selectedSubmission.status === 'pending' ? 'secondary' : 
+                              selectedSubmission.status === 'approved' ? 'default' : 'destructive'
+                            } className="text-[10px]">
+                              {selectedSubmission.status}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {/* Right: Methodology Description + Analyse Button */}
+                  <div className="w-1/2 flex flex-col justify-center space-y-4">
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-semibold text-foreground">AI Analysis Methodology</h4>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Our analysis runs 3 independent AI evaluations using Perplexity's Sonar model. 
+                        Each run estimates audience reach, validates political lean, and identifies comparable channels. 
+                        Results are averaged to reduce variance and improve accuracy, with outliers flagged for review.
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={() => estimateAudience(selectedSubmission)}
+                      disabled={isEstimating}
+                      className="h-10 px-5 font-semibold text-foreground border-2"
+                    >
+                      {isEstimating ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          {estimationProgress 
+                            ? `Analysing (Run ${estimationProgress.currentRun}/${estimationProgress.totalRuns})...`
+                            : 'Analysing...'
+                          }
+                        </>
+                      ) : (
+                        <>
+                          <img src={perplexityLogo} alt="Perplexity" className="h-4 w-4 mr-2" />
+                          Analyse Submission (3x Cross-Check)
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
 
-                {/* Analyse Submission Section */}
-                <div className="space-y-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => estimateAudience(selectedSubmission)}
-                    disabled={isEstimating}
-                    className="w-full h-12 px-5 font-semibold text-foreground border-2"
-                  >
-                    {isEstimating ? (
-                      <>
-                        <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                        {estimationProgress 
-                          ? `Analysing (Run ${estimationProgress.currentRun}/${estimationProgress.totalRuns})...`
-                          : 'Analysing...'
-                        }
-                      </>
-                    ) : (
-                      <>
-                        <img src={perplexityLogo} alt="Perplexity" className="h-5 w-5 mr-2" />
-                        Analyse Submission (3x Cross-Check)
-                      </>
-                    )}
-                  </Button>
-
-                  {/* Progress Indicator */}
-                  {isEstimating && estimationProgress && (
-                    <div className="rounded-md border bg-muted/30 p-4 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Multi-Run Analysis Progress</span>
-                        <span className="text-xs text-muted-foreground">
-                          Run {estimationProgress.currentRun} of {estimationProgress.totalRuns}
-                        </span>
-                      </div>
-                      <div className="w-full bg-secondary rounded-full h-2">
-                        <div 
-                          className="bg-primary h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${(estimationProgress.currentRun / estimationProgress.totalRuns) * 100}%` }}
-                        />
-                      </div>
-                      {estimationProgress.runResults.length > 0 && (
-                        <div className="space-y-2">
-                          <p className="text-xs text-muted-foreground">Completed runs:</p>
-                          <div className="flex flex-wrap gap-2">
-                            {estimationProgress.runResults.map((result, idx) => (
-                              <div key={idx} className="bg-background rounded px-2 py-1 text-xs border">
-                                <span className="font-medium">Run {idx + 1}:</span>{' '}
-                                {result.deduplicatedAudience.toFixed(2)}M
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                {/* Progress Indicator */}
+                {isEstimating && estimationProgress && (
+                  <div className="rounded-md border bg-muted/30 p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Multi-Run Analysis Progress</span>
+                      <span className="text-xs text-muted-foreground">
+                        Run {estimationProgress.currentRun} of {estimationProgress.totalRuns}
+                      </span>
                     </div>
-                  )}
+                    <div className="w-full bg-secondary rounded-full h-2">
+                      <div 
+                        className="bg-primary h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${(estimationProgress.currentRun / estimationProgress.totalRuns) * 100}%` }}
+                      />
+                    </div>
+                    {estimationProgress.runResults.length > 0 && (
+                      <div className="space-y-2">
+                        <p className="text-xs text-muted-foreground">Completed runs:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {estimationProgress.runResults.map((result, idx) => (
+                            <div key={idx} className="bg-background rounded px-2 py-1 text-xs border">
+                              <span className="font-medium">Run {idx + 1}:</span>{' '}
+                              {result.deduplicatedAudience.toFixed(2)}M
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                   {estimationResult && (
                     <div className="rounded-md border bg-muted/30 overflow-hidden">
@@ -5279,7 +5289,6 @@ Make sure questions are specific to {country}'s current political landscape and 
                       
                     </div>
                   )}
-                </div>
 
                 {selectedSubmission.status === 'pending' && estimationResult && (
                   <div className="flex gap-3 pt-4">
