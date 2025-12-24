@@ -166,15 +166,13 @@ const CommentItem: React.FC<CommentItemProps> = ({
   );
 };
 
-// Placeholder comments for cycling preview when collapsed
-const PLACEHOLDER_COMMENTS = [
-  { username: "Alex_T", content: "The consolidation trend since 2000 is remarkable. Great visualization!" },
-  { username: "Sarah92", content: "Independent media has really grown in influence over the past decade." },
-  { username: "Mike_Johnson", content: "Would love to see this data broken down by digital vs traditional." },
-  { username: "Chris_L", content: "The spectrum view really highlights the political positioning clearly." },
-  { username: "Emma_K", content: "This tool should be required viewing in media literacy classes." },
-  { username: "David_R", content: "Impressive work. The circle packing approach works really well here." },
-];
+// Interface for recently approved channels
+interface RecentChannel {
+  id: string;
+  name: string;
+  author_name: string;
+  approved_at: string;
+}
 
 const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClick }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -184,6 +182,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
   const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
   const [approvalNotifications, setApprovalNotifications] = useState<ApprovalNotification[]>([]);
   const [showingApproval, setShowingApproval] = useState(false);
+  const [recentChannels, setRecentChannels] = useState<RecentChannel[]>([]);
   
   const isMobile = useIsMobile();
   const { user, isAdmin } = useAuth();
@@ -192,6 +191,40 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
 
   // Check if user has moderator role (similar to admin check in useAuth)
   const [isModerator, setIsModerator] = useState(false);
+  
+  // Fetch recently approved channels for cycling preview
+  useEffect(() => {
+    const fetchRecentChannels = async () => {
+      const { data, error } = await supabase
+        .from('user_channels')
+        .select('id, name, author_id, approved_at')
+        .eq('status', 'approved')
+        .eq('country', country)
+        .not('author_id', 'is', null)
+        .order('approved_at', { ascending: false })
+        .limit(10);
+      
+      if (!error && data && data.length > 0) {
+        // Fetch author names
+        const authorIds = [...new Set(data.map(c => c.author_id).filter(Boolean))];
+        const { data: profiles } = await supabase
+          .rpc('get_profiles_by_ids', { _user_ids: authorIds });
+        
+        const profileMap = new Map(profiles?.map((p: { id: string; full_name: string }) => [p.id, p.full_name]) || []);
+        
+        const channels: RecentChannel[] = data.map(c => ({
+          id: c.id,
+          name: c.name,
+          author_name: profileMap.get(c.author_id) || 'A contributor',
+          approved_at: c.approved_at
+        }));
+        
+        setRecentChannels(channels);
+      }
+    };
+    
+    fetchRecentChannels();
+  }, [country]);
   
   // Fetch approval notifications for the user
   useEffect(() => {
@@ -330,13 +363,15 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
       return () => clearInterval(interval);
     }
     
-    // Regular placeholder cycling
-    const interval = setInterval(() => {
-      setPreviewIndex((prev) => (prev + 1) % PLACEHOLDER_COMMENTS.length);
-    }, 4000);
-    
-    return () => clearInterval(interval);
-  }, [isExpanded, showingApproval, approvalNotifications, user, settings.approvalNotificationDuration]);
+    // Cycle through recently approved channels
+    if (recentChannels.length > 0) {
+      const interval = setInterval(() => {
+        setPreviewIndex((prev) => (prev + 1) % recentChannels.length);
+      }, 4000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [isExpanded, showingApproval, approvalNotifications, user, settings.approvalNotificationDuration, recentChannels.length]);
 
   const handleSubmit = async () => {
     if (!newComment.trim()) return;
@@ -384,10 +419,33 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
   // Tier 1 users (not authenticated) see the section but with sign-up prompt
   const isAuthenticated = !!user;
   
-  const currentPreview = PLACEHOLDER_COMMENTS[previewIndex % PLACEHOLDER_COMMENTS.length];
+  const currentRecentChannel = recentChannels.length > 0 
+    ? recentChannels[previewIndex % recentChannels.length] 
+    : null;
   const currentApproval = showingApproval && approvalNotifications.length > 0 
     ? approvalNotifications[previewIndex % approvalNotifications.length] 
     : null;
+
+  // Render recent channel with celebration styling
+  const renderRecentChannelPreview = () => {
+    if (!currentRecentChannel) return null;
+    
+    return (
+      <span 
+        key={`channel-${currentRecentChannel.id}-${previewIndex}`}
+        className="flex items-center gap-2 animate-fade-in"
+      >
+        <PartyPopper className="h-4 w-4 text-green-500 animate-bounce shrink-0" />
+        <span className="font-semibold text-green-600 dark:text-green-400">
+          🎉 Congratulations {currentRecentChannel.author_name}!
+        </span>
+        <span className="text-foreground truncate">
+          "{currentRecentChannel.name}" is now live!
+        </span>
+        <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+      </span>
+    );
+  };
 
   // Render approval notification with celebration styling
   const renderApprovalPreview = () => {
@@ -436,17 +494,18 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
         {/* Mobile: Preview on top when collapsed */}
         {isMobile && !isExpanded && (
           <div className={`w-full text-sm overflow-hidden text-left ${
-            showingApproval && currentApproval ? 'bg-green-50 dark:bg-green-950/30 -mx-4 px-4 py-2 border-b border-green-200 dark:border-green-800' : ''
+            (showingApproval && currentApproval) || currentRecentChannel ? 'bg-green-50 dark:bg-green-950/30 -mx-4 px-4 py-2 border-b border-green-200 dark:border-green-800' : ''
           }`}>
             {showingApproval && currentApproval ? (
               renderApprovalPreview()
+            ) : currentRecentChannel ? (
+              renderRecentChannelPreview()
             ) : (
               <span 
                 key={previewIndex}
                 className="block truncate animate-fade-in text-muted-foreground"
               >
-                <span className="font-medium text-foreground/70">{currentPreview.username}:</span>{" "}
-                <span className="italic">{currentPreview.content}</span>
+                <span className="italic">Be the first to add a channel!</span>
               </span>
             )}
           </div>
@@ -454,7 +513,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
         
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            {showingApproval && currentApproval ? (
+            {(showingApproval && currentApproval) || currentRecentChannel ? (
               <PartyPopper className="h-4 w-4 text-green-500 shrink-0 animate-pulse" />
             ) : (
               <MessageSquare className="h-4 w-4 text-primary shrink-0" />
@@ -462,28 +521,31 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
             <span className="font-medium text-sm shrink-0">
               {showingApproval && currentApproval ? (
                 <span className="text-green-600 dark:text-green-400">New Approval!</span>
+              ) : currentRecentChannel ? (
+                <span className="text-green-600 dark:text-green-400">Recent Additions</span>
               ) : (
                 <>Comments {totalComments > 0 && `(${totalComments})`}</>
               )}
             </span>
-            {!showingApproval && (
+            {!showingApproval && !currentRecentChannel && (
               <span className="text-xs text-muted-foreground shrink-0">— {country}</span>
             )}
             
             {/* Desktop: Cycling preview inline when collapsed */}
             {!isMobile && !isExpanded && (
               <div className={`flex items-center gap-2 ml-6 text-sm overflow-hidden ${
-                showingApproval && currentApproval ? 'text-foreground' : 'text-muted-foreground'
+                (showingApproval && currentApproval) || currentRecentChannel ? 'text-foreground' : 'text-muted-foreground'
               }`}>
                 {showingApproval && currentApproval ? (
                   renderApprovalPreview()
+                ) : currentRecentChannel ? (
+                  renderRecentChannelPreview()
                 ) : (
                   <span 
                     key={previewIndex}
                     className="truncate animate-fade-in"
                   >
-                    <span className="font-medium text-foreground/70">{currentPreview.username}:</span>{" "}
-                    <span className="italic">{currentPreview.content}</span>
+                    <span className="italic">Be the first to add a channel!</span>
                   </span>
                 )}
               </div>
