@@ -922,6 +922,9 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
           comparable_channels: estimationResult.comparableChannels || [],
           raw_analysis: {
             reasoning: estimationResult.reasoning,
+            runDetails: estimationResult.runDetails || [],
+            crossPlatformRange: estimationResult.crossPlatformRange || null,
+            deduplicatedRange: estimationResult.deduplicatedRange || null,
             ...estimationResult
           },
           was_applied: wasApplied
@@ -946,6 +949,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
     const lineHeight = 7;
     const margin = 20;
     const contentWidth = pageWidth - (margin * 2);
+    const tableColWidth = contentWidth / 2;
 
     // Helper function to add text with word wrap
     const addWrappedText = (text: string, x: number, y: number, maxWidth: number): number => {
@@ -954,134 +958,198 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
       return y + (lines.length * lineHeight);
     };
 
-    // Title
-    doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Channel Submission Analysis Report', margin, yPos);
-    yPos += lineHeight * 2;
+    // Helper function to draw a table row
+    const drawTableRow = (label: string, value: string, y: number, isHeader: boolean = false): number => {
+      if (isHeader) {
+        doc.setFillColor(240, 240, 240);
+        doc.rect(margin, y - 4, contentWidth, lineHeight + 2, 'F');
+        doc.setFont('helvetica', 'bold');
+      } else {
+        doc.setFont('helvetica', 'normal');
+      }
+      doc.setDrawColor(200, 200, 200);
+      doc.rect(margin, y - 4, tableColWidth, lineHeight + 2);
+      doc.rect(margin + tableColWidth, y - 4, tableColWidth, lineHeight + 2);
+      doc.text(label, margin + 2, y);
+      doc.text(value, margin + tableColWidth + 2, y);
+      return y + lineHeight + 2;
+    };
 
-    // Channel info section
-    doc.setFontSize(14);
+    // Title
+    doc.setFontSize(20);
     doc.setFont('helvetica', 'bold');
-    doc.text('Channel Information', margin, yPos);
+    doc.setTextColor(41, 98, 255);
+    doc.text('Channel Analysis Report', margin, yPos);
+    doc.setTextColor(0, 0, 0);
     yPos += lineHeight;
-    
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Channel Name: ${channelToReview.name}`, margin, yPos);
-    yPos += lineHeight;
-    doc.text(`Country: ${channelToReview.country}`, margin, yPos);
-    yPos += lineHeight;
-    doc.text(`Submitted Category: ${channelToReview.category}`, margin, yPos);
-    yPos += lineHeight;
-    doc.text(`Platform: ${channelToReview.platform || 'Not specified'}`, margin, yPos);
-    yPos += lineHeight;
-    doc.text(`Content Type: ${channelToReview.content_type || 'Not specified'}`, margin, yPos);
-    yPos += lineHeight;
-    doc.text(`Analysis Date: ${new Date().toLocaleDateString()}`, margin, yPos);
+    doc.setTextColor(128, 128, 128);
+    doc.text('3-Run Cross-Check Analysis Methodology', margin, yPos);
+    doc.setTextColor(0, 0, 0);
     yPos += lineHeight * 2;
 
-    // Input validation section
+    // Channel Information Table
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Channel Information', margin, yPos);
+    yPos += lineHeight + 2;
+    
+    doc.setFontSize(9);
+    yPos = drawTableRow('Field', 'Value', yPos, true);
+    yPos = drawTableRow('Channel Name', channelToReview.name, yPos);
+    yPos = drawTableRow('Country', channelToReview.country, yPos);
+    yPos = drawTableRow('Category', channelToReview.category, yPos);
+    yPos = drawTableRow('Platform', channelToReview.platform || 'Not specified', yPos);
+    yPos = drawTableRow('Content Type', channelToReview.content_type || 'Not specified', yPos);
+    yPos = drawTableRow('Analysis Date', new Date().toLocaleDateString(), yPos);
+    yPos += lineHeight;
+
+    // Input Validation Table
     if (estimationResult.inputValidation) {
-      doc.setFontSize(14);
+      doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
       doc.text('Input Validation', margin, yPos);
-      yPos += lineHeight;
+      yPos += lineHeight + 2;
       
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      const catStatus = estimationResult.inputValidation.categoryCorrect ? 'Correct' : 
-        `Suggested: ${estimationResult.inputValidation.suggestedCategory}`;
-      doc.text(`Category: ${catStatus}`, margin, yPos);
-      yPos += lineHeight;
-      doc.text(`Platform: ${estimationResult.inputValidation.platformCorrect ? 'Correct' : 'Review needed'}`, margin, yPos);
-      yPos += lineHeight;
-      doc.text(`Content Type: ${estimationResult.inputValidation.contentTypeCorrect ? 'Correct' : 'Review needed'}`, margin, yPos);
-      yPos += lineHeight;
+      doc.setFontSize(9);
+      yPos = drawTableRow('Field', 'Status', yPos, true);
+      const catStatus = estimationResult.inputValidation.categoryCorrect ? '✓ Correct' : 
+        `⚠ Suggested: ${estimationResult.inputValidation.suggestedCategory}`;
+      yPos = drawTableRow('Category', catStatus, yPos);
+      yPos = drawTableRow('Platform', estimationResult.inputValidation.platformCorrect ? '✓ Correct' : '⚠ Review needed', yPos);
+      yPos = drawTableRow('Content Type', estimationResult.inputValidation.contentTypeCorrect ? '✓ Correct' : '⚠ Review needed', yPos);
       
       if (estimationResult.inputValidation.validationNotes) {
+        yPos += 2;
+        doc.setFont('helvetica', 'italic');
         yPos = addWrappedText(`Notes: ${estimationResult.inputValidation.validationNotes}`, margin, yPos, contentWidth);
       }
       yPos += lineHeight;
     }
 
-    // Results section
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Analysis Results', margin, yPos);
-    yPos += lineHeight;
-    
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    
+    // Political Lean Section
     if (estimationResult.politicalLean) {
-      doc.text(`Political Lean: ${estimationResult.politicalLean}`, margin, yPos);
-      yPos += lineHeight;
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Political Lean Analysis', margin, yPos);
+      yPos += lineHeight + 2;
+      
+      doc.setFontSize(9);
+      yPos = drawTableRow('Field', 'Value', yPos, true);
+      yPos = drawTableRow('Political Lean', estimationResult.politicalLean.toUpperCase(), yPos);
+      
       if (estimationResult.politicalLeanJustification) {
-        yPos = addWrappedText(`Justification: ${estimationResult.politicalLeanJustification}`, margin, yPos, contentWidth);
+        yPos += 2;
+        doc.setFont('helvetica', 'bold');
+        doc.text('Justification:', margin, yPos);
+        yPos += lineHeight;
+        doc.setFont('helvetica', 'normal');
+        yPos = addWrappedText(estimationResult.politicalLeanJustification, margin, yPos, contentWidth);
       }
-    }
-    
-    doc.text(`Cross-Platform Audience: ${estimationResult.crossPlatformAudience?.toFixed(2) || '0.00'}M`, margin, yPos);
-    yPos += lineHeight;
-    doc.setFont('helvetica', 'bold');
-    doc.text(`Deduplicated Audience: ${estimationResult.deduplicatedAudience?.toFixed(2) || '0.00'}M`, margin, yPos);
-    doc.setFont('helvetica', 'normal');
-    yPos += lineHeight;
-    
-    if (estimationResult.suggestedStartDate) {
-      doc.text(`Suggested Start Date: ${estimationResult.suggestedStartDate}`, margin, yPos);
       yPos += lineHeight;
+    }
+
+    // Audience Estimation Results Table
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Audience Estimation Results (3-Run Mean)', margin, yPos);
+    yPos += lineHeight + 2;
+    
+    doc.setFontSize(9);
+    yPos = drawTableRow('Metric', 'Value', yPos, true);
+    yPos = drawTableRow('Cross-Platform Audience (Mean)', `${estimationResult.crossPlatformAudience?.toFixed(2) || '0.00'}M`, yPos);
+    if (estimationResult.crossPlatformRange) {
+      yPos = drawTableRow('Cross-Platform Range', `${estimationResult.crossPlatformRange.min.toFixed(2)}M – ${estimationResult.crossPlatformRange.max.toFixed(2)}M`, yPos);
+    }
+    yPos = drawTableRow('Deduplicated Audience (Mean)', `${estimationResult.deduplicatedAudience?.toFixed(2) || '0.00'}M`, yPos);
+    if (estimationResult.deduplicatedRange) {
+      yPos = drawTableRow('Deduplicated Range', `${estimationResult.deduplicatedRange.min.toFixed(2)}M – ${estimationResult.deduplicatedRange.max.toFixed(2)}M`, yPos);
+    }
+    if (estimationResult.suggestedStartDate) {
+      yPos = drawTableRow('Suggested Start Date', estimationResult.suggestedStartDate, yPos);
     }
     yPos += lineHeight;
 
-    // Reasoning section
+    // Individual Run Results Table
+    if (estimationResult.runDetails && estimationResult.runDetails.length > 0) {
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Individual Run Results', margin, yPos);
+      yPos += lineHeight + 2;
+      
+      doc.setFontSize(9);
+      // Custom 3-column table for runs
+      const col1Width = contentWidth / 3;
+      doc.setFillColor(240, 240, 240);
+      doc.rect(margin, yPos - 4, contentWidth, lineHeight + 2, 'F');
+      doc.setDrawColor(200, 200, 200);
+      doc.rect(margin, yPos - 4, col1Width, lineHeight + 2);
+      doc.rect(margin + col1Width, yPos - 4, col1Width, lineHeight + 2);
+      doc.rect(margin + col1Width * 2, yPos - 4, col1Width, lineHeight + 2);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Run', margin + 2, yPos);
+      doc.text('Cross-Platform', margin + col1Width + 2, yPos);
+      doc.text('Deduplicated', margin + col1Width * 2 + 2, yPos);
+      yPos += lineHeight + 2;
+      
+      doc.setFont('helvetica', 'normal');
+      estimationResult.runDetails.forEach((run, idx) => {
+        doc.rect(margin, yPos - 4, col1Width, lineHeight + 2);
+        doc.rect(margin + col1Width, yPos - 4, col1Width, lineHeight + 2);
+        doc.rect(margin + col1Width * 2, yPos - 4, col1Width, lineHeight + 2);
+        doc.text(`Run ${idx + 1}`, margin + 2, yPos);
+        doc.text(`${run.crossPlatformAudience.toFixed(2)}M`, margin + col1Width + 2, yPos);
+        doc.text(`${run.deduplicatedAudience.toFixed(2)}M`, margin + col1Width * 2 + 2, yPos);
+        yPos += lineHeight + 2;
+      });
+      yPos += lineHeight;
+    }
+
+    // Reasoning Section
     if (estimationResult.reasoning) {
-      // Check if we need a new page
-      if (yPos > 250) {
+      if (yPos > 220) {
         doc.addPage();
         yPos = 20;
       }
       
-      doc.setFontSize(14);
+      doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
       doc.text('Analysis Reasoning', margin, yPos);
-      yPos += lineHeight;
+      yPos += lineHeight + 2;
       
-      doc.setFontSize(10);
+      doc.setFontSize(9);
       doc.setFont('helvetica', 'normal');
       yPos = addWrappedText(estimationResult.reasoning, margin, yPos, contentWidth);
       yPos += lineHeight;
     }
 
-    // Comparable channels section
+    // Comparable Channels Section
     if (estimationResult.comparableChannels?.length > 0) {
-      if (yPos > 260) {
+      if (yPos > 240) {
         doc.addPage();
         yPos = 20;
       }
       
-      doc.setFontSize(14);
+      doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
       doc.text('Comparable Channels', margin, yPos);
-      yPos += lineHeight;
+      yPos += lineHeight + 2;
       
-      doc.setFontSize(10);
+      doc.setFontSize(9);
       doc.setFont('helvetica', 'normal');
-      estimationResult.comparableChannels.forEach((channel, idx) => {
-        doc.text(`${idx + 1}. ${channel}`, margin, yPos);
-        yPos += lineHeight;
-      });
+      const channelsList = estimationResult.comparableChannels.map((c, i) => `${i + 1}. ${c}`).join('\n');
+      yPos = addWrappedText(channelsList, margin, yPos, contentWidth);
     }
 
-    // Footer
+    // Footer on all pages
     const pageCount = doc.internal.pages.length - 1;
     doc.setFontSize(8);
-    doc.setTextColor(128);
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
+      doc.setTextColor(128, 128, 128);
       doc.text(
-        `Generated by Media Landscape Analysis Tool - Page ${i} of ${pageCount}`,
+        `Generated by Media Landscape Analysis Tool • ${new Date().toLocaleString()} • Page ${i} of ${pageCount}`,
         pageWidth / 2,
         doc.internal.pageSize.getHeight() - 10,
         { align: 'center' }

@@ -147,6 +147,7 @@ const AnalysisReportsTab: React.FC<AnalysisReportsTabProps> = ({ isOpen }) => {
     const lineHeight = 7;
     const margin = 20;
     const contentWidth = pageWidth - (margin * 2);
+    const tableColWidth = contentWidth / 2;
 
     const addWrappedText = (text: string, x: number, y: number, maxWidth: number): number => {
       const lines = doc.splitTextToSize(text, maxWidth);
@@ -154,104 +155,212 @@ const AnalysisReportsTab: React.FC<AnalysisReportsTabProps> = ({ isOpen }) => {
       return y + (lines.length * lineHeight);
     };
 
+    // Helper function to draw a table row
+    const drawTableRow = (label: string, value: string, y: number, isHeader: boolean = false): number => {
+      if (isHeader) {
+        doc.setFillColor(240, 240, 240);
+        doc.rect(margin, y - 4, contentWidth, lineHeight + 2, 'F');
+        doc.setFont('helvetica', 'bold');
+      } else {
+        doc.setFont('helvetica', 'normal');
+      }
+      doc.setDrawColor(200, 200, 200);
+      doc.rect(margin, y - 4, tableColWidth, lineHeight + 2);
+      doc.rect(margin + tableColWidth, y - 4, tableColWidth, lineHeight + 2);
+      doc.text(label, margin + 2, y);
+      doc.text(value, margin + tableColWidth + 2, y);
+      return y + lineHeight + 2;
+    };
+
+    // Extract run details from raw_analysis if available
+    const rawAnalysis = report.raw_analysis as {
+      reasoning?: string;
+      runDetails?: Array<{ crossPlatformAudience: number; deduplicatedAudience: number }>;
+      crossPlatformRange?: { min: number; max: number };
+      deduplicatedRange?: { min: number; max: number };
+    } | null;
+
     // Title
-    doc.setFontSize(18);
+    doc.setFontSize(20);
     doc.setFont('helvetica', 'bold');
+    doc.setTextColor(41, 98, 255);
     doc.text('Channel Analysis Report', margin, yPos);
+    doc.setTextColor(0, 0, 0);
+    yPos += lineHeight;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(128, 128, 128);
+    doc.text('3-Run Cross-Check Analysis Methodology', margin, yPos);
+    doc.setTextColor(0, 0, 0);
     yPos += lineHeight * 2;
 
-    // Channel info
-    doc.setFontSize(14);
+    // Channel Information Table
+    doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.text('Channel Information', margin, yPos);
-    yPos += lineHeight;
+    yPos += lineHeight + 2;
     
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Channel Name: ${report.channel_name}`, margin, yPos);
-    yPos += lineHeight;
-    doc.text(`Country: ${report.country}`, margin, yPos);
-    yPos += lineHeight;
-    doc.text(`Category: ${report.submitted_category || 'N/A'}`, margin, yPos);
-    yPos += lineHeight;
-    doc.text(`Platform: ${report.submitted_platform || 'N/A'}`, margin, yPos);
-    yPos += lineHeight;
-    doc.text(`Content Type: ${report.submitted_content_type || 'N/A'}`, margin, yPos);
-    yPos += lineHeight;
-    doc.text(`Analysis Date: ${formatDate(report.analyzed_at)}`, margin, yPos);
-    yPos += lineHeight;
-    doc.text(`Analyzed By: ${report.analyzer_name || 'Unknown'}`, margin, yPos);
-    yPos += lineHeight * 2;
-
-    // Analysis Results
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Analysis Results', margin, yPos);
+    doc.setFontSize(9);
+    yPos = drawTableRow('Field', 'Value', yPos, true);
+    yPos = drawTableRow('Channel Name', report.channel_name, yPos);
+    yPos = drawTableRow('Country', report.country, yPos);
+    yPos = drawTableRow('Category', report.submitted_category || 'N/A', yPos);
+    yPos = drawTableRow('Platform', report.submitted_platform || 'N/A', yPos);
+    yPos = drawTableRow('Content Type', report.submitted_content_type || 'N/A', yPos);
+    yPos = drawTableRow('Analysis Date', formatDate(report.analyzed_at), yPos);
+    yPos = drawTableRow('Analyzed By', report.analyzer_name || 'Unknown', yPos);
+    yPos = drawTableRow('Applied to Channel', report.was_applied ? 'Yes' : 'No', yPos);
     yPos += lineHeight;
 
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    
-    if (report.political_lean) {
-      doc.text(`Political Lean: ${report.political_lean}`, margin, yPos);
-      yPos += lineHeight;
-      if (report.political_lean_justification) {
-        yPos = addWrappedText(`Justification: ${report.political_lean_justification}`, margin, yPos, contentWidth);
-        yPos += lineHeight;
-      }
-    }
-
-    doc.text(`Cross-Platform Audience: ${report.cross_platform_audience?.toFixed(2) || '0.00'}M`, margin, yPos);
-    yPos += lineHeight;
-    doc.text(`Deduplicated Audience: ${report.deduplicated_audience?.toFixed(2) || '0.00'}M`, margin, yPos);
-    yPos += lineHeight;
-
-    if (report.suggested_start_date) {
-      doc.text(`Suggested Start Date: ${report.suggested_start_date}`, margin, yPos);
-      yPos += lineHeight;
-    }
-
-    yPos += lineHeight;
-    doc.text(`Applied to Channel: ${report.was_applied ? 'Yes' : 'No'}`, margin, yPos);
-
-    // Input validation
+    // Input Validation Table
     if (report.input_validation) {
-      yPos += lineHeight * 2;
-      doc.setFontSize(14);
+      doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
       doc.text('Input Validation', margin, yPos);
-      yPos += lineHeight;
-
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
+      yPos += lineHeight + 2;
       
-      const catStatus = report.input_validation.categoryCorrect ? 'Correct' : 
-        `Suggested: ${report.input_validation.suggestedCategory || 'N/A'}`;
-      doc.text(`Category: ${catStatus}`, margin, yPos);
-      yPos += lineHeight;
+      doc.setFontSize(9);
+      yPos = drawTableRow('Field', 'Status', yPos, true);
+      const catStatus = report.input_validation.categoryCorrect ? '✓ Correct' : 
+        `⚠ Suggested: ${report.input_validation.suggestedCategory || 'N/A'}`;
+      yPos = drawTableRow('Category', catStatus, yPos);
+      yPos = drawTableRow('Platform', report.input_validation.platformCorrect ? '✓ Correct' : '⚠ Review needed', yPos);
+      yPos = drawTableRow('Content Type', report.input_validation.contentTypeCorrect ? '✓ Correct' : '⚠ Review needed', yPos);
       
-      doc.text(`Platform: ${report.input_validation.platformCorrect ? 'Correct' : 'Review needed'}`, margin, yPos);
-      yPos += lineHeight;
-      
-      doc.text(`Content Type: ${report.input_validation.contentTypeCorrect ? 'Correct' : 'Review needed'}`, margin, yPos);
-      yPos += lineHeight;
-
       if (report.input_validation.validationNotes) {
+        yPos += 2;
+        doc.setFont('helvetica', 'italic');
         yPos = addWrappedText(`Notes: ${report.input_validation.validationNotes}`, margin, yPos, contentWidth);
       }
+      yPos += lineHeight;
     }
 
-    // Comparable channels
+    // Political Lean Section
+    if (report.political_lean) {
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Political Lean Analysis', margin, yPos);
+      yPos += lineHeight + 2;
+      
+      doc.setFontSize(9);
+      yPos = drawTableRow('Field', 'Value', yPos, true);
+      yPos = drawTableRow('Political Lean', report.political_lean.toUpperCase(), yPos);
+      
+      if (report.political_lean_justification) {
+        yPos += 2;
+        doc.setFont('helvetica', 'bold');
+        doc.text('Justification:', margin, yPos);
+        yPos += lineHeight;
+        doc.setFont('helvetica', 'normal');
+        yPos = addWrappedText(report.political_lean_justification, margin, yPos, contentWidth);
+      }
+      yPos += lineHeight;
+    }
+
+    // Audience Estimation Results Table
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Audience Estimation Results (3-Run Mean)', margin, yPos);
+    yPos += lineHeight + 2;
+    
+    doc.setFontSize(9);
+    yPos = drawTableRow('Metric', 'Value', yPos, true);
+    yPos = drawTableRow('Cross-Platform Audience (Mean)', `${report.cross_platform_audience?.toFixed(2) || '0.00'}M`, yPos);
+    if (rawAnalysis?.crossPlatformRange) {
+      yPos = drawTableRow('Cross-Platform Range', `${rawAnalysis.crossPlatformRange.min.toFixed(2)}M – ${rawAnalysis.crossPlatformRange.max.toFixed(2)}M`, yPos);
+    }
+    yPos = drawTableRow('Deduplicated Audience (Mean)', `${report.deduplicated_audience?.toFixed(2) || '0.00'}M`, yPos);
+    if (rawAnalysis?.deduplicatedRange) {
+      yPos = drawTableRow('Deduplicated Range', `${rawAnalysis.deduplicatedRange.min.toFixed(2)}M – ${rawAnalysis.deduplicatedRange.max.toFixed(2)}M`, yPos);
+    }
+    if (report.suggested_start_date) {
+      yPos = drawTableRow('Suggested Start Date', report.suggested_start_date, yPos);
+    }
+    yPos += lineHeight;
+
+    // Individual Run Results Table
+    if (rawAnalysis?.runDetails && rawAnalysis.runDetails.length > 0) {
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Individual Run Results', margin, yPos);
+      yPos += lineHeight + 2;
+      
+      doc.setFontSize(9);
+      // Custom 3-column table for runs
+      const col1Width = contentWidth / 3;
+      doc.setFillColor(240, 240, 240);
+      doc.rect(margin, yPos - 4, contentWidth, lineHeight + 2, 'F');
+      doc.setDrawColor(200, 200, 200);
+      doc.rect(margin, yPos - 4, col1Width, lineHeight + 2);
+      doc.rect(margin + col1Width, yPos - 4, col1Width, lineHeight + 2);
+      doc.rect(margin + col1Width * 2, yPos - 4, col1Width, lineHeight + 2);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Run', margin + 2, yPos);
+      doc.text('Cross-Platform', margin + col1Width + 2, yPos);
+      doc.text('Deduplicated', margin + col1Width * 2 + 2, yPos);
+      yPos += lineHeight + 2;
+      
+      doc.setFont('helvetica', 'normal');
+      rawAnalysis.runDetails.forEach((run, idx) => {
+        doc.rect(margin, yPos - 4, col1Width, lineHeight + 2);
+        doc.rect(margin + col1Width, yPos - 4, col1Width, lineHeight + 2);
+        doc.rect(margin + col1Width * 2, yPos - 4, col1Width, lineHeight + 2);
+        doc.text(`Run ${idx + 1}`, margin + 2, yPos);
+        doc.text(`${run.crossPlatformAudience.toFixed(2)}M`, margin + col1Width + 2, yPos);
+        doc.text(`${run.deduplicatedAudience.toFixed(2)}M`, margin + col1Width * 2 + 2, yPos);
+        yPos += lineHeight + 2;
+      });
+      yPos += lineHeight;
+    }
+
+    // Reasoning Section
+    if (rawAnalysis?.reasoning) {
+      if (yPos > 220) {
+        doc.addPage();
+        yPos = 20;
+      }
+      
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Analysis Reasoning', margin, yPos);
+      yPos += lineHeight + 2;
+      
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      yPos = addWrappedText(rawAnalysis.reasoning, margin, yPos, contentWidth);
+      yPos += lineHeight;
+    }
+
+    // Comparable Channels Section
     if (report.comparable_channels && report.comparable_channels.length > 0) {
-      yPos += lineHeight * 2;
-      doc.setFontSize(14);
+      if (yPos > 240) {
+        doc.addPage();
+        yPos = 20;
+      }
+      
+      doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
       doc.text('Comparable Channels', margin, yPos);
-      yPos += lineHeight;
-
-      doc.setFontSize(10);
+      yPos += lineHeight + 2;
+      
+      doc.setFontSize(9);
       doc.setFont('helvetica', 'normal');
-      yPos = addWrappedText(report.comparable_channels.join(', '), margin, yPos, contentWidth);
+      const channelsList = report.comparable_channels.map((c, i) => `${i + 1}. ${c}`).join('\n');
+      yPos = addWrappedText(channelsList, margin, yPos, contentWidth);
+    }
+
+    // Footer on all pages
+    const pageCount = doc.internal.pages.length - 1;
+    doc.setFontSize(8);
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setTextColor(128, 128, 128);
+      doc.text(
+        `Generated by Media Landscape Analysis Tool • ${new Date().toLocaleString()} • Page ${i} of ${pageCount}`,
+        pageWidth / 2,
+        doc.internal.pageSize.getHeight() - 10,
+        { align: 'center' }
+      );
     }
 
     // Save
