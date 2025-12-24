@@ -436,10 +436,10 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
         className="flex items-center gap-2 animate-fade-in"
       >
         <span className="font-semibold text-green-600 dark:text-green-400">
-          🎉 Congratulations {currentRecentChannel.author_name}!
+          🎉 Thank you {currentRecentChannel.author_name}!
         </span>
         <span className="text-foreground truncate">
-          "{currentRecentChannel.name}" is now live!
+          "{currentRecentChannel.name}" has been added!
         </span>
         <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
       </span>
@@ -459,10 +459,10 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
         {isApproved ? (
           <>
             <span className="font-semibold text-green-600 dark:text-green-400">
-              🎉 Congratulations!
+              🎉 Thank you!
             </span>
             <span className="text-foreground">
-              "{currentApproval.channelName}" is now live!
+              "{currentApproval.channelName}" has been added!
             </span>
             <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
           </>
