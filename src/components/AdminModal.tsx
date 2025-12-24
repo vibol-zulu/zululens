@@ -2427,8 +2427,7 @@ Make sure questions are specific to {country}'s current political landscape and 
           </div>
         ) : (
           <div className="flex flex-col h-[80vh]">
-            <div className="border-b p-4 flex items-center justify-between shrink-0 pr-12">
-              <h2 className="font-semibold text-lg">Admin Panel</h2>
+            <div className="border-b p-4 flex items-center gap-3 shrink-0 pr-12">
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -2447,6 +2446,7 @@ Make sure questions are specific to {country}'s current political landscape and 
                 <RefreshCw className="h-4 w-4" />
                 Refresh
               </Button>
+              <h2 className="font-semibold text-lg">Admin Panel</h2>
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">

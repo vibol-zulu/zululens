@@ -1418,11 +1418,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
       <DialogContent className="max-w-5xl max-h-[90vh] p-0 overflow-hidden">
         <div className="flex flex-col h-[80vh]">
           {/* Header */}
-          <div className="border-b p-4 flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-3">
-              <h2 className="font-semibold text-lg">{userName}'s Dashboard</h2>
-              <Badge variant="secondary">Moderator</Badge>
-            </div>
+          <div className="border-b p-4 flex items-center gap-3 shrink-0">
             <Button 
               variant="outline" 
               size="sm" 
@@ -1439,6 +1435,10 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
               <RefreshCw className="h-4 w-4" />
               Refresh
             </Button>
+            <div className="flex items-center gap-3">
+              <h2 className="font-semibold text-lg">{userName}'s Dashboard</h2>
+              <Badge variant="secondary">Moderator</Badge>
+            </div>
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
