@@ -5326,17 +5326,8 @@ Make sure questions are specific to {country}'s current political landscape and 
             {/* Fixed footer with action buttons - always visible when estimationResult exists */}
             {selectedSubmission && selectedSubmission.status === 'pending' && estimationResult && (
               <div className="border-t p-4 bg-background shrink-0 space-y-3">
-                {/* Export actions row */}
-                <div className="flex gap-2">
-                  <Button 
-                    variant="outline"
-                    size="sm"
-                    onClick={exportReportAsPDF}
-                    className="flex-1"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Export PDF
-                  </Button>
+                {/* Save report row */}
+                <div className="flex gap-2 items-center">
                   <Button 
                     variant="outline"
                     size="sm"
@@ -5346,6 +5337,7 @@ Make sure questions are specific to {country}'s current political landscape and 
                     <Save className="h-4 w-4 mr-2" />
                     Save Report
                   </Button>
+                  <span className="text-xs text-muted-foreground">Download PDF version in Reports Tab</span>
                 </div>
                 
                 {/* Main action buttons */}
