@@ -73,6 +73,7 @@ import NotificationsTab from '@/components/NotificationsTab';
 import AccountSettingsTab from '@/components/AccountSettingsTab';
 import AnalysisReportsTab from '@/components/AnalysisReportsTab';
 import SubmissionAnalysisPanel from '@/components/SubmissionAnalysisPanel';
+import SearchableCountrySelect from '@/components/SearchableCountrySelect';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { ClipboardList } from 'lucide-react';
@@ -1560,17 +1561,11 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
             {/* Pending Suggestions Tab */}
             <TabsContent value="suggestions" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
               <div className="border-b p-4 flex items-center gap-2 shrink-0 flex-wrap">
-                <Select value={selectedCountry} onValueChange={setSelectedCountry}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Filter by country" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Countries</SelectItem>
-                    {COUNTRIES.map(c => (
-                      <SelectItem key={c} value={c}>{c}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <SearchableCountrySelect 
+                  value={selectedCountry} 
+                  onValueChange={setSelectedCountry}
+                  includeAllOption={true}
+                />
                 
                 <Input
                   placeholder="Search channels..."
@@ -1794,17 +1789,11 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
             {/* All Channels Tab */}
             <TabsContent value="all-channels" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
               <div className="border-b p-4 flex items-center gap-2 shrink-0">
-                <Select value={allChannelsCountry} onValueChange={setAllChannelsCountry}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Filter by country" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Countries</SelectItem>
-                    {COUNTRIES.map(c => (
-                      <SelectItem key={c} value={c}>{c}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <SearchableCountrySelect 
+                  value={allChannelsCountry} 
+                  onValueChange={setAllChannelsCountry}
+                  includeAllOption={true}
+                />
                 
                 <Input
                   placeholder="Search channels..."
@@ -1879,17 +1868,11 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
             {/* Comments Tab */}
             <TabsContent value="comments" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
               <div className="border-b p-4 flex items-center gap-2 shrink-0 flex-wrap">
-                <Select value={commentsCountry} onValueChange={setCommentsCountry}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Filter by country" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Countries</SelectItem>
-                    {COUNTRIES.map(c => (
-                      <SelectItem key={c} value={c}>{c}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <SearchableCountrySelect 
+                  value={commentsCountry} 
+                  onValueChange={setCommentsCountry}
+                  includeAllOption={true}
+                />
                 
                 <Input
                   placeholder="Search comments..."

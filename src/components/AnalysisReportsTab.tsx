@@ -39,6 +39,7 @@ import {
 import { COUNTRIES } from '@/data/mediaData';
 import { useAnalysisReports, AnalysisReport } from '@/hooks/useAnalysisReports';
 import { Loader2, Trash2, Pencil, Download, Eye, Check, X } from 'lucide-react';
+import SearchableCountrySelect from '@/components/SearchableCountrySelect';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -247,17 +248,11 @@ const AnalysisReportsTab: React.FC<AnalysisReportsTabProps> = ({ isOpen }) => {
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Filters */}
       <div className="border-b p-4 flex items-center gap-2 shrink-0 flex-wrap">
-        <Select value={countryFilter} onValueChange={setCountryFilter}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by country" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Countries</SelectItem>
-            {COUNTRIES.map(c => (
-              <SelectItem key={c} value={c}>{c}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <SearchableCountrySelect 
+          value={countryFilter} 
+          onValueChange={setCountryFilter}
+          includeAllOption={true}
+        />
         
         <Input
           placeholder="Search by channel name..."

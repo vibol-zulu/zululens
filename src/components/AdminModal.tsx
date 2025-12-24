@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Search, Database, MoreVertical, MessageCircle, BarChart3, Trophy, Flame, TrendingUp, Newspaper, ChevronDown, Bell, Loader2, Settings, Save, RefreshCw, Sparkles, ClipboardList, Download } from 'lucide-react';
 import AnalysisReportsTab from '@/components/AnalysisReportsTab';
 import SubmissionAnalysisPanel from '@/components/SubmissionAnalysisPanel';
+import SearchableCountrySelect from '@/components/SearchableCountrySelect';
 import perplexityLogo from '@/assets/perplexity-color.svg';
 import { sendSubmissionEmail } from '@/lib/sendSubmissionEmail';
 import jsPDF from 'jspdf';
@@ -2790,16 +2791,12 @@ Make sure questions are specific to {country}'s current political landscape and 
                       </DropdownMenuContent>
                     </DropdownMenu>
                   )}
-                  <Select value={selectedCountry} onValueChange={setSelectedCountry}>
-                    <SelectTrigger className="w-[140px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {COUNTRIES.map(c => (
-                        <SelectItem key={c} value={c}>{c}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <SearchableCountrySelect 
+                    value={selectedCountry} 
+                    onValueChange={setSelectedCountry}
+                    includeAllOption={false}
+                    className="w-[160px]"
+                  />
                   
                   <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
                     <SelectTrigger className="w-[90px]">
