@@ -2170,73 +2170,74 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                     </div>
                   )}
                 </div>
-
-                {estimationResult && (
-                  <div className="space-y-3 pt-4 border-t">
-                    {/* Export actions row */}
-                    <div className="flex gap-2">
-                      <Button 
-                        variant="outline"
-                        size="sm"
-                        onClick={exportReportAsPDF}
-                        className="flex-1"
-                      >
-                        <Download className="h-4 w-4 mr-2" />
-                        Export PDF
-                      </Button>
-                      <Button 
-                        variant="outline"
-                        size="sm"
-                        onClick={() => saveAnalysisReport(false)}
-                        className="flex-1"
-                      >
-                        <FileText className="h-4 w-4 mr-2" />
-                        Save Report
-                      </Button>
-                    </div>
-                    
-                    {/* Main action buttons */}
-                    <div className="flex gap-3">
-                      <Button 
-                        variant="outline" 
-                        onClick={() => {
-                          setShowReviewDialog(false);
-                          setEstimationResult(null);
-                        }}
-                        className="flex-1"
-                      >
-                        Cancel
-                      </Button>
-                      <Button 
-                        variant="secondary"
-                        onClick={() => channelToReview && estimateAudience(channelToReview)}
-                        disabled={isEstimating}
-                        className="flex-1"
-                      >
-                        {isEstimating ? 'Analysing...' : 'Re-analyse'}
-                      </Button>
-                      {reviewAction === 'reject' ? (
-                        <Button 
-                          variant="destructive"
-                          onClick={confirmReview}
-                          className="flex-1"
-                        >
-                          Reject
-                        </Button>
-                      ) : (
-                        <Button 
-                          onClick={async () => {
-                            await saveAnalysisReport(true);
-                            applyEstimation();
-                          }}
-                          className="flex-1 bg-green-600 hover:bg-green-700"
-                        >
-                          Approve ({estimationResult.deduplicatedAudience?.toFixed(2) || '0'}M)
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                )}
+              </div>
+            )}
+            
+            {/* Fixed footer with action buttons - always visible when estimationResult exists */}
+            {channelToReview && estimationResult && (
+              <div className="border-t p-4 bg-background shrink-0 space-y-3">
+                {/* Export actions row */}
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    onClick={exportReportAsPDF}
+                    className="flex-1"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export PDF
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    onClick={() => saveAnalysisReport(false)}
+                    className="flex-1"
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Save Report
+                  </Button>
+                </div>
+                
+                {/* Main action buttons */}
+                <div className="flex gap-3">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setShowReviewDialog(false);
+                      setEstimationResult(null);
+                    }}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    variant="secondary"
+                    onClick={() => channelToReview && estimateAudience(channelToReview)}
+                    disabled={isEstimating}
+                    className="flex-1"
+                  >
+                    {isEstimating ? 'Analysing...' : 'Re-analyse'}
+                  </Button>
+                  {reviewAction === 'reject' ? (
+                    <Button 
+                      variant="destructive"
+                      onClick={confirmReview}
+                      className="flex-1"
+                    >
+                      Reject
+                    </Button>
+                  ) : (
+                    <Button 
+                      onClick={async () => {
+                        await saveAnalysisReport(true);
+                        applyEstimation();
+                      }}
+                      className="flex-1 bg-green-600 hover:bg-green-700"
+                    >
+                      Approve ({estimationResult.deduplicatedAudience?.toFixed(2) || '0'}M)
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </DialogContent>
