@@ -2089,38 +2089,38 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
             {channelToReview && (
               <div className="flex-1 overflow-y-auto p-6 space-y-6">
                 {/* Submission Details Table */}
-                <div className="rounded-md border text-xs">
+                <div className="rounded-md border text-[10px]">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-1/3 py-2 text-xs">Field</TableHead>
-                        <TableHead className="py-2 text-xs">Value</TableHead>
+                        <TableHead className="w-1/3 py-1 h-6 text-[10px]">Field</TableHead>
+                        <TableHead className="py-1 h-6 text-[10px]">Value</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       <TableRow>
-                        <TableCell className="font-medium text-muted-foreground py-1.5">Channel Name</TableCell>
-                        <TableCell className="font-semibold py-1.5">{channelToReview.name}</TableCell>
+                        <TableCell className="font-medium text-muted-foreground py-1 px-2">Channel Name</TableCell>
+                        <TableCell className="font-semibold py-1 px-2">{channelToReview.name}</TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell className="font-medium text-muted-foreground py-1.5">Category</TableCell>
-                        <TableCell className="capitalize py-1.5">{channelToReview.category}</TableCell>
+                        <TableCell className="font-medium text-muted-foreground py-1 px-2">Category</TableCell>
+                        <TableCell className="capitalize py-1 px-2">{channelToReview.category}</TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell className="font-medium text-muted-foreground py-1.5">Platform</TableCell>
-                        <TableCell className="py-1.5">{channelToReview.platform || 'N/A'}</TableCell>
+                        <TableCell className="font-medium text-muted-foreground py-1 px-2">Platform</TableCell>
+                        <TableCell className="py-1 px-2">{channelToReview.platform || 'N/A'}</TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell className="font-medium text-muted-foreground py-1.5">Content Type</TableCell>
-                        <TableCell className="py-1.5">{channelToReview.content_type || 'N/A'}</TableCell>
+                        <TableCell className="font-medium text-muted-foreground py-1 px-2">Content Type</TableCell>
+                        <TableCell className="py-1 px-2">{channelToReview.content_type || 'N/A'}</TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell className="font-medium text-muted-foreground py-1.5">Political Lean</TableCell>
-                        <TableCell className="py-1.5">{channelToReview.political_lean || 'N/A'}</TableCell>
+                        <TableCell className="font-medium text-muted-foreground py-1 px-2">Political Lean</TableCell>
+                        <TableCell className="py-1 px-2">{channelToReview.political_lean || 'N/A'}</TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell className="font-medium text-muted-foreground py-1.5">Country</TableCell>
-                        <TableCell className="py-1.5">{channelToReview.country}</TableCell>
+                        <TableCell className="font-medium text-muted-foreground py-1 px-2">Country</TableCell>
+                        <TableCell className="py-1 px-2">{channelToReview.country}</TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>
