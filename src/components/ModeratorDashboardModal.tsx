@@ -65,11 +65,13 @@ import {
   Bell,
   RefreshCw,
   AlertTriangle,
-  Settings
+  Settings,
+  Download
 } from 'lucide-react';
 import perplexityLogo from '@/assets/perplexity-color.svg';
 import NotificationsTab from '@/components/NotificationsTab';
 import AccountSettingsTab from '@/components/AccountSettingsTab';
+import jsPDF from 'jspdf';
 
 interface SimilarChannel {
   id: string;
@@ -791,7 +793,203 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
     }
   };
 
-  // Analyze a comparable channel
+  // Save analysis report to database
+  const saveAnalysisReport = async (wasApplied: boolean = false) => {
+    if (!channelToReview || !estimationResult || !user) return;
+    
+    try {
+      const { error } = await supabase
+        .from('channel_analysis_reports')
+        .insert({
+          channel_id: channelToReview.id,
+          channel_name: channelToReview.name,
+          country: channelToReview.country,
+          analyzed_by: user.id,
+          submitted_category: channelToReview.category,
+          submitted_platform: channelToReview.platform,
+          submitted_content_type: channelToReview.content_type,
+          cross_platform_audience: estimationResult.crossPlatformAudience,
+          deduplicated_audience: estimationResult.deduplicatedAudience,
+          political_lean: estimationResult.politicalLean,
+          political_lean_justification: estimationResult.politicalLeanJustification,
+          suggested_start_date: estimationResult.suggestedStartDate,
+          input_validation: estimationResult.inputValidation || {},
+          comparable_channels: estimationResult.comparableChannels || [],
+          raw_analysis: {
+            reasoning: estimationResult.reasoning,
+            ...estimationResult
+          },
+          was_applied: wasApplied
+        } as any);
+
+      if (error) throw error;
+      
+      toast({ title: 'Analysis report saved' });
+    } catch (error) {
+      console.error('Error saving analysis report:', error);
+      toast({ title: 'Failed to save report', variant: 'destructive' });
+    }
+  };
+
+  // Export analysis report as PDF
+  const exportReportAsPDF = () => {
+    if (!channelToReview || !estimationResult) return;
+    
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let yPos = 20;
+    const lineHeight = 7;
+    const margin = 20;
+    const contentWidth = pageWidth - (margin * 2);
+
+    // Helper function to add text with word wrap
+    const addWrappedText = (text: string, x: number, y: number, maxWidth: number): number => {
+      const lines = doc.splitTextToSize(text, maxWidth);
+      doc.text(lines, x, y);
+      return y + (lines.length * lineHeight);
+    };
+
+    // Title
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Channel Submission Analysis Report', margin, yPos);
+    yPos += lineHeight * 2;
+
+    // Channel info section
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Channel Information', margin, yPos);
+    yPos += lineHeight;
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Channel Name: ${channelToReview.name}`, margin, yPos);
+    yPos += lineHeight;
+    doc.text(`Country: ${channelToReview.country}`, margin, yPos);
+    yPos += lineHeight;
+    doc.text(`Submitted Category: ${channelToReview.category}`, margin, yPos);
+    yPos += lineHeight;
+    doc.text(`Platform: ${channelToReview.platform || 'Not specified'}`, margin, yPos);
+    yPos += lineHeight;
+    doc.text(`Content Type: ${channelToReview.content_type || 'Not specified'}`, margin, yPos);
+    yPos += lineHeight;
+    doc.text(`Analysis Date: ${new Date().toLocaleDateString()}`, margin, yPos);
+    yPos += lineHeight * 2;
+
+    // Input validation section
+    if (estimationResult.inputValidation) {
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Input Validation', margin, yPos);
+      yPos += lineHeight;
+      
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      const catStatus = estimationResult.inputValidation.categoryCorrect ? 'Correct' : 
+        `Suggested: ${estimationResult.inputValidation.suggestedCategory}`;
+      doc.text(`Category: ${catStatus}`, margin, yPos);
+      yPos += lineHeight;
+      doc.text(`Platform: ${estimationResult.inputValidation.platformCorrect ? 'Correct' : 'Review needed'}`, margin, yPos);
+      yPos += lineHeight;
+      doc.text(`Content Type: ${estimationResult.inputValidation.contentTypeCorrect ? 'Correct' : 'Review needed'}`, margin, yPos);
+      yPos += lineHeight;
+      
+      if (estimationResult.inputValidation.validationNotes) {
+        yPos = addWrappedText(`Notes: ${estimationResult.inputValidation.validationNotes}`, margin, yPos, contentWidth);
+      }
+      yPos += lineHeight;
+    }
+
+    // Results section
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Analysis Results', margin, yPos);
+    yPos += lineHeight;
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    
+    if (estimationResult.politicalLean) {
+      doc.text(`Political Lean: ${estimationResult.politicalLean}`, margin, yPos);
+      yPos += lineHeight;
+      if (estimationResult.politicalLeanJustification) {
+        yPos = addWrappedText(`Justification: ${estimationResult.politicalLeanJustification}`, margin, yPos, contentWidth);
+      }
+    }
+    
+    doc.text(`Cross-Platform Audience: ${estimationResult.crossPlatformAudience?.toFixed(2) || '0.00'}M`, margin, yPos);
+    yPos += lineHeight;
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Deduplicated Audience: ${estimationResult.deduplicatedAudience?.toFixed(2) || '0.00'}M`, margin, yPos);
+    doc.setFont('helvetica', 'normal');
+    yPos += lineHeight;
+    
+    if (estimationResult.suggestedStartDate) {
+      doc.text(`Suggested Start Date: ${estimationResult.suggestedStartDate}`, margin, yPos);
+      yPos += lineHeight;
+    }
+    yPos += lineHeight;
+
+    // Reasoning section
+    if (estimationResult.reasoning) {
+      // Check if we need a new page
+      if (yPos > 250) {
+        doc.addPage();
+        yPos = 20;
+      }
+      
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Analysis Reasoning', margin, yPos);
+      yPos += lineHeight;
+      
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      yPos = addWrappedText(estimationResult.reasoning, margin, yPos, contentWidth);
+      yPos += lineHeight;
+    }
+
+    // Comparable channels section
+    if (estimationResult.comparableChannels?.length > 0) {
+      if (yPos > 260) {
+        doc.addPage();
+        yPos = 20;
+      }
+      
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Comparable Channels', margin, yPos);
+      yPos += lineHeight;
+      
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      estimationResult.comparableChannels.forEach((channel, idx) => {
+        doc.text(`${idx + 1}. ${channel}`, margin, yPos);
+        yPos += lineHeight;
+      });
+    }
+
+    // Footer
+    const pageCount = doc.internal.pages.length - 1;
+    doc.setFontSize(8);
+    doc.setTextColor(128);
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.text(
+        `Generated by Media Landscape Analysis Tool - Page ${i} of ${pageCount}`,
+        pageWidth / 2,
+        doc.internal.pageSize.getHeight() - 10,
+        { align: 'center' }
+      );
+    }
+
+    // Save the PDF
+    const fileName = `analysis_${channelToReview.name.replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+    doc.save(fileName);
+    
+    toast({ title: 'Report exported as PDF' });
+  };
+
   const analyzeComparableChannel = async (channelName: string) => {
     setComparableChannelName(channelName);
     setShowComparableModal(true);
@@ -1974,41 +2172,69 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                 </div>
 
                 {estimationResult && (
-                  <div className="flex gap-3 pt-4 border-t">
-                    <Button 
-                      variant="outline" 
-                      onClick={() => {
-                        setShowReviewDialog(false);
-                        setEstimationResult(null);
-                      }}
-                      className="flex-1"
-                    >
-                      Cancel
-                    </Button>
-                    <Button 
-                      variant="secondary"
-                      onClick={() => channelToReview && estimateAudience(channelToReview)}
-                      disabled={isEstimating}
-                      className="flex-1"
-                    >
-                      {isEstimating ? 'Analysing...' : 'Re-analyse'}
-                    </Button>
-                    {reviewAction === 'reject' ? (
+                  <div className="space-y-3 pt-4 border-t">
+                    {/* Export actions row */}
+                    <div className="flex gap-2">
                       <Button 
-                        variant="destructive"
-                        onClick={confirmReview}
+                        variant="outline"
+                        size="sm"
+                        onClick={exportReportAsPDF}
                         className="flex-1"
                       >
-                        Reject
+                        <Download className="h-4 w-4 mr-2" />
+                        Export PDF
                       </Button>
-                    ) : (
                       <Button 
-                        onClick={applyEstimation}
-                        className="flex-1 bg-green-600 hover:bg-green-700"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => saveAnalysisReport(false)}
+                        className="flex-1"
                       >
-                        Approve ({estimationResult.deduplicatedAudience?.toFixed(2) || '0'}M)
+                        <FileText className="h-4 w-4 mr-2" />
+                        Save Report
                       </Button>
-                    )}
+                    </div>
+                    
+                    {/* Main action buttons */}
+                    <div className="flex gap-3">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => {
+                          setShowReviewDialog(false);
+                          setEstimationResult(null);
+                        }}
+                        className="flex-1"
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        variant="secondary"
+                        onClick={() => channelToReview && estimateAudience(channelToReview)}
+                        disabled={isEstimating}
+                        className="flex-1"
+                      >
+                        {isEstimating ? 'Analysing...' : 'Re-analyse'}
+                      </Button>
+                      {reviewAction === 'reject' ? (
+                        <Button 
+                          variant="destructive"
+                          onClick={confirmReview}
+                          className="flex-1"
+                        >
+                          Reject
+                        </Button>
+                      ) : (
+                        <Button 
+                          onClick={async () => {
+                            await saveAnalysisReport(true);
+                            applyEstimation();
+                          }}
+                          className="flex-1 bg-green-600 hover:bg-green-700"
+                        >
+                          Approve ({estimationResult.deduplicatedAudience?.toFixed(2) || '0'}M)
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>

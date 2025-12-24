@@ -35,6 +35,75 @@ export type Database = {
         }
         Relationships: []
       }
+      channel_analysis_reports: {
+        Row: {
+          analyzed_at: string
+          analyzed_by: string
+          channel_id: string
+          channel_name: string
+          comparable_channels: Json | null
+          country: string
+          created_at: string
+          cross_platform_audience: number | null
+          deduplicated_audience: number | null
+          id: string
+          input_validation: Json | null
+          platform_breakdown: Json | null
+          political_lean: string | null
+          political_lean_justification: string | null
+          raw_analysis: Json | null
+          submitted_category: string | null
+          submitted_content_type: string | null
+          submitted_platform: string | null
+          suggested_start_date: string | null
+          was_applied: boolean | null
+        }
+        Insert: {
+          analyzed_at?: string
+          analyzed_by: string
+          channel_id: string
+          channel_name: string
+          comparable_channels?: Json | null
+          country: string
+          created_at?: string
+          cross_platform_audience?: number | null
+          deduplicated_audience?: number | null
+          id?: string
+          input_validation?: Json | null
+          platform_breakdown?: Json | null
+          political_lean?: string | null
+          political_lean_justification?: string | null
+          raw_analysis?: Json | null
+          submitted_category?: string | null
+          submitted_content_type?: string | null
+          submitted_platform?: string | null
+          suggested_start_date?: string | null
+          was_applied?: boolean | null
+        }
+        Update: {
+          analyzed_at?: string
+          analyzed_by?: string
+          channel_id?: string
+          channel_name?: string
+          comparable_channels?: Json | null
+          country?: string
+          created_at?: string
+          cross_platform_audience?: number | null
+          deduplicated_audience?: number | null
+          id?: string
+          input_validation?: Json | null
+          platform_breakdown?: Json | null
+          political_lean?: string | null
+          political_lean_justification?: string | null
+          raw_analysis?: Json | null
+          submitted_category?: string | null
+          submitted_content_type?: string | null
+          submitted_platform?: string | null
+          suggested_start_date?: string | null
+          was_applied?: boolean | null
+        }
+        Relationships: []
+      }
       channel_discoveries: {
         Row: {
           category: string
