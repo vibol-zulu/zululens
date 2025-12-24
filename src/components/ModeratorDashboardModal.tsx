@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -74,6 +74,7 @@ import AccountSettingsTab from '@/components/AccountSettingsTab';
 import AnalysisReportsTab from '@/components/AnalysisReportsTab';
 import SubmissionAnalysisPanel from '@/components/SubmissionAnalysisPanel';
 import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import { ClipboardList } from 'lucide-react';
 
 interface SimilarChannel {
@@ -272,6 +273,10 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
   const [selectedComments, setSelectedComments] = useState<Set<string>>(new Set());
   const [selectedNews, setSelectedNews] = useState<Set<string>>(new Set());
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
+  
+  // PDF export
+  const analysisPanelRef = useRef<HTMLDivElement>(null);
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
 
   const toggleSelectPending = (id: string) => {
     setSelectedPending(prev => {
