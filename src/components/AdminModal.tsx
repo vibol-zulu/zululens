@@ -247,6 +247,14 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
   const [showModeratorApplicationDialog, setShowModeratorApplicationDialog] = useState(false);
   // AI Estimation state
   const [isEstimating, setIsEstimating] = useState(false);
+  const [estimationProgress, setEstimationProgress] = useState<{
+    currentRun: number;
+    totalRuns: number;
+    runResults: Array<{
+      crossPlatformAudience: number;
+      deduplicatedAudience: number;
+    }>;
+  } | null>(null);
   const [estimationResult, setEstimationResult] = useState<{
     inputValidation?: {
       categoryCorrect: boolean;
@@ -262,6 +270,13 @@ const AdminModal: React.FC<AdminModalProps> = ({ open, onClose }) => {
     reasoning: string;
     comparableChannels: string[];
     suggestedStartDate: string;
+    // Multi-run data
+    runDetails?: Array<{
+      crossPlatformAudience: number;
+      deduplicatedAudience: number;
+    }>;
+    crossPlatformRange?: { min: number; max: number };
+    deduplicatedRange?: { min: number; max: number };
   } | null>(null);
 
   // Comparable channel analysis state
@@ -1789,43 +1804,129 @@ Make sure questions are specific to {country}'s current political landscape and 
     }
   };
 
-  // AI Audience Estimation function
+  // Single AI call helper
+  const runSingleEstimate = async (submission: Submission): Promise<{
+    crossPlatformAudience: number;
+    deduplicatedAudience: number;
+    inputValidation?: {
+      categoryCorrect: boolean;
+      suggestedCategory: string | null;
+      platformCorrect: boolean;
+      contentTypeCorrect: boolean;
+      validationNotes: string;
+    } | null;
+    politicalLean?: string | null;
+    politicalLeanJustification?: string | null;
+    reasoning: string;
+    comparableChannels: string[];
+    suggestedStartDate: string;
+  }> => {
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/estimate-audience`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      },
+      body: JSON.stringify({
+        channel: {
+          name: submission.name,
+          platform: submission.platform,
+          contentType: submission.content_type,
+          politicalLean: submission.political_lean,
+          category: submission.category,
+          country: submission.country
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || 'Failed to estimate audience');
+    }
+
+    const data = await response.json();
+    
+    if (data.success && data.estimate) {
+      return data.estimate;
+    } else {
+      throw new Error('Invalid response from AI');
+    }
+  };
+
+  // Multi-run AI Audience Estimation function (runs 3 times and calculates mean)
   const estimateAudience = async (submission: Submission) => {
+    const TOTAL_RUNS = 3;
     setIsEstimating(true);
     setEstimationResult(null);
+    setEstimationProgress({ currentRun: 0, totalRuns: TOTAL_RUNS, runResults: [] });
     
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/estimate-audience`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({
-          channel: {
-            name: submission.name,
-            platform: submission.platform,
-            contentType: submission.content_type,
-            politicalLean: submission.political_lean,
-            category: submission.category,
-            country: submission.country
-          }
-        })
-      });
+      const runResults: Array<{
+        crossPlatformAudience: number;
+        deduplicatedAudience: number;
+        inputValidation?: {
+          categoryCorrect: boolean;
+          suggestedCategory: string | null;
+          platformCorrect: boolean;
+          contentTypeCorrect: boolean;
+          validationNotes: string;
+        } | null;
+        politicalLean?: string | null;
+        politicalLeanJustification?: string | null;
+        reasoning: string;
+        comparableChannels: string[];
+        suggestedStartDate: string;
+      }> = [];
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to estimate audience');
+      for (let i = 0; i < TOTAL_RUNS; i++) {
+        setEstimationProgress({
+          currentRun: i + 1,
+          totalRuns: TOTAL_RUNS,
+          runResults: runResults.map(r => ({
+            crossPlatformAudience: r.crossPlatformAudience,
+            deduplicatedAudience: r.deduplicatedAudience
+          }))
+        });
+
+        const result = await runSingleEstimate(submission);
+        runResults.push(result);
       }
 
-      const data = await response.json();
+      // Calculate means and ranges
+      const crossPlatformValues = runResults.map(r => r.crossPlatformAudience);
+      const deduplicatedValues = runResults.map(r => r.deduplicatedAudience);
       
-      if (data.success && data.estimate) {
-        setEstimationResult(data.estimate);
-        toast({ title: 'Audience estimate generated' });
-      } else {
-        throw new Error('Invalid response from AI');
-      }
+      const crossPlatformMean = crossPlatformValues.reduce((a, b) => a + b, 0) / TOTAL_RUNS;
+      const deduplicatedMean = deduplicatedValues.reduce((a, b) => a + b, 0) / TOTAL_RUNS;
+      
+      const crossPlatformRange = {
+        min: Math.min(...crossPlatformValues),
+        max: Math.max(...crossPlatformValues)
+      };
+      const deduplicatedRange = {
+        min: Math.min(...deduplicatedValues),
+        max: Math.max(...deduplicatedValues)
+      };
+
+      // Use the first run's qualitative data (validation, political lean, reasoning, etc.)
+      // but with calculated mean for audience numbers
+      const finalResult = {
+        ...runResults[0],
+        crossPlatformAudience: crossPlatformMean,
+        deduplicatedAudience: deduplicatedMean,
+        runDetails: runResults.map(r => ({
+          crossPlatformAudience: r.crossPlatformAudience,
+          deduplicatedAudience: r.deduplicatedAudience
+        })),
+        crossPlatformRange,
+        deduplicatedRange
+      };
+
+      setEstimationResult(finalResult);
+      toast({ 
+        title: 'Audience estimate generated',
+        description: `Mean calculated from ${TOTAL_RUNS} AI analyses`
+      });
     } catch (error) {
       console.error('Error estimating audience:', error);
       toast({ 
@@ -1835,6 +1936,7 @@ Make sure questions are specific to {country}'s current political landscape and 
       });
     } finally {
       setIsEstimating(false);
+      setEstimationProgress(null);
     }
   };
 
@@ -4088,8 +4190,19 @@ Make sure questions are specific to {country}'s current political landscape and 
                         <img src={perplexityLogo} alt="Perplexity" className="h-4 w-4" />
                         Submission Analysis Prompts
                       </CardTitle>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        AI analysis runs 3 times and calculates the mean for Cross-Platform and Deduplicated Audience values.
+                      </p>
                     </CardHeader>
                     <CardContent className="space-y-4">
+                      <div className="rounded-md border bg-muted/30 p-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant="default" className="text-xs">Multi-Run Analysis</Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Each submission is analyzed 3 times with a progress indicator. The final audience values are calculated as the <strong>mean</strong> of all runs, with the range displayed for transparency.
+                        </p>
+                      </div>
                       <div className="space-y-2">
                         <Label htmlFor="system-prompt">System Prompt</Label>
                         <Textarea
@@ -4996,15 +5109,49 @@ Make sure questions are specific to {country}'s current political landscape and 
                     {isEstimating ? (
                       <>
                         <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                        Analysing...
+                        {estimationProgress 
+                          ? `Analysing (Run ${estimationProgress.currentRun}/${estimationProgress.totalRuns})...`
+                          : 'Analysing...'
+                        }
                       </>
                     ) : (
                       <>
                         <img src={perplexityLogo} alt="Perplexity" className="h-5 w-5 mr-2" />
-                        Analyse Submission
+                        Analyse Submission (3x Cross-Check)
                       </>
                     )}
                   </Button>
+
+                  {/* Progress Indicator */}
+                  {isEstimating && estimationProgress && (
+                    <div className="rounded-md border bg-muted/30 p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Multi-Run Analysis Progress</span>
+                        <span className="text-xs text-muted-foreground">
+                          Run {estimationProgress.currentRun} of {estimationProgress.totalRuns}
+                        </span>
+                      </div>
+                      <div className="w-full bg-secondary rounded-full h-2">
+                        <div 
+                          className="bg-primary h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${(estimationProgress.currentRun / estimationProgress.totalRuns) * 100}%` }}
+                        />
+                      </div>
+                      {estimationProgress.runResults.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-xs text-muted-foreground">Completed runs:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {estimationProgress.runResults.map((result, idx) => (
+                              <div key={idx} className="bg-background rounded px-2 py-1 text-xs border">
+                                <span className="font-medium">Run {idx + 1}:</span>{' '}
+                                {result.deduplicatedAudience.toFixed(2)}M
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {estimationResult && (
                     <div className="rounded-md border bg-muted/30 overflow-hidden">
@@ -5057,12 +5204,47 @@ Make sure questions are specific to {country}'s current political landscape and 
                           )}
                           <TableRow>
                             <TableCell className="font-medium text-muted-foreground">Cross-Platform Audience</TableCell>
-                            <TableCell className="text-lg font-bold">{estimationResult.crossPlatformAudience?.toFixed(2) || '0.00'}M</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <span className="text-lg font-bold">{estimationResult.crossPlatformAudience?.toFixed(2) || '0.00'}M</span>
+                                <Badge variant="secondary" className="text-xs">Mean</Badge>
+                              </div>
+                              {estimationResult.crossPlatformRange && (
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  Range: {estimationResult.crossPlatformRange.min.toFixed(2)}M – {estimationResult.crossPlatformRange.max.toFixed(2)}M
+                                </p>
+                              )}
+                            </TableCell>
                           </TableRow>
                           <TableRow>
                             <TableCell className="font-medium text-muted-foreground">Deduplicated Audience</TableCell>
-                            <TableCell className="text-lg font-bold text-primary">{estimationResult.deduplicatedAudience?.toFixed(2) || '0.00'}M</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <span className="text-lg font-bold text-primary">{estimationResult.deduplicatedAudience?.toFixed(2) || '0.00'}M</span>
+                                <Badge variant="secondary" className="text-xs">Mean</Badge>
+                              </div>
+                              {estimationResult.deduplicatedRange && (
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  Range: {estimationResult.deduplicatedRange.min.toFixed(2)}M – {estimationResult.deduplicatedRange.max.toFixed(2)}M
+                                </p>
+                              )}
+                            </TableCell>
                           </TableRow>
+                          {estimationResult.runDetails && estimationResult.runDetails.length > 0 && (
+                            <TableRow>
+                              <TableCell className="font-medium text-muted-foreground">Individual Runs</TableCell>
+                              <TableCell>
+                                <div className="flex flex-wrap gap-2">
+                                  {estimationResult.runDetails.map((run, idx) => (
+                                    <div key={idx} className="bg-muted rounded px-2 py-1 text-xs border">
+                                      <span className="font-medium">Run {idx + 1}:</span>{' '}
+                                      Cross: {run.crossPlatformAudience.toFixed(2)}M, Dedup: {run.deduplicatedAudience.toFixed(2)}M
+                                    </div>
+                                  ))}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )}
                           {estimationResult.suggestedStartDate && (
                             <TableRow>
                               <TableCell className="font-medium text-muted-foreground">Suggested Start Date</TableCell>
