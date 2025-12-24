@@ -142,7 +142,7 @@ const SubmissionAnalysisPanel: React.FC<SubmissionAnalysisPanelProps> = ({
         </div>
 
         {/* Right: Methodology Description + Analyse Button */}
-        <div className="w-1/2 flex flex-col justify-center space-y-4">
+        <div className="w-1/2 flex flex-col justify-start space-y-4">
           <div className="space-y-2">
             <h4 className="text-sm font-semibold text-foreground">AI Analysis Methodology</h4>
             <p className="text-xs text-muted-foreground leading-relaxed">
