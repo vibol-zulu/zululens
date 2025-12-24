@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronUp, ChevronDown, MessageSquare, Send, Edit2, Trash2, Reply, X, UserPlus, PartyPopper, CheckCircle2 } from 'lucide-react';
+import { ChevronUp, ChevronDown, MessageSquare, Send, Edit2, Trash2, Reply, X, UserPlus, PartyPopper, CheckCircle2, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useComments, Comment } from '@/hooks/useComments';
@@ -38,6 +38,7 @@ interface CommentItemProps {
   onReply: (parentId: string) => void;
   onEdit: (id: string, content: string) => void;
   onDelete: (id: string) => void;
+  onToggleLike: (commentId: string) => void;
   currentUserId?: string;
   isAdmin?: boolean;
   isModerator?: boolean;
@@ -49,6 +50,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
   onReply,
   onEdit,
   onDelete,
+  onToggleLike,
   currentUserId,
   isAdmin,
   isModerator,
@@ -83,6 +85,17 @@ const CommentItem: React.FC<CommentItemProps> = ({
           </div>
           
           <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`h-7 px-2 gap-1 ${comment.liked_by_user ? 'text-red-500 hover:text-red-600' : ''}`}
+              onClick={() => onToggleLike(comment.id)}
+            >
+              <Heart className={`h-3 w-3 ${comment.liked_by_user ? 'fill-current' : ''}`} />
+              {comment.like_count > 0 && (
+                <span className="text-xs">{comment.like_count}</span>
+              )}
+            </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -140,6 +153,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
               onReply={onReply}
               onEdit={onEdit}
               onDelete={onDelete}
+              onToggleLike={onToggleLike}
               currentUserId={currentUserId}
               isAdmin={isAdmin}
               isModerator={isModerator}
@@ -174,7 +188,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
   const isMobile = useIsMobile();
   const { user, isAdmin } = useAuth();
   const { settings } = useAppSettings();
-  const { comments, loading, addComment, updateComment, deleteComment } = useComments(country);
+  const { comments, loading, addComment, updateComment, deleteComment, toggleLike } = useComments(country);
 
   // Check if user has moderator role (similar to admin check in useAuth)
   const [isModerator, setIsModerator] = useState(false);
@@ -526,6 +540,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
                           onReply={setReplyingTo}
                           onEdit={handleEdit}
                           onDelete={handleDelete}
+                          onToggleLike={toggleLike}
                           currentUserId={user.id}
                           isAdmin={isAdmin}
                           isModerator={isModerator}
