@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,6 +39,7 @@ import { COUNTRIES } from '@/data/mediaData';
 import { useAnalysisReports, AnalysisReport } from '@/hooks/useAnalysisReports';
 import { Loader2, Trash2, Pencil, Download, Eye, Check, X } from 'lucide-react';
 import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 interface AnalysisReportsTabProps {
   isOpen: boolean;
@@ -69,6 +70,10 @@ const AnalysisReportsTab: React.FC<AnalysisReportsTabProps> = ({ isOpen }) => {
   // Delete dialog
   const [reportToDelete, setReportToDelete] = useState<AnalysisReport | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  
+  // PDF export
+  const reportContentRef = useRef<HTMLDivElement>(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -140,232 +145,96 @@ const AnalysisReportsTab: React.FC<AnalysisReportsTabProps> = ({ isOpen }) => {
     setReportToDelete(null);
   };
 
-  const exportReportAsPDF = (report: AnalysisReport) => {
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    let yPos = 20;
-    const lineHeight = 7;
-    const margin = 20;
-    const contentWidth = pageWidth - (margin * 2);
-    const tableColWidth = contentWidth / 2;
-
-    const addWrappedText = (text: string, x: number, y: number, maxWidth: number): number => {
-      const lines = doc.splitTextToSize(text, maxWidth);
-      doc.text(lines, x, y);
-      return y + (lines.length * lineHeight);
-    };
-
-    // Helper function to draw a table row
-    const drawTableRow = (label: string, value: string, y: number, isHeader: boolean = false): number => {
-      if (isHeader) {
-        doc.setFillColor(240, 240, 240);
-        doc.rect(margin, y - 4, contentWidth, lineHeight + 2, 'F');
-        doc.setFont('helvetica', 'bold');
-      } else {
-        doc.setFont('helvetica', 'normal');
+  const exportReportAsPDF = async (report: AnalysisReport) => {
+    // If we're viewing the report, capture the dialog content
+    if (reportContentRef.current) {
+      setIsExporting(true);
+      try {
+        const canvas = await html2canvas(reportContentRef.current, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          logging: false,
+        });
+        
+        const imgData = canvas.toDataURL('image/png');
+        const doc = new jsPDF('p', 'mm', 'a4');
+        
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const margin = 10;
+        const availableWidth = pageWidth - (margin * 2);
+        const availableHeight = pageHeight - (margin * 2);
+        
+        // Calculate dimensions to fit on one page
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+        const ratio = Math.min(availableWidth / imgWidth, availableHeight / imgHeight);
+        
+        const scaledWidth = imgWidth * ratio;
+        const scaledHeight = imgHeight * ratio;
+        
+        // Center the image
+        const x = margin + (availableWidth - scaledWidth) / 2;
+        const y = margin;
+        
+        doc.addImage(imgData, 'PNG', x, y, scaledWidth, scaledHeight);
+        
+        const fileName = `analysis-report-${report.channel_name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.pdf`;
+        doc.save(fileName);
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+      } finally {
+        setIsExporting(false);
       }
-      doc.setDrawColor(200, 200, 200);
-      doc.rect(margin, y - 4, tableColWidth, lineHeight + 2);
-      doc.rect(margin + tableColWidth, y - 4, tableColWidth, lineHeight + 2);
-      doc.text(label, margin + 2, y);
-      doc.text(value, margin + tableColWidth + 2, y);
-      return y + lineHeight + 2;
-    };
-
-    // Extract run details from raw_analysis if available
-    const rawAnalysis = report.raw_analysis as {
-      reasoning?: string;
-      runDetails?: Array<{ crossPlatformAudience: number; deduplicatedAudience: number }>;
-      crossPlatformRange?: { min: number; max: number };
-      deduplicatedRange?: { min: number; max: number };
-    } | null;
-
-    // Title
-    doc.setFontSize(20);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(41, 98, 255);
-    doc.text('Channel Analysis Report', margin, yPos);
-    doc.setTextColor(0, 0, 0);
-    yPos += lineHeight;
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(128, 128, 128);
-    doc.text('3-Run Cross-Check Analysis Methodology', margin, yPos);
-    doc.setTextColor(0, 0, 0);
-    yPos += lineHeight * 2;
-
-    // Channel Information Table
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Channel Information', margin, yPos);
-    yPos += lineHeight + 2;
-    
-    doc.setFontSize(9);
-    yPos = drawTableRow('Field', 'Value', yPos, true);
-    yPos = drawTableRow('Channel Name', report.channel_name, yPos);
-    yPos = drawTableRow('Country', report.country, yPos);
-    yPos = drawTableRow('Category', report.submitted_category || 'N/A', yPos);
-    yPos = drawTableRow('Platform', report.submitted_platform || 'N/A', yPos);
-    yPos = drawTableRow('Content Type', report.submitted_content_type || 'N/A', yPos);
-    yPos = drawTableRow('Analysis Date', formatDate(report.analyzed_at), yPos);
-    yPos = drawTableRow('Analyzed By', report.analyzer_name || 'Unknown', yPos);
-    yPos = drawTableRow('Applied to Channel', report.was_applied ? 'Yes' : 'No', yPos);
-    yPos += lineHeight;
-
-    // Input Validation Table
-    if (report.input_validation) {
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Input Validation', margin, yPos);
-      yPos += lineHeight + 2;
-      
-      doc.setFontSize(9);
-      yPos = drawTableRow('Field', 'Status', yPos, true);
-      const catStatus = report.input_validation.categoryCorrect ? '✓ Correct' : 
-        `⚠ Suggested: ${report.input_validation.suggestedCategory || 'N/A'}`;
-      yPos = drawTableRow('Category', catStatus, yPos);
-      yPos = drawTableRow('Platform', report.input_validation.platformCorrect ? '✓ Correct' : '⚠ Review needed', yPos);
-      yPos = drawTableRow('Content Type', report.input_validation.contentTypeCorrect ? '✓ Correct' : '⚠ Review needed', yPos);
-      
-      if (report.input_validation.validationNotes) {
-        yPos += 2;
-        doc.setFont('helvetica', 'italic');
-        yPos = addWrappedText(`Notes: ${report.input_validation.validationNotes}`, margin, yPos, contentWidth);
-      }
-      yPos += lineHeight;
+    } else {
+      // Open view dialog first, then export
+      setViewReport(report);
+      setShowViewDialog(true);
+      // Wait for dialog to render, then export
+      setTimeout(async () => {
+        if (reportContentRef.current) {
+          setIsExporting(true);
+          try {
+            const canvas = await html2canvas(reportContentRef.current, {
+              scale: 2,
+              useCORS: true,
+              backgroundColor: '#ffffff',
+              logging: false,
+            });
+            
+            const imgData = canvas.toDataURL('image/png');
+            const doc = new jsPDF('p', 'mm', 'a4');
+            
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const margin = 10;
+            const availableWidth = pageWidth - (margin * 2);
+            const availableHeight = pageHeight - (margin * 2);
+            
+            const imgWidth = canvas.width;
+            const imgHeight = canvas.height;
+            const ratio = Math.min(availableWidth / imgWidth, availableHeight / imgHeight);
+            
+            const scaledWidth = imgWidth * ratio;
+            const scaledHeight = imgHeight * ratio;
+            
+            const x = margin + (availableWidth - scaledWidth) / 2;
+            const y = margin;
+            
+            doc.addImage(imgData, 'PNG', x, y, scaledWidth, scaledHeight);
+            
+            const fileName = `analysis-report-${report.channel_name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(fileName);
+          } catch (error) {
+            console.error('Error generating PDF:', error);
+          } finally {
+            setIsExporting(false);
+            setShowViewDialog(false);
+          }
+        }
+      }, 500);
     }
-
-    // Political Lean Section
-    if (report.political_lean) {
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Political Lean Analysis', margin, yPos);
-      yPos += lineHeight + 2;
-      
-      doc.setFontSize(9);
-      yPos = drawTableRow('Field', 'Value', yPos, true);
-      yPos = drawTableRow('Political Lean', report.political_lean.toUpperCase(), yPos);
-      
-      if (report.political_lean_justification) {
-        yPos += 2;
-        doc.setFont('helvetica', 'bold');
-        doc.text('Justification:', margin, yPos);
-        yPos += lineHeight;
-        doc.setFont('helvetica', 'normal');
-        yPos = addWrappedText(report.political_lean_justification, margin, yPos, contentWidth);
-      }
-      yPos += lineHeight;
-    }
-
-    // Audience Estimation Results Table
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Audience Estimation Results (3-Run Mean)', margin, yPos);
-    yPos += lineHeight + 2;
-    
-    doc.setFontSize(9);
-    yPos = drawTableRow('Metric', 'Value', yPos, true);
-    yPos = drawTableRow('Cross-Platform Audience (Mean)', `${report.cross_platform_audience?.toFixed(2) || '0.00'}M`, yPos);
-    if (rawAnalysis?.crossPlatformRange) {
-      yPos = drawTableRow('Cross-Platform Range', `${rawAnalysis.crossPlatformRange.min.toFixed(2)}M – ${rawAnalysis.crossPlatformRange.max.toFixed(2)}M`, yPos);
-    }
-    yPos = drawTableRow('Deduplicated Audience (Mean)', `${report.deduplicated_audience?.toFixed(2) || '0.00'}M`, yPos);
-    if (rawAnalysis?.deduplicatedRange) {
-      yPos = drawTableRow('Deduplicated Range', `${rawAnalysis.deduplicatedRange.min.toFixed(2)}M – ${rawAnalysis.deduplicatedRange.max.toFixed(2)}M`, yPos);
-    }
-    if (report.suggested_start_date) {
-      yPos = drawTableRow('Suggested Start Date', report.suggested_start_date, yPos);
-    }
-    yPos += lineHeight;
-
-    // Individual Run Results Table
-    if (rawAnalysis?.runDetails && rawAnalysis.runDetails.length > 0) {
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Individual Run Results', margin, yPos);
-      yPos += lineHeight + 2;
-      
-      doc.setFontSize(9);
-      // Custom 3-column table for runs
-      const col1Width = contentWidth / 3;
-      doc.setFillColor(240, 240, 240);
-      doc.rect(margin, yPos - 4, contentWidth, lineHeight + 2, 'F');
-      doc.setDrawColor(200, 200, 200);
-      doc.rect(margin, yPos - 4, col1Width, lineHeight + 2);
-      doc.rect(margin + col1Width, yPos - 4, col1Width, lineHeight + 2);
-      doc.rect(margin + col1Width * 2, yPos - 4, col1Width, lineHeight + 2);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Run', margin + 2, yPos);
-      doc.text('Cross-Platform', margin + col1Width + 2, yPos);
-      doc.text('Deduplicated', margin + col1Width * 2 + 2, yPos);
-      yPos += lineHeight + 2;
-      
-      doc.setFont('helvetica', 'normal');
-      rawAnalysis.runDetails.forEach((run, idx) => {
-        doc.rect(margin, yPos - 4, col1Width, lineHeight + 2);
-        doc.rect(margin + col1Width, yPos - 4, col1Width, lineHeight + 2);
-        doc.rect(margin + col1Width * 2, yPos - 4, col1Width, lineHeight + 2);
-        doc.text(`Run ${idx + 1}`, margin + 2, yPos);
-        doc.text(`${run.crossPlatformAudience.toFixed(2)}M`, margin + col1Width + 2, yPos);
-        doc.text(`${run.deduplicatedAudience.toFixed(2)}M`, margin + col1Width * 2 + 2, yPos);
-        yPos += lineHeight + 2;
-      });
-      yPos += lineHeight;
-    }
-
-    // Reasoning Section
-    if (rawAnalysis?.reasoning) {
-      if (yPos > 220) {
-        doc.addPage();
-        yPos = 20;
-      }
-      
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Analysis Reasoning', margin, yPos);
-      yPos += lineHeight + 2;
-      
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
-      yPos = addWrappedText(rawAnalysis.reasoning, margin, yPos, contentWidth);
-      yPos += lineHeight;
-    }
-
-    // Comparable Channels Section
-    if (report.comparable_channels && report.comparable_channels.length > 0) {
-      if (yPos > 240) {
-        doc.addPage();
-        yPos = 20;
-      }
-      
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Comparable Channels', margin, yPos);
-      yPos += lineHeight + 2;
-      
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
-      const channelsList = report.comparable_channels.map((c, i) => `${i + 1}. ${c}`).join('\n');
-      yPos = addWrappedText(channelsList, margin, yPos, contentWidth);
-    }
-
-    // Footer on all pages
-    const pageCount = doc.internal.pages.length - 1;
-    doc.setFontSize(8);
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setTextColor(128, 128, 128);
-      doc.text(
-        `Generated by Media Landscape Analysis Tool • ${new Date().toLocaleString()} • Page ${i} of ${pageCount}`,
-        pageWidth / 2,
-        doc.internal.pageSize.getHeight() - 10,
-        { align: 'center' }
-      );
-    }
-
-    // Save
-    const fileName = `analysis-report-${report.channel_name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.pdf`;
-    doc.save(fileName);
   };
 
   const filteredReports = reports.filter(report => {
@@ -504,125 +373,137 @@ const AnalysisReportsTab: React.FC<AnalysisReportsTabProps> = ({ isOpen }) => {
       {/* View Dialog */}
       <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Analysis Report: {viewReport?.channel_name}</DialogTitle>
-          </DialogHeader>
-          
-          {viewReport && (
-            <div className="space-y-4">
-              {/* Channel Info */}
-              <div className="grid grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
-                <div>
-                  <Label className="text-muted-foreground text-xs">Country</Label>
-                  <p className="font-medium">{viewReport.country}</p>
+          {/* Capturable content - excludes buttons */}
+          <div ref={reportContentRef} className="bg-background p-4">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold">Analysis Report: {viewReport?.channel_name}</DialogTitle>
+            </DialogHeader>
+            
+            {viewReport && (
+              <div className="space-y-4 mt-4">
+                {/* Channel Info */}
+                <div className="grid grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
+                  <div>
+                    <Label className="text-muted-foreground text-xs">Country</Label>
+                    <p className="font-medium">{viewReport.country}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground text-xs">Category</Label>
+                    <p className="font-medium capitalize">{viewReport.submitted_category || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground text-xs">Platform</Label>
+                    <p className="font-medium">{viewReport.submitted_platform || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground text-xs">Content Type</Label>
+                    <p className="font-medium">{viewReport.submitted_content_type || 'N/A'}</p>
+                  </div>
                 </div>
-                <div>
-                  <Label className="text-muted-foreground text-xs">Category</Label>
-                  <p className="font-medium capitalize">{viewReport.submitted_category || 'N/A'}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground text-xs">Platform</Label>
-                  <p className="font-medium">{viewReport.submitted_platform || 'N/A'}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground text-xs">Content Type</Label>
-                  <p className="font-medium">{viewReport.submitted_content_type || 'N/A'}</p>
-                </div>
-              </div>
 
-              {/* Analysis Results */}
-              <div className="space-y-3">
-                <h4 className="font-semibold">Analysis Results</h4>
-                
-                {viewReport.political_lean && (
-                  <div className="p-3 border rounded-lg">
-                    <Label className="text-muted-foreground text-xs">Political Lean</Label>
-                    <p className="font-medium capitalize">{viewReport.political_lean}</p>
-                    {viewReport.political_lean_justification && (
-                      <p className="text-sm text-muted-foreground mt-1">{viewReport.political_lean_justification}</p>
-                    )}
+                {/* Analysis Results */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold">Analysis Results</h4>
+                  
+                  {viewReport.political_lean && (
+                    <div className="p-3 border rounded-lg">
+                      <Label className="text-muted-foreground text-xs">Political Lean</Label>
+                      <p className="font-medium capitalize">{viewReport.political_lean}</p>
+                      {viewReport.political_lean_justification && (
+                        <p className="text-sm text-muted-foreground mt-1">{viewReport.political_lean_justification}</p>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 border rounded-lg">
+                      <Label className="text-muted-foreground text-xs">Cross-Platform Audience</Label>
+                      <p className="text-lg font-bold">{viewReport.cross_platform_audience?.toFixed(2) || '0.00'}M</p>
+                    </div>
+                    <div className="p-3 border rounded-lg">
+                      <Label className="text-muted-foreground text-xs">Deduplicated Audience</Label>
+                      <p className="text-lg font-bold text-primary">{viewReport.deduplicated_audience?.toFixed(2) || '0.00'}M</p>
+                    </div>
+                  </div>
+
+                  {viewReport.suggested_start_date && (
+                    <div className="p-3 border rounded-lg">
+                      <Label className="text-muted-foreground text-xs">Suggested Start Date</Label>
+                      <p className="font-medium">{viewReport.suggested_start_date}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Input Validation */}
+                {viewReport.input_validation && (
+                  <div className="space-y-2">
+                    <h4 className="font-semibold">Input Validation</h4>
+                    <div className="p-3 bg-muted/50 rounded-lg space-y-1 text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className={viewReport.input_validation.categoryCorrect ? 'text-green-600' : 'text-amber-600'}>
+                          {viewReport.input_validation.categoryCorrect ? '✓' : '⚠'}
+                        </span>
+                        <span>Category: {viewReport.input_validation.categoryCorrect ? 'Correct' : 
+                          `Suggested: ${viewReport.input_validation.suggestedCategory || 'N/A'}`}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={viewReport.input_validation.platformCorrect ? 'text-green-600' : 'text-amber-600'}>
+                          {viewReport.input_validation.platformCorrect ? '✓' : '⚠'}
+                        </span>
+                        <span>Platform: {viewReport.input_validation.platformCorrect ? 'Correct' : 'Review needed'}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={viewReport.input_validation.contentTypeCorrect ? 'text-green-600' : 'text-amber-600'}>
+                          {viewReport.input_validation.contentTypeCorrect ? '✓' : '⚠'}
+                        </span>
+                        <span>Content Type: {viewReport.input_validation.contentTypeCorrect ? 'Correct' : 'Review needed'}</span>
+                      </div>
+                      {viewReport.input_validation.validationNotes && (
+                        <p className="text-muted-foreground mt-2 italic">{viewReport.input_validation.validationNotes}</p>
+                      )}
+                    </div>
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 border rounded-lg">
-                    <Label className="text-muted-foreground text-xs">Cross-Platform Audience</Label>
-                    <p className="text-lg font-bold">{viewReport.cross_platform_audience?.toFixed(2) || '0.00'}M</p>
-                  </div>
-                  <div className="p-3 border rounded-lg">
-                    <Label className="text-muted-foreground text-xs">Deduplicated Audience</Label>
-                    <p className="text-lg font-bold text-primary">{viewReport.deduplicated_audience?.toFixed(2) || '0.00'}M</p>
-                  </div>
-                </div>
-
-                {viewReport.suggested_start_date && (
-                  <div className="p-3 border rounded-lg">
-                    <Label className="text-muted-foreground text-xs">Suggested Start Date</Label>
-                    <p className="font-medium">{viewReport.suggested_start_date}</p>
+                {/* Comparable Channels */}
+                {viewReport.comparable_channels && viewReport.comparable_channels.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="font-semibold">Comparable Channels</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {viewReport.comparable_channels.map((channel, idx) => (
+                        <Badge key={idx} variant="outline">{channel}</Badge>
+                      ))}
+                    </div>
                   </div>
                 )}
-              </div>
 
-              {/* Input Validation */}
-              {viewReport.input_validation && (
-                <div className="space-y-2">
-                  <h4 className="font-semibold">Input Validation</h4>
-                  <div className="p-3 bg-muted/50 rounded-lg space-y-1 text-sm">
-                    <div className="flex items-center gap-2">
-                      <span className={viewReport.input_validation.categoryCorrect ? 'text-green-600' : 'text-amber-600'}>
-                        {viewReport.input_validation.categoryCorrect ? '✓' : '⚠'}
-                      </span>
-                      <span>Category: {viewReport.input_validation.categoryCorrect ? 'Correct' : 
-                        `Suggested: ${viewReport.input_validation.suggestedCategory || 'N/A'}`}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className={viewReport.input_validation.platformCorrect ? 'text-green-600' : 'text-amber-600'}>
-                        {viewReport.input_validation.platformCorrect ? '✓' : '⚠'}
-                      </span>
-                      <span>Platform: {viewReport.input_validation.platformCorrect ? 'Correct' : 'Review needed'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className={viewReport.input_validation.contentTypeCorrect ? 'text-green-600' : 'text-amber-600'}>
-                        {viewReport.input_validation.contentTypeCorrect ? '✓' : '⚠'}
-                      </span>
-                      <span>Content Type: {viewReport.input_validation.contentTypeCorrect ? 'Correct' : 'Review needed'}</span>
-                    </div>
-                    {viewReport.input_validation.validationNotes && (
-                      <p className="text-muted-foreground mt-2 italic">{viewReport.input_validation.validationNotes}</p>
-                    )}
-                  </div>
+                {/* Metadata */}
+                <div className="pt-4 border-t text-sm text-muted-foreground">
+                  <p>Analyzed by: {viewReport.analyzer_name} on {formatDate(viewReport.analyzed_at)}</p>
+                  <p>Applied to channel: {viewReport.was_applied ? 'Yes' : 'No'}</p>
                 </div>
-              )}
-
-              {/* Comparable Channels */}
-              {viewReport.comparable_channels && viewReport.comparable_channels.length > 0 && (
-                <div className="space-y-2">
-                  <h4 className="font-semibold">Comparable Channels</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {viewReport.comparable_channels.map((channel, idx) => (
-                      <Badge key={idx} variant="outline">{channel}</Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Metadata */}
-              <div className="pt-4 border-t text-sm text-muted-foreground">
-                <p>Analyzed by: {viewReport.analyzer_name} on {formatDate(viewReport.analyzed_at)}</p>
-                <p>Applied to channel: {viewReport.was_applied ? 'Yes' : 'No'}</p>
               </div>
+            )}
+          </div>
 
-              <div className="flex gap-2 pt-2">
-                <Button variant="outline" onClick={() => setShowViewDialog(false)} className="flex-1">
-                  Close
-                </Button>
-                <Button onClick={() => exportReportAsPDF(viewReport)} className="flex-1">
-                  <Download className="h-4 w-4 mr-2" />
-                  Export PDF
-                </Button>
-              </div>
-            </div>
-          )}
+          {/* Buttons outside capturable area */}
+          <div className="flex gap-2 pt-2 px-4 pb-4">
+            <Button variant="outline" onClick={() => setShowViewDialog(false)} className="flex-1">
+              Close
+            </Button>
+            <Button 
+              onClick={() => viewReport && exportReportAsPDF(viewReport)} 
+              className="flex-1"
+              disabled={isExporting}
+            >
+              {isExporting ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4 mr-2" />
+              )}
+              Export PDF
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 
