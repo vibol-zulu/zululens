@@ -71,7 +71,9 @@ import {
 import perplexityLogo from '@/assets/perplexity-color.svg';
 import NotificationsTab from '@/components/NotificationsTab';
 import AccountSettingsTab from '@/components/AccountSettingsTab';
+import AnalysisReportsTab from '@/components/AnalysisReportsTab';
 import jsPDF from 'jspdf';
+import { ClipboardList } from 'lucide-react';
 
 interface SimilarChannel {
   id: string;
@@ -1364,6 +1366,10 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                   <Newspaper className="h-4 w-4" />
                   News
                 </TabsTrigger>
+                <TabsTrigger value="reports" className="gap-2">
+                  <ClipboardList className="h-4 w-4" />
+                  Reports
+                </TabsTrigger>
                 <TabsTrigger value="notifications" className="gap-2">
                   <Bell className="h-4 w-4" />
                   Notifications
@@ -1939,6 +1945,11 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                   </div>
                 )}
               </div>
+            </TabsContent>
+
+            {/* Reports Tab */}
+            <TabsContent value="reports" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
+              <AnalysisReportsTab isOpen={activeTab === 'reports'} />
             </TabsContent>
 
             {/* Notifications Tab */}
