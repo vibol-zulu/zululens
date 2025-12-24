@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import SubmissionAnalysisPanel from '@/components/SubmissionAnalysisPanel';
 import perplexityLogo from '@/assets/perplexity-color.svg';
 import { sendSubmissionEmail } from '@/lib/sendSubmissionEmail';
 import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import {
   Tooltip,
   TooltipContent,
