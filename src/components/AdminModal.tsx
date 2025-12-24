@@ -5,11 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Search, Database, MoreVertical, MessageCircle, BarChart3, Trophy, Flame, TrendingUp, Newspaper, ChevronDown, Bell, Loader2, Settings, Save, RefreshCw, Sparkles, ClipboardList } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, LogOut, Check, XCircle, Shield, User, Users, MessageSquare, Search, Database, MoreVertical, MessageCircle, BarChart3, Trophy, Flame, TrendingUp, Newspaper, ChevronDown, Bell, Loader2, Settings, Save, RefreshCw, Sparkles, ClipboardList, Download } from 'lucide-react';
 import AnalysisReportsTab from '@/components/AnalysisReportsTab';
 import SubmissionAnalysisPanel from '@/components/SubmissionAnalysisPanel';
 import perplexityLogo from '@/assets/perplexity-color.svg';
 import { sendSubmissionEmail } from '@/lib/sendSubmissionEmail';
+import jsPDF from 'jspdf';
 import {
   Tooltip,
   TooltipContent,
@@ -1999,6 +2000,267 @@ Make sure questions are specific to {country}'s current political landscape and 
       toast({ title: 'Failed to apply estimation', variant: 'destructive' });
     }
   };
+
+  // Save analysis report to database
+  const saveAnalysisReport = async (wasApplied: boolean = false) => {
+    if (!selectedSubmission || !estimationResult || !user) return;
+    
+    try {
+      const { error } = await supabase
+        .from('channel_analysis_reports')
+        .insert({
+          channel_id: selectedSubmission.id,
+          channel_name: selectedSubmission.name,
+          country: selectedSubmission.country,
+          analyzed_by: user.id,
+          submitted_category: selectedSubmission.category,
+          submitted_platform: selectedSubmission.platform,
+          submitted_content_type: selectedSubmission.content_type,
+          cross_platform_audience: estimationResult.crossPlatformAudience,
+          deduplicated_audience: estimationResult.deduplicatedAudience,
+          political_lean: estimationResult.politicalLean,
+          political_lean_justification: estimationResult.politicalLeanJustification,
+          suggested_start_date: estimationResult.suggestedStartDate,
+          input_validation: estimationResult.inputValidation || {},
+          comparable_channels: estimationResult.comparableChannels || [],
+          raw_analysis: {
+            reasoning: estimationResult.reasoning,
+            runDetails: estimationResult.runDetails || [],
+            crossPlatformRange: estimationResult.crossPlatformRange || null,
+            deduplicatedRange: estimationResult.deduplicatedRange || null,
+            ...estimationResult
+          },
+          was_applied: wasApplied
+        } as any);
+
+      if (error) throw error;
+      
+      toast({ title: 'Analysis report saved' });
+    } catch (error) {
+      console.error('Error saving analysis report:', error);
+      toast({ title: 'Failed to save report', variant: 'destructive' });
+    }
+  };
+
+  // Export analysis report as PDF
+  const exportReportAsPDF = () => {
+    if (!selectedSubmission || !estimationResult) return;
+    
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let yPos = 20;
+    const lineHeight = 7;
+    const margin = 20;
+    const contentWidth = pageWidth - (margin * 2);
+    const tableColWidth = contentWidth / 2;
+
+    const addWrappedText = (text: string, x: number, y: number, maxWidth: number): number => {
+      const lines = doc.splitTextToSize(text, maxWidth);
+      doc.text(lines, x, y);
+      return y + (lines.length * lineHeight);
+    };
+
+    const drawTableRow = (label: string, value: string, y: number, isHeader: boolean = false): number => {
+      if (isHeader) {
+        doc.setFillColor(240, 240, 240);
+        doc.rect(margin, y - 4, contentWidth, lineHeight + 2, 'F');
+        doc.setFont('helvetica', 'bold');
+      } else {
+        doc.setFont('helvetica', 'normal');
+      }
+      doc.setDrawColor(200, 200, 200);
+      doc.rect(margin, y - 4, tableColWidth, lineHeight + 2);
+      doc.rect(margin + tableColWidth, y - 4, tableColWidth, lineHeight + 2);
+      doc.text(label, margin + 2, y);
+      doc.text(value, margin + tableColWidth + 2, y);
+      return y + lineHeight + 2;
+    };
+
+    // Title
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(41, 98, 255);
+    doc.text('Channel Analysis Report', margin, yPos);
+    doc.setTextColor(0, 0, 0);
+    yPos += lineHeight;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(128, 128, 128);
+    doc.text('3-Run Cross-Check Analysis Methodology', margin, yPos);
+    doc.setTextColor(0, 0, 0);
+    yPos += lineHeight * 2;
+
+    // Channel Information Table
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Channel Information', margin, yPos);
+    yPos += lineHeight + 2;
+    
+    doc.setFontSize(9);
+    yPos = drawTableRow('Field', 'Value', yPos, true);
+    yPos = drawTableRow('Channel Name', selectedSubmission.name, yPos);
+    yPos = drawTableRow('Country', selectedSubmission.country, yPos);
+    yPos = drawTableRow('Category', selectedSubmission.category, yPos);
+    yPos = drawTableRow('Platform', selectedSubmission.platform || 'Not specified', yPos);
+    yPos = drawTableRow('Content Type', selectedSubmission.content_type || 'Not specified', yPos);
+    yPos = drawTableRow('Analysis Date', new Date().toLocaleDateString(), yPos);
+    yPos += lineHeight;
+
+    // Input Validation Table
+    if (estimationResult.inputValidation) {
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Input Validation', margin, yPos);
+      yPos += lineHeight + 2;
+      
+      doc.setFontSize(9);
+      yPos = drawTableRow('Field', 'Status', yPos, true);
+      const catStatus = estimationResult.inputValidation.categoryCorrect ? '✓ Correct' : 
+        `⚠ Suggested: ${estimationResult.inputValidation.suggestedCategory}`;
+      yPos = drawTableRow('Category', catStatus, yPos);
+      yPos = drawTableRow('Platform', estimationResult.inputValidation.platformCorrect ? '✓ Correct' : '⚠ Review needed', yPos);
+      yPos = drawTableRow('Content Type', estimationResult.inputValidation.contentTypeCorrect ? '✓ Correct' : '⚠ Review needed', yPos);
+      
+      if (estimationResult.inputValidation.validationNotes) {
+        yPos += 2;
+        doc.setFont('helvetica', 'italic');
+        yPos = addWrappedText(`Notes: ${estimationResult.inputValidation.validationNotes}`, margin, yPos, contentWidth);
+      }
+      yPos += lineHeight;
+    }
+
+    // Political Lean Section
+    if (estimationResult.politicalLean) {
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Political Lean Analysis', margin, yPos);
+      yPos += lineHeight + 2;
+      
+      doc.setFontSize(9);
+      yPos = drawTableRow('Field', 'Value', yPos, true);
+      yPos = drawTableRow('Political Lean', estimationResult.politicalLean.toUpperCase(), yPos);
+      
+      if (estimationResult.politicalLeanJustification) {
+        yPos += 2;
+        doc.setFont('helvetica', 'bold');
+        doc.text('Justification:', margin, yPos);
+        yPos += lineHeight;
+        doc.setFont('helvetica', 'normal');
+        yPos = addWrappedText(estimationResult.politicalLeanJustification, margin, yPos, contentWidth);
+      }
+      yPos += lineHeight;
+    }
+
+    // Audience Estimation Results Table
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Audience Estimation Results (3-Run Mean)', margin, yPos);
+    yPos += lineHeight + 2;
+    
+    doc.setFontSize(9);
+    yPos = drawTableRow('Metric', 'Value', yPos, true);
+    yPos = drawTableRow('Cross-Platform Audience (Mean)', `${estimationResult.crossPlatformAudience?.toFixed(2) || '0.00'}M`, yPos);
+    if (estimationResult.crossPlatformRange) {
+      yPos = drawTableRow('Cross-Platform Range', `${estimationResult.crossPlatformRange.min.toFixed(2)}M – ${estimationResult.crossPlatformRange.max.toFixed(2)}M`, yPos);
+    }
+    yPos = drawTableRow('Deduplicated Audience (Mean)', `${estimationResult.deduplicatedAudience?.toFixed(2) || '0.00'}M`, yPos);
+    if (estimationResult.deduplicatedRange) {
+      yPos = drawTableRow('Deduplicated Range', `${estimationResult.deduplicatedRange.min.toFixed(2)}M – ${estimationResult.deduplicatedRange.max.toFixed(2)}M`, yPos);
+    }
+    if (estimationResult.suggestedStartDate) {
+      yPos = drawTableRow('Suggested Start Date', estimationResult.suggestedStartDate, yPos);
+    }
+    yPos += lineHeight;
+
+    // Individual Run Results Table
+    if (estimationResult.runDetails && estimationResult.runDetails.length > 0) {
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Individual Run Results', margin, yPos);
+      yPos += lineHeight + 2;
+      
+      doc.setFontSize(9);
+      const col1Width = contentWidth / 3;
+      doc.setFillColor(240, 240, 240);
+      doc.rect(margin, yPos - 4, contentWidth, lineHeight + 2, 'F');
+      doc.setDrawColor(200, 200, 200);
+      doc.rect(margin, yPos - 4, col1Width, lineHeight + 2);
+      doc.rect(margin + col1Width, yPos - 4, col1Width, lineHeight + 2);
+      doc.rect(margin + col1Width * 2, yPos - 4, col1Width, lineHeight + 2);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Run', margin + 2, yPos);
+      doc.text('Cross-Platform', margin + col1Width + 2, yPos);
+      doc.text('Deduplicated', margin + col1Width * 2 + 2, yPos);
+      yPos += lineHeight + 2;
+      
+      doc.setFont('helvetica', 'normal');
+      estimationResult.runDetails.forEach((run, idx) => {
+        doc.rect(margin, yPos - 4, col1Width, lineHeight + 2);
+        doc.rect(margin + col1Width, yPos - 4, col1Width, lineHeight + 2);
+        doc.rect(margin + col1Width * 2, yPos - 4, col1Width, lineHeight + 2);
+        doc.text(`Run ${idx + 1}`, margin + 2, yPos);
+        doc.text(`${run.crossPlatformAudience.toFixed(2)}M`, margin + col1Width + 2, yPos);
+        doc.text(`${run.deduplicatedAudience.toFixed(2)}M`, margin + col1Width * 2 + 2, yPos);
+        yPos += lineHeight + 2;
+      });
+      yPos += lineHeight;
+    }
+
+    // Reasoning Section
+    if (estimationResult.reasoning) {
+      if (yPos > 220) {
+        doc.addPage();
+        yPos = 20;
+      }
+      
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Analysis Reasoning', margin, yPos);
+      yPos += lineHeight + 2;
+      
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      yPos = addWrappedText(estimationResult.reasoning, margin, yPos, contentWidth);
+      yPos += lineHeight;
+    }
+
+    // Comparable Channels Section
+    if (estimationResult.comparableChannels?.length > 0) {
+      if (yPos > 240) {
+        doc.addPage();
+        yPos = 20;
+      }
+      
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Comparable Channels', margin, yPos);
+      yPos += lineHeight + 2;
+      
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      const channelsList = estimationResult.comparableChannels.map((c, i) => `${i + 1}. ${c}`).join('\n');
+      yPos = addWrappedText(channelsList, margin, yPos, contentWidth);
+    }
+
+    // Footer on all pages
+    const pageCount = doc.internal.pages.length - 1;
+    doc.setFontSize(8);
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setTextColor(128, 128, 128);
+      doc.text(
+        `Generated by Media Landscape Analysis Tool • ${new Date().toLocaleString()} • Page ${i} of ${pageCount}`,
+        pageWidth / 2,
+        doc.internal.pageSize.getHeight() - 10,
+        { align: 'center' }
+      );
+    }
+
+    const fileName = `analysis_${selectedSubmission.name.replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+    doc.save(fileName);
+    
+    toast({ title: 'Report exported as PDF' });
+  }
 
   // Analyze a comparable channel
   const analyzeComparableChannel = async (channelName: string) => {
@@ -5059,28 +5321,54 @@ Make sure questions are specific to {country}'s current political landscape and 
                 />
 
                 {selectedSubmission.status === 'pending' && estimationResult && (
-                  <div className="flex gap-3 pt-4">
-                    <Button 
-                      variant="outline" 
-                      onClick={() => updateSubmissionStatus(selectedSubmission.id, 'rejected', selectedSubmission.author_id)} 
-                      className="flex-1"
-                    >
-                      Reject
-                    </Button>
-                    <Button 
-                      variant="secondary"
-                      onClick={() => estimateAudience(selectedSubmission)}
-                      disabled={isEstimating}
-                      className="flex-1"
-                    >
-                      {isEstimating ? 'Analysing...' : 'Re-analyse'}
-                    </Button>
-                    <Button 
-                      onClick={applyEstimation} 
-                      className="flex-1"
-                    >
-                      Approve ({estimationResult.deduplicatedAudience?.toFixed(2) || '0'}M)
-                    </Button>
+                  <div className="border-t pt-4 space-y-3">
+                    {/* Export and Save buttons */}
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        onClick={exportReportAsPDF}
+                        className="flex-1"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Export PDF
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => saveAnalysisReport(false)}
+                        className="flex-1"
+                      >
+                        <Save className="h-4 w-4 mr-2" />
+                        Save Report
+                      </Button>
+                    </div>
+                    
+                    {/* Action buttons */}
+                    <div className="flex gap-3">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => updateSubmissionStatus(selectedSubmission.id, 'rejected', selectedSubmission.author_id)} 
+                        className="flex-1"
+                      >
+                        Reject
+                      </Button>
+                      <Button 
+                        variant="secondary"
+                        onClick={() => estimateAudience(selectedSubmission)}
+                        disabled={isEstimating}
+                        className="flex-1"
+                      >
+                        {isEstimating ? 'Analysing...' : 'Re-analyse'}
+                      </Button>
+                      <Button 
+                        onClick={() => {
+                          saveAnalysisReport(true);
+                          applyEstimation();
+                        }} 
+                        className="flex-1"
+                      >
+                        Approve ({estimationResult.deduplicatedAudience?.toFixed(2) || '0'}M)
+                      </Button>
+                    </div>
                   </div>
                 )}
               </div>
