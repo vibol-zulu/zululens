@@ -513,29 +513,17 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
         
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            {(showingApproval && currentApproval) || currentRecentChannel ? (
-              <PartyPopper className="h-4 w-4 text-green-500 shrink-0 animate-pulse" />
-            ) : (
-              <MessageSquare className="h-4 w-4 text-primary shrink-0" />
-            )}
+            {/* Always show comments icon and count */}
+            <MessageSquare className="h-4 w-4 text-primary shrink-0" />
             <span className="font-medium text-sm shrink-0">
-              {showingApproval && currentApproval ? (
-                <span className="text-green-600 dark:text-green-400">New Approval!</span>
-              ) : currentRecentChannel ? (
-                <span className="text-green-600 dark:text-green-400">Recent Additions</span>
-              ) : (
-                <>Comments {totalComments > 0 && `(${totalComments})`}</>
-              )}
+              Comments {totalComments > 0 && `(${totalComments})`}
             </span>
-            {!showingApproval && !currentRecentChannel && (
-              <span className="text-xs text-muted-foreground shrink-0">— {country}</span>
-            )}
+            <span className="text-xs text-muted-foreground shrink-0">— {country}</span>
             
             {/* Desktop: Cycling preview inline when collapsed */}
             {!isMobile && !isExpanded && (
-              <div className={`flex items-center gap-2 ml-6 text-sm overflow-hidden ${
-                (showingApproval && currentApproval) || currentRecentChannel ? 'text-foreground' : 'text-muted-foreground'
-              }`}>
+              <div className="flex items-center gap-2 ml-4 text-sm overflow-hidden">
+                <span className="text-muted-foreground shrink-0">|</span>
                 {showingApproval && currentApproval ? (
                   renderApprovalPreview()
                 ) : currentRecentChannel ? (
@@ -543,7 +531,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ country, onSignUpClic
                 ) : (
                   <span 
                     key={previewIndex}
-                    className="truncate animate-fade-in"
+                    className="truncate animate-fade-in text-muted-foreground"
                   >
                     <span className="italic">Be the first to add a channel!</span>
                   </span>
