@@ -2088,42 +2088,9 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
               
             {channelToReview && (
               <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                {/* Top Section: Methodology + Analyse Button (Left) | Submission Details Table (Right) */}
+                {/* Top Section: Submission Details Table (Left) | Methodology + Analyse Button (Right) */}
                 <div className="flex gap-6">
-                  {/* Left: Methodology Description + Analyse Button */}
-                  <div className="w-1/2 flex flex-col justify-center space-y-4">
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-semibold text-foreground">AI Analysis Methodology</h4>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        Our analysis runs 3 independent AI evaluations using Perplexity's Sonar model. 
-                        Each run estimates audience reach, validates political lean, and identifies comparable channels. 
-                        Results are averaged to reduce variance and improve accuracy, with outliers flagged for review.
-                      </p>
-                    </div>
-                    <Button
-                      variant="outline"
-                      onClick={() => estimateAudience(channelToReview)}
-                      disabled={isEstimating}
-                      className="h-10 px-5 font-semibold text-foreground border-2"
-                    >
-                      {isEstimating ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          {estimationProgress 
-                            ? `Analysing (Run ${estimationProgress.currentRun}/${estimationProgress.totalRuns})...`
-                            : 'Analysing...'
-                          }
-                        </>
-                      ) : (
-                        <>
-                          <img src={perplexityLogo} alt="Perplexity" className="h-4 w-4 mr-2" />
-                          Analyse Submission (3x Cross-Check)
-                        </>
-                      )}
-                    </Button>
-                  </div>
-
-                  {/* Right: Submission Details Table */}
+                  {/* Left: Submission Details Table */}
                   <div className="w-1/2 rounded-md border text-[10px]">
                     <Table>
                       <TableHeader>
@@ -2159,6 +2126,39 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
                         </TableRow>
                       </TableBody>
                     </Table>
+                  </div>
+
+                  {/* Right: Methodology Description + Analyse Button */}
+                  <div className="w-1/2 flex flex-col justify-center space-y-4">
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-semibold text-foreground">AI Analysis Methodology</h4>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Our analysis runs 3 independent AI evaluations using Perplexity's Sonar model. 
+                        Each run estimates audience reach, validates political lean, and identifies comparable channels. 
+                        Results are averaged to reduce variance and improve accuracy, with outliers flagged for review.
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={() => estimateAudience(channelToReview)}
+                      disabled={isEstimating}
+                      className="h-10 px-5 font-semibold text-foreground border-2"
+                    >
+                      {isEstimating ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          {estimationProgress 
+                            ? `Analysing (Run ${estimationProgress.currentRun}/${estimationProgress.totalRuns})...`
+                            : 'Analysing...'
+                          }
+                        </>
+                      ) : (
+                        <>
+                          <img src={perplexityLogo} alt="Perplexity" className="h-4 w-4 mr-2" />
+                          Analyse Submission (3x Cross-Check)
+                        </>
+                      )}
+                    </Button>
                   </div>
                 </div>
 
