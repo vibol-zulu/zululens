@@ -5304,7 +5304,7 @@ Make sure questions are specific to {country}'s current political landscape and 
         {/* View Submission Dialog */}
         <Dialog open={showSubmissionDialog} onOpenChange={setShowSubmissionDialog}>
           <DialogContent className="max-w-6xl max-h-[85vh] p-0 flex flex-col overflow-hidden">
-            <DialogHeader className="p-6 pb-4 border-b">
+            <DialogHeader className="p-6 pb-4 border-b shrink-0">
               <DialogTitle className="text-xl">Submission Details</DialogTitle>
             </DialogHeader>
             
@@ -5319,58 +5319,71 @@ Make sure questions are specific to {country}'s current political landscape and 
                   onAnalyzeComparableChannel={analyzeComparableChannel}
                   showSimilarityWarning={false}
                 />
-
-                {selectedSubmission.status === 'pending' && estimationResult && (
-                  <div className="border-t pt-4 space-y-3">
-                    {/* Export and Save buttons */}
-                    <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
-                        onClick={exportReportAsPDF}
-                        className="flex-1"
-                      >
-                        <Download className="h-4 w-4 mr-2" />
-                        Export PDF
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        onClick={() => saveAnalysisReport(false)}
-                        className="flex-1"
-                      >
-                        <Save className="h-4 w-4 mr-2" />
-                        Save Report
-                      </Button>
-                    </div>
-                    
-                    {/* Action buttons */}
-                    <div className="flex gap-3">
-                      <Button 
-                        variant="outline" 
-                        onClick={() => updateSubmissionStatus(selectedSubmission.id, 'rejected', selectedSubmission.author_id)} 
-                        className="flex-1"
-                      >
-                        Reject
-                      </Button>
-                      <Button 
-                        variant="secondary"
-                        onClick={() => estimateAudience(selectedSubmission)}
-                        disabled={isEstimating}
-                        className="flex-1"
-                      >
-                        {isEstimating ? 'Analysing...' : 'Re-analyse'}
-                      </Button>
-                      <Button 
-                        onClick={() => {
-                          saveAnalysisReport(true);
-                          applyEstimation();
-                        }} 
-                        className="flex-1"
-                      >
-                        Approve ({estimationResult.deduplicatedAudience?.toFixed(2) || '0'}M)
-                      </Button>
-                    </div>
-                  </div>
-                )}
+              </div>
+            )}
+            
+            {/* Fixed footer with action buttons - always visible when estimationResult exists */}
+            {selectedSubmission && selectedSubmission.status === 'pending' && estimationResult && (
+              <div className="border-t p-4 bg-background shrink-0 space-y-3">
+                {/* Export actions row */}
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    onClick={exportReportAsPDF}
+                    className="flex-1"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export PDF
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    onClick={() => saveAnalysisReport(false)}
+                    className="flex-1"
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    Save Report
+                  </Button>
+                </div>
+                
+                {/* Main action buttons */}
+                <div className="flex gap-3">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setShowSubmissionDialog(false);
+                      setEstimationResult(null);
+                    }}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    variant="secondary"
+                    onClick={() => selectedSubmission && estimateAudience(selectedSubmission)}
+                    disabled={isEstimating}
+                    className="flex-1"
+                  >
+                    {isEstimating ? 'Analysing...' : 'Re-analyse'}
+                  </Button>
+                  <Button 
+                    variant="destructive"
+                    onClick={() => updateSubmissionStatus(selectedSubmission.id, 'rejected', selectedSubmission.author_id)}
+                    className="flex-1"
+                  >
+                    Reject
+                  </Button>
+                  <Button 
+                    onClick={async () => {
+                      await saveAnalysisReport(true);
+                      applyEstimation();
+                    }}
+                    className="flex-1 bg-green-600 hover:bg-green-700"
+                  >
+                    Approve ({estimationResult.deduplicatedAudience?.toFixed(2) || '0'}M)
+                  </Button>
+                </div>
               </div>
             )}
           </DialogContent>
