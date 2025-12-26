@@ -1,8 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-session-id",
 };
 
 serve(async (req) => {
@@ -11,6 +12,33 @@ serve(async (req) => {
   }
 
   try {
+    // ===== RATE LIMITING =====
+    const sessionId = req.headers.get('x-session-id') || 'anonymous';
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Check rate limit: 20 requests per 60 minutes per session
+    const { data: allowed, error: rateLimitError } = await supabase.rpc('check_rate_limit', {
+      _identifier: sessionId,
+      _action: 'questionnaire_chat',
+      _max_requests: 20,
+      _window_minutes: 60
+    });
+
+    if (rateLimitError) {
+      console.error('Rate limit check error:', rateLimitError);
+    }
+
+    if (allowed === false) {
+      console.log('questionnaire-chat: Rate limit exceeded for session', sessionId);
+      return new Response(
+        JSON.stringify({ error: 'Rate limit exceeded. You can send up to 20 messages per hour. Please try again later.' }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    // ===== END RATE LIMITING =====
+
     const { messages, question, explanation, category } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");

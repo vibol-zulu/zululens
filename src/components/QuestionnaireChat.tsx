@@ -60,11 +60,16 @@ const QuestionnaireChat: React.FC<QuestionnaireChatProps> = ({
     let assistantContent = '';
 
     try {
+      // Generate a session ID for rate limiting
+      const sessionId = sessionStorage.getItem('chat_session_id') || crypto.randomUUID();
+      sessionStorage.setItem('chat_session_id', sessionId);
+
       const response = await fetch(CHAT_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          'x-session-id': sessionId,
         },
         body: JSON.stringify({
           messages: [...messages, userMessage],

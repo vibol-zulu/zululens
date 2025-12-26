@@ -255,6 +255,53 @@ serve(async (req) => {
   }
 
   try {
+    // ===== AUTHENTICATION & AUTHORIZATION =====
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.log('estimate-audience: No authorization header');
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const jwt = authHeader.replace('Bearer ', '');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Verify user from JWT
+    const { data: { user }, error: authError } = await supabase.auth.getUser(jwt);
+
+    if (authError || !user) {
+      console.log('estimate-audience: Invalid JWT or user not found', authError?.message);
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Check for admin or moderator role
+    const { data: isModerator } = await supabase.rpc('has_role', {
+      _user_id: user.id,
+      _role: 'moderator'
+    });
+    const { data: isAdmin } = await supabase.rpc('has_role', {
+      _user_id: user.id,
+      _role: 'admin'
+    });
+
+    if (!isModerator && !isAdmin) {
+      console.log('estimate-audience: User lacks required role', user.id);
+      return new Response(
+        JSON.stringify({ error: 'Forbidden: Admin or Moderator role required' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('estimate-audience: Authorized user', user.id, 'role:', isAdmin ? 'admin' : 'moderator');
+    // ===== END AUTHENTICATION & AUTHORIZATION =====
+
     const { channel }: { channel: ChannelSubmission } = await req.json();
     
     if (!channel || !channel.name || !channel.platform || !channel.contentType) {
@@ -282,10 +329,6 @@ serve(async (req) => {
     let corporateUserPromptTemplate = DEFAULT_CORPORATE_USER_PROMPT;
 
     try {
-      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-      const supabase = createClient(supabaseUrl, supabaseKey);
-
       const { data: settings } = await supabase
         .from('app_settings')
         .select('key, value')
