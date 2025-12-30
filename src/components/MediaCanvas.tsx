@@ -571,7 +571,7 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
           const lineArrayInnerRadius = boundaryRadius - 6 - lineLength;
           
           ctx.strokeStyle = isMajorTick ? '#d0d0d0' : '#e0e0e0';
-          ctx.lineWidth = isMajorTick ? 1.5 : 1;
+          ctx.lineWidth = isLongMajorTick ? 1.5 : (isMajorTick ? 1.2 : 1);
           
           const angle = (i / numLines) * Math.PI * 2;
           const x1 = cx + Math.cos(angle) * lineArrayInnerRadius;
