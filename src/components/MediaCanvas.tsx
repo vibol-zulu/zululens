@@ -566,11 +566,11 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
         
         for (let i = 0; i < numLines; i++) {
           const isMajorTick = i % 10 === 0;
-          const lineLength = isMajorTick ? 40 : 20; // Major ticks are longer
+          const lineLength = isMajorTick ? 30 : 20; // Major ticks are slightly longer
           const lineArrayInnerRadius = boundaryRadius - 6 - lineLength;
           
-          ctx.strokeStyle = isMajorTick ? '#c0c0c0' : '#e0e0e0';
-          ctx.lineWidth = isMajorTick ? 2 : 1;
+          ctx.strokeStyle = isMajorTick ? '#d0d0d0' : '#e0e0e0';
+          ctx.lineWidth = isMajorTick ? 1.5 : 1;
           
           const angle = (i / numLines) * Math.PI * 2;
           const x1 = cx + Math.cos(angle) * lineArrayInnerRadius;
