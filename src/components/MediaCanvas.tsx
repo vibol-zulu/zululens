@@ -560,14 +560,18 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Draw circular line array (radial lines) inside the dashed circle
+        // Draw circular ruler effect (radial lines) inside the dashed circle
         const lineArrayOuterRadius = boundaryRadius - 6; // Gap from dashed circle
-        const lineArrayInnerRadius = boundaryRadius - 46; // Line length
         const numLines = 500; // Number of radial lines
-        ctx.strokeStyle = '#e0e0e0'; // Match dashed circle color
-        ctx.lineWidth = 1;
         
         for (let i = 0; i < numLines; i++) {
+          const isMajorTick = i % 10 === 0;
+          const lineLength = isMajorTick ? 40 : 20; // Major ticks are longer
+          const lineArrayInnerRadius = boundaryRadius - 6 - lineLength;
+          
+          ctx.strokeStyle = isMajorTick ? '#c0c0c0' : '#e0e0e0';
+          ctx.lineWidth = isMajorTick ? 2 : 1;
+          
           const angle = (i / numLines) * Math.PI * 2;
           const x1 = cx + Math.cos(angle) * lineArrayInnerRadius;
           const y1 = cy + Math.sin(angle) * lineArrayInnerRadius;
