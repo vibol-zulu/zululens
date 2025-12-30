@@ -567,7 +567,7 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
         for (let i = 0; i < numLines; i++) {
           const isMajorTick = i % 10 === 0;
           const isLongMajorTick = i % 20 === 0; // Every second major tick is longer
-          const lineLength = isLongMajorTick ? 30 : 20;
+          const lineLength = isLongMajorTick ? 26 : 20;
           const lineArrayInnerRadius = boundaryRadius - 6 - lineLength;
           
           ctx.strokeStyle = isMajorTick ? '#d0d0d0' : '#e0e0e0';
