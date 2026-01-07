@@ -631,49 +631,8 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
         const isAlexJones = circle.name.toLowerCase().includes('alex jones');
         const shouldRenderAsImage = showAlexJonesImage && isAlexJones && alexJonesImageRef.current;
 
-        if (shouldRenderAsImage && alexJonesImageRef.current) {
-          // Render Alex Jones as an image
-          const img = alexJonesImageRef.current;
-          const size = circle.currentRadius * 2;
-          
-          ctx.save();
-          ctx.globalAlpha = circle.opacity;
-          
-          // Create circular clip path
-          ctx.beginPath();
-          ctx.arc(circle.x, circle.y, circle.currentRadius, 0, Math.PI * 2);
-          ctx.clip();
-          
-          // Draw image centered on circle position
-          ctx.drawImage(
-            img,
-            circle.x - circle.currentRadius,
-            circle.y - circle.currentRadius,
-            size,
-            size
-          );
-          
-          ctx.restore();
-          
-          // Draw border and labels if selected/hovered
-          if (selectedIds.has(circle.id) || hoveredId === circle.id) {
-            ctx.beginPath();
-            ctx.arc(circle.x, circle.y, circle.currentRadius, 0, Math.PI * 2);
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = contrastColor;
-            ctx.stroke();
-            
-            ctx.globalAlpha = 1;
-            ctx.fillStyle = contrastColor;
-            ctx.font = 'bold 12px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            
-            ctx.fillText(circle.name, circle.x, circle.y + circle.currentRadius + 14);
-            ctx.font = '10px sans-serif';
-            ctx.fillText(`${circle.valueMillions}M`, circle.x, circle.y + circle.currentRadius + 28);
-          }
-        } else {
+        // Always draw the bubble first
+        {
           // Standard circle rendering
           ctx.beginPath();
           ctx.arc(circle.x, circle.y, circle.currentRadius, 0, Math.PI * 2);
@@ -729,6 +688,26 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
             ctx.shadowOffsetX = 0;
             ctx.shadowOffsetY = 0;
           }
+        }
+        
+        // Overlay Alex Jones image on top of the bubble if enabled
+        if (shouldRenderAsImage && alexJonesImageRef.current) {
+          const img = alexJonesImageRef.current;
+          const size = circle.currentRadius * 2;
+          
+          ctx.save();
+          ctx.globalAlpha = circle.opacity;
+          
+          // Draw image centered on circle position (no clipping, overlay on top)
+          ctx.drawImage(
+            img,
+            circle.x - circle.currentRadius,
+            circle.y - circle.currentRadius,
+            size,
+            size
+          );
+          
+          ctx.restore();
         }
       });
 
