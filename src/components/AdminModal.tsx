@@ -481,6 +481,7 @@ Format your response as JSON with this structure:
   const [mailchimpUrl, setMailchimpUrl] = useState('');
   const [guidedTourEnabled, setGuidedTourEnabled] = useState(false);
   const [defaultViewMode, setDefaultViewMode] = useState<'default' | 'compass'>('compass');
+  const [showAlexJonesImage, setShowAlexJonesImage] = useState(false);
   const [pxFactorGlobal, setPxFactorGlobal] = useState('1.0');
   const [pxFactorAllCountries, setPxFactorAllCountries] = useState('2.24');
   const [audienceSystemPrompt, setAudienceSystemPrompt] = useState(DEFAULT_SYSTEM_PROMPT);
@@ -671,6 +672,9 @@ Make sure questions are specific to {country}'s current political landscape and 
       if (settingsMap['approval_notification_duration']) {
         setApprovalNotificationDuration(settingsMap['approval_notification_duration']);
       }
+      if (settingsMap['show_alex_jones_image'] !== undefined) {
+        setShowAlexJonesImage(settingsMap['show_alex_jones_image'] === 'true');
+      }
     } catch (error) {
       console.error('Error fetching settings:', error);
     } finally {
@@ -686,6 +690,7 @@ Make sure questions are specific to {country}'s current political landscape and 
         { key: 'mailchimp_url', value: mailchimpUrl },
         { key: 'guided_tour_enabled', value: guidedTourEnabled.toString() },
         { key: 'default_view_mode', value: defaultViewMode },
+        { key: 'show_alex_jones_image', value: showAlexJonesImage.toString() },
         { key: 'px_factor_global', value: pxFactorGlobal },
         { key: 'px_factor_all_countries', value: pxFactorAllCountries },
         { key: 'approval_notification_duration', value: approvalNotificationDuration },
@@ -4321,6 +4326,20 @@ Make sure questions are specific to {country}'s current political landscape and 
                             <SelectItem value="compass">Spectrum</SelectItem>
                           </SelectContent>
                         </Select>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label htmlFor="alex-jones-image">Alex Jones Image Mode</Label>
+                          <p className="text-xs text-muted-foreground">
+                            Display Alex Jones as an image instead of a bubble
+                          </p>
+                        </div>
+                        <Checkbox
+                          id="alex-jones-image"
+                          checked={showAlexJonesImage}
+                          onCheckedChange={(checked) => setShowAlexJonesImage(checked === true)}
+                        />
                       </div>
                     </CardContent>
                   </Card>

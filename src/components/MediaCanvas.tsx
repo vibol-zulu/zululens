@@ -18,6 +18,7 @@ import { YearData, ViewMode, COLORS } from '@/types/media';
 import { BrandCircle, INNER_CONTAINER_RADIUS, SPECTRUM_BIN_WIDTH, SPECTRUM_BIN_HEIGHT, getSpectrumBinIndex } from '@/lib/BrandCircle';
 import PoliticalQuestionnaire, { RefinedResult } from '@/components/PoliticalQuestionnaire';
 import CountryConfirmationDialog from '@/components/CountryConfirmationDialog';
+import alexJonesImageSrc from '@/assets/alex-jones.png';
 interface ChannelSuggestion {
   id: string;
   name: string;
@@ -58,6 +59,7 @@ interface MediaCanvasProps {
   pxFactorGlobal?: number;
   pxFactorAllCountries?: number;
   isAuthenticated?: boolean;
+  showAlexJonesImage?: boolean;
   onSignUpClick?: () => void;
   onContributeClick?: () => void;
   onMethodologyClick?: () => void;
@@ -416,6 +418,7 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
   pxFactorGlobal = 1.0,
   pxFactorAllCountries = 2.24,
   isAuthenticated = false,
+  showAlexJonesImage = false,
   onSignUpClick,
   onContributeClick,
   onMethodologyClick,
@@ -427,6 +430,18 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
   const requestRef = useRef<number>(0);
   const scaleRef = useRef<number>(1);
   const userBubbleRef = useRef<{ x: number; y: number; vx: number; vy: number; binIndex: number } | null>(null);
+  const alexJonesImageRef = useRef<HTMLImageElement | null>(null);
+
+  // Load Alex Jones image
+  useEffect(() => {
+    if (showAlexJonesImage && !alexJonesImageRef.current) {
+      const img = new Image();
+      img.src = alexJonesImageSrc;
+      img.onload = () => {
+        alexJonesImageRef.current = img;
+      };
+    }
+  }, [showAlexJonesImage]);
 
   // Convert user's political score (-100 to +100) to bin index (0-4)
   const userPoliticalPosition = useMemo(() => {
@@ -611,60 +626,109 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
         circle.update(width, height, boundaryRadius, selectedIds, hoveredId, circlesRef.current, viewMode);
         
         const contrastColor = circle.category === 'corporate' ? COLORS.independent : COLORS.corporate;
+        
+        // Check if this is Alex Jones and we should render as image
+        const isAlexJones = circle.name.toLowerCase().includes('alex jones');
+        const shouldRenderAsImage = showAlexJonesImage && isAlexJones && alexJonesImageRef.current;
 
-        ctx.beginPath();
-        ctx.arc(circle.x, circle.y, circle.currentRadius, 0, Math.PI * 2);
-        ctx.fillStyle = circle.baseColor;
-        ctx.globalAlpha = circle.opacity;
-        ctx.fill();
-
-        if (selectedIds.has(circle.id) || hoveredId === circle.id) {
-          ctx.lineWidth = 1;
-          ctx.strokeStyle = contrastColor;
-          ctx.stroke();
+        if (shouldRenderAsImage && alexJonesImageRef.current) {
+          // Render Alex Jones as an image
+          const img = alexJonesImageRef.current;
+          const size = circle.currentRadius * 2;
           
-          ctx.globalAlpha = 1;
-          ctx.fillStyle = contrastColor;
-          ctx.font = 'bold 12px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
+          ctx.save();
+          ctx.globalAlpha = circle.opacity;
           
-          if (circle.category === 'corporate') {
-            ctx.shadowColor = '#002b25';
-            ctx.shadowBlur = 4;
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 1;
+          // Create circular clip path
+          ctx.beginPath();
+          ctx.arc(circle.x, circle.y, circle.currentRadius, 0, Math.PI * 2);
+          ctx.clip();
+          
+          // Draw image centered on circle position
+          ctx.drawImage(
+            img,
+            circle.x - circle.currentRadius,
+            circle.y - circle.currentRadius,
+            size,
+            size
+          );
+          
+          ctx.restore();
+          
+          // Draw border and labels if selected/hovered
+          if (selectedIds.has(circle.id) || hoveredId === circle.id) {
+            ctx.beginPath();
+            ctx.arc(circle.x, circle.y, circle.currentRadius, 0, Math.PI * 2);
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = contrastColor;
+            ctx.stroke();
+            
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = contrastColor;
+            ctx.font = 'bold 12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            ctx.fillText(circle.name, circle.x, circle.y + circle.currentRadius + 14);
+            ctx.font = '10px sans-serif';
+            ctx.fillText(`${circle.valueMillions}M`, circle.x, circle.y + circle.currentRadius + 28);
           }
+        } else {
+          // Standard circle rendering
+          ctx.beginPath();
+          ctx.arc(circle.x, circle.y, circle.currentRadius, 0, Math.PI * 2);
+          ctx.fillStyle = circle.baseColor;
+          ctx.globalAlpha = circle.opacity;
+          ctx.fill();
 
-          ctx.fillText(circle.name, circle.x, circle.y);
-          ctx.font = '10px sans-serif';
-          ctx.fillText(`${circle.valueMillions}M`, circle.x, circle.y + 14);
+          if (selectedIds.has(circle.id) || hoveredId === circle.id) {
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = contrastColor;
+            ctx.stroke();
+            
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = contrastColor;
+            ctx.font = 'bold 12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            if (circle.category === 'corporate') {
+              ctx.shadowColor = '#002b25';
+              ctx.shadowBlur = 4;
+              ctx.shadowOffsetX = 0;
+              ctx.shadowOffsetY = 1;
+            }
 
-          ctx.shadowColor = 'transparent';
-          ctx.shadowBlur = 0;
-          ctx.shadowOffsetX = 0;
-          ctx.shadowOffsetY = 0;
+            ctx.fillText(circle.name, circle.x, circle.y);
+            ctx.font = '10px sans-serif';
+            ctx.fillText(`${circle.valueMillions}M`, circle.x, circle.y + 14);
 
-        } else if (circle.currentRadius > 15) {
-          ctx.globalAlpha = 0.9;
-          ctx.fillStyle = contrastColor;
-          ctx.font = '10px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-
-          if (circle.category === 'corporate') {
-            ctx.shadowColor = '#002b25';
-            ctx.shadowBlur = 3;
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
             ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 1;
+            ctx.shadowOffsetY = 0;
+
+          } else if (circle.currentRadius > 15) {
+            ctx.globalAlpha = 0.9;
+            ctx.fillStyle = contrastColor;
+            ctx.font = '10px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            if (circle.category === 'corporate') {
+              ctx.shadowColor = '#002b25';
+              ctx.shadowBlur = 3;
+              ctx.shadowOffsetX = 0;
+              ctx.shadowOffsetY = 1;
+            }
+
+            ctx.fillText(circle.name.slice(0, 10), circle.x, circle.y);
+
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
           }
-
-          ctx.fillText(circle.name.slice(0, 10), circle.x, circle.y);
-
-          ctx.shadowColor = 'transparent';
-          ctx.shadowBlur = 0;
-          ctx.shadowOffsetX = 0;
-          ctx.shadowOffsetY = 0;
         }
       });
 
