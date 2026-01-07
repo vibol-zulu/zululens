@@ -668,11 +668,14 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
         // Draw text labels on top
         {
           if (selectedIds.has(circle.id) || hoveredId === circle.id) {
-            ctx.lineWidth = 1;
-            ctx.strokeStyle = contrastColor;
-            ctx.beginPath();
-            ctx.arc(circle.x, circle.y, circle.currentRadius, 0, Math.PI * 2);
-            ctx.stroke();
+            // Only draw circle outline if not showing Alex Jones image
+            if (!shouldRenderAsImage) {
+              ctx.lineWidth = 1;
+              ctx.strokeStyle = contrastColor;
+              ctx.beginPath();
+              ctx.arc(circle.x, circle.y, circle.currentRadius, 0, Math.PI * 2);
+              ctx.stroke();
+            }
             
             ctx.globalAlpha = 1;
             ctx.fillStyle = contrastColor;
