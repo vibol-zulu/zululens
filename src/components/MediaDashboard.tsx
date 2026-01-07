@@ -637,6 +637,7 @@ const MediaDashboard: React.FC<MediaDashboardProps> = ({
             pxFactorGlobal={appSettings.pxFactorGlobal}
             pxFactorAllCountries={appSettings.pxFactorAllCountries}
             isAuthenticated={!!user}
+            showAlexJonesImage={appSettings.showAlexJonesImage}
             onSignUpClick={() => {
               setSignInDefaultTab('signup');
               setShowSignIn(true);
