@@ -693,16 +693,17 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
         // Overlay Alex Jones image on top of the bubble if enabled
         if (shouldRenderAsImage && alexJonesImageRef.current) {
           const img = alexJonesImageRef.current;
-          const size = circle.currentRadius * 2;
+          const imageScale = 1.4; // Make image larger than the bubble
+          const size = circle.currentRadius * 2 * imageScale;
           
           ctx.save();
           ctx.globalAlpha = circle.opacity;
           
-          // Draw image centered on circle position (no clipping, overlay on top)
+          // Draw image centered on circle position, extending beyond the bubble
           ctx.drawImage(
             img,
-            circle.x - circle.currentRadius,
-            circle.y - circle.currentRadius,
+            circle.x - size / 2,
+            circle.y - size / 2,
             size,
             size
           );
