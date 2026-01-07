@@ -631,8 +631,8 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
         const isAlexJones = circle.name.toLowerCase().includes('alex jones');
         const shouldRenderAsImage = showAlexJonesImage && isAlexJones && alexJonesImageRef.current;
 
-        // Always draw the bubble first
-        {
+        // Draw the bubble (skip for Alex Jones when image mode is on)
+        if (!shouldRenderAsImage) {
           // Standard circle rendering
           ctx.beginPath();
           ctx.arc(circle.x, circle.y, circle.currentRadius, 0, Math.PI * 2);
@@ -641,22 +641,23 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
           ctx.fill();
         }
         
-        // Draw Alex Jones image on top of bubble but behind text
+        // Draw Alex Jones image above the name text
         if (shouldRenderAsImage && alexJonesImageRef.current) {
           const img = alexJonesImageRef.current;
-          const imageScale = 2.1; // 50% larger than before (1.4 * 1.5)
+          const imageScale = 2.1;
           const aspectRatio = 166 / 230; // Original image aspect ratio (width/height)
           const height = circle.currentRadius * 2 * imageScale;
           const width = height * aspectRatio;
           
           ctx.save();
-          ctx.globalAlpha = circle.opacity;
+          ctx.globalAlpha = 0.75; // 75% opacity
           
-          // Draw image centered on circle position, maintaining aspect ratio
+          // Position image above the name text (offset upward)
+          const textOffset = 20; // Space for text below
           ctx.drawImage(
             img,
             circle.x - width / 2,
-            circle.y - height / 2,
+            circle.y - height / 2 - textOffset,
             width,
             height
           );
