@@ -650,7 +650,7 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
           const width = height * aspectRatio;
           
           ctx.save();
-          ctx.globalAlpha = 0.75; // 75% opacity
+          ctx.globalAlpha = 1.0; // 100% opacity
           
           // Position image above the name text (offset upward)
           const textOffset = 20; // Space for text below
