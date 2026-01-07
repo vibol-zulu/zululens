@@ -694,18 +694,20 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
         if (shouldRenderAsImage && alexJonesImageRef.current) {
           const img = alexJonesImageRef.current;
           const imageScale = 1.4; // Make image larger than the bubble
-          const size = circle.currentRadius * 2 * imageScale;
+          const aspectRatio = 166 / 230; // Original image aspect ratio (width/height)
+          const height = circle.currentRadius * 2 * imageScale;
+          const width = height * aspectRatio;
           
           ctx.save();
           ctx.globalAlpha = circle.opacity;
           
-          // Draw image centered on circle position, extending beyond the bubble
+          // Draw image centered on circle position, maintaining aspect ratio
           ctx.drawImage(
             img,
-            circle.x - size / 2,
-            circle.y - size / 2,
-            size,
-            size
+            circle.x - width / 2,
+            circle.y - height / 2,
+            width,
+            height
           );
           
           ctx.restore();
