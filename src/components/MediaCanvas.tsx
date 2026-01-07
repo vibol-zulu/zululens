@@ -639,10 +639,38 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
           ctx.fillStyle = circle.baseColor;
           ctx.globalAlpha = circle.opacity;
           ctx.fill();
+        }
+        
+        // Draw Alex Jones image on top of bubble but behind text
+        if (shouldRenderAsImage && alexJonesImageRef.current) {
+          const img = alexJonesImageRef.current;
+          const imageScale = 2.1; // 50% larger than before (1.4 * 1.5)
+          const aspectRatio = 166 / 230; // Original image aspect ratio (width/height)
+          const height = circle.currentRadius * 2 * imageScale;
+          const width = height * aspectRatio;
+          
+          ctx.save();
+          ctx.globalAlpha = circle.opacity;
+          
+          // Draw image centered on circle position, maintaining aspect ratio
+          ctx.drawImage(
+            img,
+            circle.x - width / 2,
+            circle.y - height / 2,
+            width,
+            height
+          );
+          
+          ctx.restore();
+        }
 
+        // Draw text labels on top
+        {
           if (selectedIds.has(circle.id) || hoveredId === circle.id) {
             ctx.lineWidth = 1;
             ctx.strokeStyle = contrastColor;
+            ctx.beginPath();
+            ctx.arc(circle.x, circle.y, circle.currentRadius, 0, Math.PI * 2);
             ctx.stroke();
             
             ctx.globalAlpha = 1;
@@ -688,29 +716,6 @@ const MediaCanvas: React.FC<MediaCanvasProps> = ({
             ctx.shadowOffsetX = 0;
             ctx.shadowOffsetY = 0;
           }
-        }
-        
-        // Overlay Alex Jones image on top of the bubble if enabled
-        if (shouldRenderAsImage && alexJonesImageRef.current) {
-          const img = alexJonesImageRef.current;
-          const imageScale = 1.4; // Make image larger than the bubble
-          const aspectRatio = 166 / 230; // Original image aspect ratio (width/height)
-          const height = circle.currentRadius * 2 * imageScale;
-          const width = height * aspectRatio;
-          
-          ctx.save();
-          ctx.globalAlpha = circle.opacity;
-          
-          // Draw image centered on circle position, maintaining aspect ratio
-          ctx.drawImage(
-            img,
-            circle.x - width / 2,
-            circle.y - height / 2,
-            width,
-            height
-          );
-          
-          ctx.restore();
         }
       });
 
