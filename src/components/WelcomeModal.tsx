@@ -100,11 +100,11 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
       >
         <div className="flex flex-col">
           {/* Illustration */}
-          <div className="px-6 pt-6">
+          <div className="px-6 pt-6 flex justify-center">
             <img 
               src={welcomeIllustration} 
               alt="Diverse group of media personalities illustration" 
-              className="w-full h-auto"
+              className="w-[75%] h-auto"
             />
           </div>
 
