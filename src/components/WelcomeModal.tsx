@@ -96,7 +96,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
       <DialogContent 
         className="w-[470px] h-[680px] max-w-[95vw] max-h-[95vh] overflow-y-auto p-0 bg-background" 
         hideCloseButton
-        overlayClassName="bg-black/20"
+        overlayClassName="bg-black/50"
       >
         <div className="flex flex-col">
           {/* Illustration */}
