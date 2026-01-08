@@ -112,16 +112,16 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
           <div className="px-6 pt-4 pb-6 flex flex-col items-center">
             <div className="w-full max-w-[400px] flex flex-col gap-4">
               <div className="flex flex-col gap-[14px]">
-                {/* Title */}
-                <h2 className="text-[40px] font-bold" style={{ lineHeight: '1.1em' }}>
-                  Where do you get your info from?
-                </h2>
+              {/* Title */}
+              <h2 className="text-[40px] font-bold text-black dark:text-white" style={{ lineHeight: '1.1em' }}>
+                Where do you get your info from?
+              </h2>
 
-                {/* Body Copy */}
-                <p className="text-[16px] text-muted-foreground" style={{ lineHeight: '1.7em' }}>
-                  Welcome, <span className="font-semibold text-foreground">{userName}</span>. You now have access to the Zulu Digital Microscope — an interactive visualization mapping the media landscape, starting with the U.S.
-                </p>
-              </div>
+              {/* Body Copy */}
+              <p className="text-[16px] text-muted-foreground" style={{ lineHeight: '1.7em' }}>
+                Welcome, <span className="font-semibold text-foreground">{userName}</span>. You now have access to the Zulu Digital Microscope — an interactive visualization mapping the media landscape, starting with the U.S.
+              </p>
+            </div>
 
               {/* Search Bar */}
               <div className="flex gap-2 mt-2">
