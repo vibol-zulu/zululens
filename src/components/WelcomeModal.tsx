@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Globe, UserPlus, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { ChevronRight, Check, UserPlus } from 'lucide-react';
+import { INITIAL_DATA } from '@/data/mediaData';
+import { supabase } from '@/integrations/supabase/client';
+import welcomeIllustration from '@/assets/welcome-card-illustration.png';
 
 interface WelcomeModalProps {
   open: boolean;
@@ -11,25 +15,6 @@ interface WelcomeModalProps {
   onSignUpClick?: () => void;
 }
 
-interface OnboardingStep {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-}
-
-const getOnboardingSteps = (userName: string): OnboardingStep[] => [
-  {
-    icon: <Globe className="h-8 w-8" />,
-    title: `Welcome, ${userName}`,
-    description: "You now have access to the Zulu Digital Microscope — an interactive visualization mapping the media landscape, starting with the U.S. It grows as new data and members join, helping make our information networks visible and improvable.",
-  },
-  {
-    icon: <UserPlus className="h-8 w-8" />,
-    title: "Join the Community",
-    description: "Create an account to contribute channel suggestions, engage in discussions, and help build the most comprehensive media map in the world.",
-  },
-];
-
 const WelcomeModal: React.FC<WelcomeModalProps> = ({
   open,
   onOpenChange,
@@ -37,109 +22,163 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
   onStartExploring,
   onSignUpClick
 }) => {
-  const [currentStep, setCurrentStep] = useState(0);
-  const onboardingSteps = getOnboardingSteps(userName);
-  const isLastStep = currentStep === onboardingSteps.length - 1;
-  const isFirstStep = currentStep === 0;
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResult, setSearchResult] = useState<'found' | 'not-found' | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [foundChannelName, setFoundChannelName] = useState('');
 
-  const handleNext = () => {
-    if (isLastStep) {
-      onOpenChange(false);
-      onSignUpClick?.();
-    } else {
-      setCurrentStep(prev => prev + 1);
+  // Get all channel names from static data
+  const staticChannelNames = useMemo(() => {
+    const names: string[] = [];
+    Object.values(INITIAL_DATA).forEach(yearData => {
+      yearData.brands.forEach(brand => {
+        names.push(brand.name.toLowerCase());
+      });
+    });
+    return names;
+  }, []);
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) return;
+    
+    setIsSearching(true);
+    setSearchResult(null);
+    
+    const query = searchQuery.trim().toLowerCase();
+    
+    // Check static data first
+    const foundInStatic = staticChannelNames.find(name => 
+      name.includes(query) || query.includes(name)
+    );
+    
+    if (foundInStatic) {
+      setFoundChannelName(foundInStatic);
+      setSearchResult('found');
+      setIsSearching(false);
+      return;
+    }
+    
+    // Check database
+    try {
+      const { data, error } = await supabase
+        .from('user_channels')
+        .select('name')
+        .ilike('name', `%${query}%`)
+        .eq('status', 'approved')
+        .limit(1);
+      
+      if (!error && data && data.length > 0) {
+        setFoundChannelName(data[0].name);
+        setSearchResult('found');
+      } else {
+        setSearchResult('not-found');
+      }
+    } catch (err) {
+      setSearchResult('not-found');
+    }
+    
+    setIsSearching(false);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
     }
   };
 
-  const handlePrevious = () => {
-    if (!isFirstStep) {
-      setCurrentStep(prev => prev - 1);
-    }
+  const handleClose = () => {
+    onOpenChange(false);
+    onStartExploring?.();
   };
-
-  const currentStepData = onboardingSteps[currentStep];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="max-w-sm sm:max-w-md min-h-[430px] max-h-[90vh] overflow-y-auto p-0 bg-background/90 backdrop-blur-sm" 
+        className="max-w-sm sm:max-w-md max-h-[90vh] overflow-y-auto p-0 bg-background" 
         hideCloseButton
         overlayClassName="bg-black/20"
       >
         <div className="flex flex-col">
-          {/* Progress Indicators */}
-          <div className="flex justify-center gap-2 pt-6 px-6">
-            {onboardingSteps.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentStep(index)}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  index === currentStep 
-                    ? 'w-8 bg-primary' 
-                    : index < currentStep 
-                      ? 'w-4 bg-primary/50' 
-                      : 'w-4 bg-muted'
-                }`}
-                aria-label={`Go to step ${index + 1}`}
-              />
-            ))}
+          {/* Illustration */}
+          <div className="px-6 pt-6">
+            <img 
+              src={welcomeIllustration} 
+              alt="Diverse group of media personalities illustration" 
+              className="w-full h-auto"
+            />
           </div>
 
           {/* Content */}
-          <div className="p-6 flex-1 flex flex-col">
-            {/* Icon - fixed position from top */}
-            <div className="flex justify-center pt-4">
-              <div className="p-4 rounded-full bg-primary/10 text-primary">
-                {currentStepData.icon}
-              </div>
-            </div>
+          <div className="px-6 pt-4 pb-6 flex flex-col gap-4">
+            {/* Title */}
+            <h2 className="text-2xl sm:text-3xl font-bold leading-tight">
+              Where do you get your info from?
+            </h2>
 
-            {/* Title & Description - fixed height container */}
-            <div className="flex-1 flex flex-col justify-center text-center space-y-2 py-4">
-              <h2 className="text-xl sm:text-2xl font-semibold">
-                {currentStepData.title}
-              </h2>
-              <p className="text-sm text-muted-foreground leading-relaxed min-h-[72px]">
-                {currentStepData.description}
-              </p>
-            </div>
-
-            {/* Step Counter - fixed position from bottom */}
-            <p className="text-center text-xs text-muted-foreground">
-              {currentStep + 1} of {onboardingSteps.length}
+            {/* Body Copy */}
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Welcome, <span className="font-semibold text-foreground">{userName}</span>. You now have access to the Zulu Digital Microscope — an interactive visualization mapping the media landscape, starting with the U.S.
             </p>
-          </div>
 
-          {/* Navigation */}
-          <div className="p-6 pt-0">
-            <div className="flex gap-3">
-              {!isFirstStep && (
-                <Button 
-                  variant="outline" 
-                  onClick={handlePrevious}
-                  className="flex-1"
-                >
-                  <ChevronLeft className="h-4 w-4 mr-1" />
-                  Back
-                </Button>
-              )}
+            {/* Search Bar */}
+            <div className="flex gap-2 mt-2">
+              <Input
+                type="text"
+                placeholder="Search Channel"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setSearchResult(null);
+                }}
+                onKeyPress={handleKeyPress}
+                className="flex-1 bg-muted/50 border-0 placeholder:text-muted-foreground/50"
+              />
               <Button 
-                onClick={handleNext} 
-                className={isFirstStep ? "w-full" : "flex-1"}
+                onClick={handleSearch}
+                disabled={isSearching || !searchQuery.trim()}
+                className="px-4 rounded-full bg-primary hover:bg-primary/90"
+                size="icon"
               >
-                {isLastStep ? (
-                  <>
-                    Create Account
-                    <UserPlus className="h-4 w-4 ml-1" />
-                  </>
-                ) : (
-                  <>
-                    Next
-                    <ChevronRight className="h-4 w-4 ml-1" />
-                  </>
-                )}
+                <ChevronRight className="h-5 w-5" />
               </Button>
             </div>
+
+            {/* Search Results */}
+            {searchResult === 'found' && (
+              <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-900">
+                <Check className="h-5 w-5 text-green-600 dark:text-green-400 shrink-0" />
+                <p className="text-sm text-green-700 dark:text-green-300">
+                  <span className="font-semibold capitalize">{foundChannelName}</span> is already in our database!
+                </p>
+              </div>
+            )}
+
+            {searchResult === 'not-found' && (
+              <div className="flex flex-col gap-3 p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-900">
+                <p className="text-sm text-amber-700 dark:text-amber-300">
+                  <span className="font-semibold">"{searchQuery}"</span> isn't in our database yet.
+                </p>
+                <Button 
+                  onClick={() => {
+                    onOpenChange(false);
+                    onSignUpClick?.();
+                  }}
+                  variant="outline"
+                  className="w-full border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/50"
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Create an account to add it
+                </Button>
+              </div>
+            )}
+
+            {/* Skip Button */}
+            <button
+              onClick={handleClose}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors mt-2 underline underline-offset-2"
+            >
+              Skip and explore
+            </button>
           </div>
         </div>
       </DialogContent>
