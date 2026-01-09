@@ -10,7 +10,7 @@
 
 @layer base {
   :root {
-    /* Utilitarian cream/off-white background */
+    /* Utilitarian cream/off-white background with Teal & Peach */
     --background: 40 30% 96%;
     --foreground: 0 0% 8%;
 
@@ -20,18 +20,18 @@
     --popover: 40 25% 94%;
     --popover-foreground: 0 0% 8%;
 
-    /* Coral/salmon accent - primary action color */
-    --primary: 8 72% 56%;
+    /* Teal #00564A as primary */
+    --primary: 168 100% 17%;
     --primary-foreground: 0 0% 100%;
 
-    /* Light blue accent for secondary elements */
-    --secondary: 195 60% 85%;
+    /* Peach #F8D4C8 as accent/secondary */
+    --secondary: 13 75% 88%;
     --secondary-foreground: 0 0% 8%;
 
     --muted: 40 15% 90%;
     --muted-foreground: 0 0% 40%;
 
-    --accent: 195 60% 85%;
+    --accent: 13 75% 88%;
     --accent-foreground: 0 0% 8%;
 
     --destructive: 0 84% 60%;
@@ -43,29 +43,29 @@
     /* Strong black borders for utilitarian look */
     --border: 0 0% 15%;
     --input: 0 0% 15%;
-    --ring: 8 72% 56%;
+    --ring: 168 100% 17%;
 
     --radius: 0rem;
 
-    /* Custom Zulu colors - utilitarian palette */
-    --corporate: 0 0% 8%;
-    --corporate-foreground: 40 30% 96%;
-    --independent: 8 72% 56%;
-    --independent-foreground: 0 0% 100%;
+    /* Custom Zulu colors - Teal & Peach palette */
+    --corporate: 168 100% 17%;
+    --corporate-foreground: 0 0% 100%;
+    --independent: 13 75% 88%;
+    --independent-foreground: 0 0% 8%;
     --user-bubble: 195 70% 50%;
     --user-bubble-foreground: 0 0% 100%;
     --boundary: 0 0% 20%;
 
     --sidebar-background: 40 25% 94%;
     --sidebar-foreground: 0 0% 8%;
-    --sidebar-primary: 8 72% 56%;
+    --sidebar-primary: 168 100% 17%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 40 15% 88%;
+    --sidebar-accent: 13 75% 88%;
     --sidebar-accent-foreground: 0 0% 8%;
     --sidebar-border: 0 0% 15%;
-    --sidebar-ring: 8 72% 56%;
-    --chart-1: 8 72% 56%;
-    --chart-2: 195 60% 50%;
+    --sidebar-ring: 168 100% 17%;
+    --chart-1: 168 100% 17%;
+    --chart-2: 13 75% 88%;
     --chart-3: 0 0% 40%;
     --chart-4: 40 30% 70%;
     --chart-5: 0 0% 60%;
@@ -96,17 +96,19 @@
     --popover: 0 0% 10%;
     --popover-foreground: 40 20% 92%;
 
-    --primary: 8 72% 56%;
+    /* Teal #00564A as primary */
+    --primary: 168 100% 22%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 195 40% 25%;
-    --secondary-foreground: 40 20% 92%;
+    /* Peach #F8D4C8 as accent/secondary */
+    --secondary: 13 75% 88%;
+    --secondary-foreground: 0 0% 8%;
 
     --muted: 0 0% 15%;
     --muted-foreground: 0 0% 60%;
 
-    --accent: 195 40% 25%;
-    --accent-foreground: 40 20% 92%;
+    --accent: 13 75% 88%;
+    --accent-foreground: 0 0% 8%;
 
     --destructive: 0 63% 45%;
     --destructive-foreground: 0 0% 95%;
@@ -116,23 +118,24 @@
 
     --border: 0 0% 25%;
     --input: 0 0% 25%;
-    --ring: 8 72% 56%;
+    --ring: 168 100% 22%;
 
-    --corporate: 40 20% 92%;
-    --corporate-foreground: 0 0% 8%;
-    --independent: 8 72% 60%;
-    --independent-foreground: 0 0% 100%;
+    /* Teal & Peach for dark mode */
+    --corporate: 168 100% 30%;
+    --corporate-foreground: 0 0% 100%;
+    --independent: 13 75% 88%;
+    --independent-foreground: 0 0% 8%;
 
     --sidebar-background: 0 0% 10%;
     --sidebar-foreground: 40 20% 92%;
-    --sidebar-primary: 8 72% 56%;
+    --sidebar-primary: 168 100% 22%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 15%;
-    --sidebar-accent-foreground: 40 20% 92%;
+    --sidebar-accent: 13 75% 88%;
+    --sidebar-accent-foreground: 0 0% 8%;
     --sidebar-border: 0 0% 25%;
-    --sidebar-ring: 8 72% 56%;
-    --chart-1: 8 72% 56%;
-    --chart-2: 195 50% 50%;
+    --sidebar-ring: 168 100% 22%;
+    --chart-1: 168 100% 22%;
+    --chart-2: 13 75% 88%;
     --chart-3: 0 0% 50%;
     --chart-4: 40 30% 50%;
     --chart-5: 0 0% 40%;
@@ -194,14 +197,14 @@
     animation: shimmer 3s linear infinite;
   }
 
-  .shimmer-coral {
+  .shimmer-teal {
     background: linear-gradient(
       90deg,
-      hsl(8 72% 56%) 0%,
-      hsl(8 72% 56%) 40%,
-      hsl(8 72% 70%) 50%,
-      hsl(8 72% 56%) 60%,
-      hsl(8 72% 56%) 100%
+      hsl(168 100% 17%) 0%,
+      hsl(168 100% 17%) 40%,
+      hsl(168 100% 30%) 50%,
+      hsl(168 100% 17%) 60%,
+      hsl(168 100% 17%) 100%
     );
     background-size: 200% 100%;
     -webkit-background-clip: text;
