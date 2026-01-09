@@ -530,7 +530,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           style={{ color: headerTextColor }}
         >
           {category === 'corporate' 
-            ? 'Large media conglomerates owned by major corporations'
+            ? <>Large media conglomerates<br />owned by major corporations</>
             : 'Creator-driven outlets operating outside traditional ownership'}
         </p>
         <div className="flex gap-1.5 mb-2">
