@@ -2,6 +2,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -9,28 +10,29 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 160 10% 20%;
+    /* Utilitarian cream/off-white background */
+    --background: 40 30% 96%;
+    --foreground: 0 0% 8%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 160 10% 20%;
+    --card: 40 25% 94%;
+    --card-foreground: 0 0% 8%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 160 10% 20%;
+    --popover: 40 25% 94%;
+    --popover-foreground: 0 0% 8%;
 
-    /* Corporate teal */
-    --primary: 170 100% 17%;
+    /* Coral/salmon accent - primary action color */
+    --primary: 8 72% 56%;
     --primary-foreground: 0 0% 100%;
 
-    /* Peach / Independent */
-    --secondary: 15 75% 88%;
-    --secondary-foreground: 170 100% 17%;
+    /* Light blue accent for secondary elements */
+    --secondary: 195 60% 85%;
+    --secondary-foreground: 0 0% 8%;
 
-    --muted: 210 20% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 40 15% 90%;
+    --muted-foreground: 0 0% 40%;
 
-    --accent: 15 75% 88%;
-    --accent-foreground: 170 100% 17%;
+    --accent: 195 60% 85%;
+    --accent-foreground: 0 0% 8%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
@@ -38,110 +40,111 @@
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 170 100% 17%;
+    /* Strong black borders for utilitarian look */
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 8 72% 56%;
 
-    --radius: 0.75rem;
+    --radius: 0rem;
 
-    /* Custom Zulu colors */
-    --corporate: 170 100% 17%;
-    --corporate-foreground: 15 75% 88%;
-    --independent: 15 75% 88%;
-    --independent-foreground: 170 100% 17%;
-    --user-bubble: 280 70% 50%;
+    /* Custom Zulu colors - utilitarian palette */
+    --corporate: 0 0% 8%;
+    --corporate-foreground: 40 30% 96%;
+    --independent: 8 72% 56%;
+    --independent-foreground: 0 0% 100%;
+    --user-bubble: 195 70% 50%;
     --user-bubble-foreground: 0 0% 100%;
-    --boundary: 0 0% 80%;
+    --boundary: 0 0% 20%;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5% 26%;
-    --sidebar-primary: 170 100% 17%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 5% 96%;
-    --sidebar-accent-foreground: 240 6% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 170 100% 17%;
-    --chart-1: 41 22.2% 64.6%;
-    --chart-2: 185 11.8% 60%;
-    --chart-3: 227 7% 39.8%;
-    --chart-4: 84 18.9% 82.8%;
-    --chart-5: 70 18.8% 76.9%;
-    --sidebar: 248 0.3% 98.4%;
-    --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --sidebar-background: 40 25% 94%;
+    --sidebar-foreground: 0 0% 8%;
+    --sidebar-primary: 8 72% 56%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 40 15% 88%;
+    --sidebar-accent-foreground: 0 0% 8%;
+    --sidebar-border: 0 0% 15%;
+    --sidebar-ring: 8 72% 56%;
+    --chart-1: 8 72% 56%;
+    --chart-2: 195 60% 50%;
+    --chart-3: 0 0% 40%;
+    --chart-4: 40 30% 70%;
+    --chart-5: 0 0% 60%;
+    --sidebar: 40 25% 94%;
+    --font-sans: 'Geist', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
     --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-    --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
-    --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
-    --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.1);
-    --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
-    --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
-    --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+    --font-mono: 'JetBrains Mono', 'Space Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --shadow-2xs: 0 1px 2px 0px hsl(0 0% 0% / 0.03);
+    --shadow-xs: 0 1px 2px 0px hsl(0 0% 0% / 0.03);
+    --shadow-sm: 0 1px 2px 0px hsl(0 0% 0% / 0.05);
+    --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --shadow-md: 0 2px 4px 0px hsl(0 0% 0% / 0.05);
+    --shadow-lg: 0 4px 6px 0px hsl(0 0% 0% / 0.05);
+    --shadow-xl: 0 8px 10px 0px hsl(0 0% 0% / 0.05);
+    --shadow-2xl: 0 12px 16px 0px hsl(0 0% 0% / 0.08);
     --tracking-normal: 0em;
     --spacing: 0.25rem;
   }
 
   .dark {
-    --background: 170 30% 6%;
-    --background-gradient: linear-gradient(135deg, hsl(180 25% 25%) 0%, hsl(170 30% 18%) 50%, hsl(200 20% 30%) 100%);
-    --foreground: 0 0% 95%;
+    --background: 0 0% 6%;
+    --background-gradient: linear-gradient(135deg, hsl(0 0% 10%) 0%, hsl(0 0% 6%) 50%, hsl(0 0% 8%) 100%);
+    --foreground: 40 20% 92%;
 
-    --card: 170 30% 8%;
-    --card-foreground: 0 0% 95%;
+    --card: 0 0% 10%;
+    --card-foreground: 40 20% 92%;
 
-    --popover: 170 30% 8%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 40 20% 92%;
 
-    --primary: 170 60% 45%;
-    --primary-foreground: 170 30% 6%;
+    --primary: 8 72% 56%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 15 50% 30%;
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 195 40% 25%;
+    --secondary-foreground: 40 20% 92%;
 
-    --muted: 170 20% 15%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 60%;
 
-    --accent: 15 50% 30%;
-    --accent-foreground: 0 0% 95%;
+    --accent: 195 40% 25%;
+    --accent-foreground: 40 20% 92%;
 
-    --destructive: 0 63% 31%;
+    --destructive: 0 63% 45%;
     --destructive-foreground: 0 0% 95%;
 
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
-    --border: 170 20% 18%;
-    --input: 170 20% 18%;
-    --ring: 170 60% 45%;
+    --border: 0 0% 25%;
+    --input: 0 0% 25%;
+    --ring: 8 72% 56%;
 
-    --corporate: 170 60% 45%;
-    --corporate-foreground: 15 50% 85%;
-    --independent: 15 50% 75%;
-    --independent-foreground: 170 30% 10%;
+    --corporate: 40 20% 92%;
+    --corporate-foreground: 0 0% 8%;
+    --independent: 8 72% 60%;
+    --independent-foreground: 0 0% 100%;
 
-    --sidebar-background: 170 30% 8%;
-    --sidebar-foreground: 0 0% 90%;
-    --sidebar-primary: 170 60% 50%;
+    --sidebar-background: 0 0% 10%;
+    --sidebar-foreground: 40 20% 92%;
+    --sidebar-primary: 8 72% 56%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 170 20% 15%;
-    --sidebar-accent-foreground: 0 0% 90%;
-    --sidebar-border: 170 20% 18%;
-    --sidebar-ring: 170 60% 50%;
-    --chart-1: 264 24.3% 48.8%;
-    --chart-2: 162 17% 69.6%;
-    --chart-3: 70 18.8% 76.9%;
-    --chart-4: 304 26.5% 62.7%;
-    --chart-5: 16 24.6% 64.5%;
-    --sidebar: 266 4% 20.8%;
-    --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-    --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
-    --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
-    --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.1);
-    --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
-    --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
-    --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+    --sidebar-accent: 0 0% 15%;
+    --sidebar-accent-foreground: 40 20% 92%;
+    --sidebar-border: 0 0% 25%;
+    --sidebar-ring: 8 72% 56%;
+    --chart-1: 8 72% 56%;
+    --chart-2: 195 50% 50%;
+    --chart-3: 0 0% 50%;
+    --chart-4: 40 30% 50%;
+    --chart-5: 0 0% 40%;
+    --sidebar: 0 0% 10%;
+    --shadow-2xs: 0 1px 2px 0px hsl(0 0% 0% / 0.1);
+    --shadow-xs: 0 1px 2px 0px hsl(0 0% 0% / 0.1);
+    --shadow-sm: 0 1px 2px 0px hsl(0 0% 0% / 0.15);
+    --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.15);
+    --shadow-md: 0 2px 4px 0px hsl(0 0% 0% / 0.15);
+    --shadow-lg: 0 4px 6px 0px hsl(0 0% 0% / 0.15);
+    --shadow-xl: 0 8px 10px 0px hsl(0 0% 0% / 0.15);
+    --shadow-2xl: 0 12px 16px 0px hsl(0 0% 0% / 0.2);
   }
 }
 
@@ -178,11 +181,11 @@
   .shimmer-text {
     background: linear-gradient(
       90deg,
-      hsl(0 0% 50%) 0%,
-      hsl(0 0% 50%) 40%,
-      hsl(0 0% 80%) 50%,
-      hsl(0 0% 50%) 60%,
-      hsl(0 0% 50%) 100%
+      hsl(0 0% 30%) 0%,
+      hsl(0 0% 30%) 40%,
+      hsl(0 0% 60%) 50%,
+      hsl(0 0% 30%) 60%,
+      hsl(0 0% 30%) 100%
     );
     background-size: 200% 100%;
     -webkit-background-clip: text;
@@ -191,14 +194,14 @@
     animation: shimmer 3s linear infinite;
   }
 
-  .shimmer-pink {
+  .shimmer-coral {
     background: linear-gradient(
       90deg,
-      hsl(338 70% 50%) 0%,
-      hsl(338 70% 50%) 40%,
-      hsl(338 70% 70%) 50%,
-      hsl(338 70% 50%) 60%,
-      hsl(338 70% 50%) 100%
+      hsl(8 72% 56%) 0%,
+      hsl(8 72% 56%) 40%,
+      hsl(8 72% 70%) 50%,
+      hsl(8 72% 56%) 60%,
+      hsl(8 72% 56%) 100%
     );
     background-size: 200% 100%;
     -webkit-background-clip: text;
@@ -210,5 +213,74 @@
   @keyframes shimmer {
     0% { background-position: 200% 0; }
     100% { background-position: 0% 0; }
+  }
+
+  /* Utilitarian frame styling */
+  .util-frame {
+    @apply border border-border relative;
+  }
+
+  .util-frame::before,
+  .util-frame::after {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border: 1px solid hsl(var(--border));
+  }
+
+  .util-frame::before {
+    top: -1px;
+    left: -1px;
+    border-right: none;
+    border-bottom: none;
+  }
+
+  .util-frame::after {
+    top: -1px;
+    right: -1px;
+    border-left: none;
+    border-bottom: none;
+  }
+
+  .util-frame-bottom::before,
+  .util-frame-bottom::after {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border: 1px solid hsl(var(--border));
+  }
+
+  .util-frame-bottom::before {
+    bottom: -1px;
+    left: -1px;
+    border-right: none;
+    border-top: none;
+  }
+
+  .util-frame-bottom::after {
+    bottom: -1px;
+    right: -1px;
+    border-left: none;
+    border-top: none;
+  }
+
+  /* Technical label styling */
+  .tech-label {
+    @apply font-mono text-[10px] uppercase tracking-wider text-muted-foreground;
+  }
+
+  .tech-value {
+    @apply font-mono text-sm tabular-nums;
+  }
+
+  /* Utilitarian button */
+  .util-button {
+    @apply border border-border bg-background hover:bg-muted transition-colors font-mono uppercase text-xs tracking-wider px-4 py-2;
+  }
+
+  .util-button-primary {
+    @apply border border-primary bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-mono uppercase text-xs tracking-wider px-4 py-2;
   }
 }
