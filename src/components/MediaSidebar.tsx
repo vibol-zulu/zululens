@@ -99,7 +99,7 @@ const BrandItem: React.FC<BrandItemProps> = ({
         className="mt-1 shrink-0"
         data-tour={isFirstItem ? "channel-item" : undefined}
       />
-      <div className={cn("leading-tight flex-1 font-geist", isMobile ? "text-[10px]" : "text-xs")}>
+      <div className={cn("leading-tight flex-1", isMobile ? "text-[10px]" : "text-xs")}>
         <div className="flex items-center gap-1">
           <button
             onClick={() => onShowProfile(brand.id)}
@@ -117,7 +117,7 @@ const BrandItem: React.FC<BrandItemProps> = ({
                   onClick={() => onShowProfile(brand.id)}
                   className={cn(
                     "opacity-0 group-hover:opacity-100 transition-all duration-200",
-                    "p-1 rounded-md hover:bg-primary/10 hover:scale-110",
+                    "p-1 hover:bg-primary/10 hover:scale-110",
                     "text-muted-foreground hover:text-primary",
                     isMobile ? "h-5 w-5" : "h-6 w-6"
                   )}
@@ -131,8 +131,8 @@ const BrandItem: React.FC<BrandItemProps> = ({
             </Tooltip>
           </TooltipProvider>
         </div>
-        <span className={cn("text-muted-foreground", isMobile ? "text-[9px]" : "text-[10px]")}>({brand.valueMillions}M)</span>
-        <div className={cn("text-muted-foreground italic mt-0.5", isMobile ? "text-[9px]" : "text-[10px]")}>{brand.platform}</div>
+        <span className={cn("font-mono text-muted-foreground tabular-nums", isMobile ? "text-[9px]" : "text-[10px]")}>[{brand.valueMillions}M]</span>
+        <div className={cn("font-mono text-muted-foreground mt-0.5 uppercase tracking-wide", isMobile ? "text-[8px]" : "text-[9px]")}>{brand.platform}</div>
       </div>
     </div>
   );
@@ -166,12 +166,12 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-3">
-      <CollapsibleTrigger className="flex items-center justify-between w-full py-2 px-2 bg-muted/50 rounded-md hover:bg-muted transition-colors">
-        <span className={cn("font-semibold font-sans", isMobile ? "text-xs" : "text-sm")}>{title}</span>
+      <CollapsibleTrigger className="flex items-center justify-between w-full py-2 px-3 border border-border bg-card hover:bg-muted transition-colors">
+        <span className={cn("font-mono uppercase tracking-wider", isMobile ? "text-[10px]" : "text-xs")}>{title}</span>
         {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
       </CollapsibleTrigger>
-      <CollapsibleContent className="pt-2">
-        <div className={cn("space-y-2", isMobile ? "pl-2" : "pl-2 space-y-3")}>
+      <CollapsibleContent className="pt-2 border-l border-border ml-2">
+        <div className={cn("space-y-2", isMobile ? "pl-2" : "pl-3 space-y-3")}>
           {sorted.map((b, index) => (
             <BrandItem 
               key={b.id} 
@@ -216,17 +216,17 @@ const CountryGroup: React.FC<CountryGroupProps> = ({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-2">
-      <CollapsibleTrigger className="flex items-center justify-between w-full py-2 px-2 bg-muted/70 rounded-md hover:bg-muted transition-colors border border-border/50">
-        <div className="flex items-center gap-1">
-          <span className={cn("font-semibold font-sans", isMobile ? "text-xs" : "text-sm")}>{countryName}</span>
-          <span className={cn("text-muted-foreground", isMobile ? "text-[10px]" : "text-xs")}>
-            ({sorted.length})
+      <CollapsibleTrigger className="flex items-center justify-between w-full py-2 px-3 border border-border bg-card hover:bg-muted transition-colors">
+        <div className="flex items-center gap-2">
+          <span className={cn("font-mono uppercase tracking-wider", isMobile ? "text-[10px]" : "text-xs")}>{countryName}</span>
+          <span className={cn("font-mono text-muted-foreground", isMobile ? "text-[9px]" : "text-[10px]")}>
+            [{sorted.length}]
           </span>
         </div>
         {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
       </CollapsibleTrigger>
-      <CollapsibleContent className="pt-2">
-        <div className={cn("space-y-2 border-l-2 border-primary/20 ml-2", isMobile ? "pl-2" : "pl-3 space-y-3")}>
+      <CollapsibleContent className="pt-2 border-l border-border ml-2">
+        <div className={cn("space-y-2", isMobile ? "pl-2" : "pl-3 space-y-3")}>
           {sorted.map((b) => (
             <BrandItem 
               key={b.id} 
@@ -345,32 +345,31 @@ const Sidebar: React.FC<SidebarProps> = ({
   }) : [];
   const othersFiltered = isCorporate ? filteredBrands.filter(b => !big6Filtered.includes(b)) : [];
 
-  // Determine header colors - corporate gets teal bg with peach text, independent gets peach bg with teal text
-  const headerBgColor = category === 'corporate' ? COLORS.corporate : COLORS.independent;
-  const headerTextColor = category === 'corporate' ? COLORS.independent : COLORS.corporate;
-  // Button text always uses corporate (green/teal) color
-  const buttonTextColor = COLORS.corporate;
+  // Utilitarian color scheme - black for corporate, coral for independent
+  const headerBgColor = category === 'corporate' ? '#1a1a1a' : '#E85A4F';
+  const headerTextColor = '#F5F0E6'; // Cream text on both
+  const buttonTextColor = '#1a1a1a'; // Black button text
 
   if (isMobile) {
     return (
-      <div className="w-1/2 border-r last:border-r-0 border-border bg-card overflow-hidden flex flex-col min-w-0">
+      <div className="w-1/2 border-r-2 last:border-r-0 border-border bg-card overflow-hidden flex flex-col min-w-0">
         <div 
-          className="px-3 py-3 shrink-0 relative z-10"
-          style={{ backgroundColor: headerBgColor, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
+          className="px-3 py-3 shrink-0 relative z-10 border-b border-border"
+          style={{ backgroundColor: headerBgColor }}
         >
           <h3 
-            className="font-semibold capitalize text-base text-center mb-1 font-sans"
+            className="font-mono uppercase tracking-widest text-sm text-center mb-1"
             style={{ color: headerTextColor }}
           >
             {category}
           </h3>
           <p 
-            className="text-[10px] text-center mb-2 opacity-80 leading-tight"
+            className="font-mono text-[9px] text-center mb-2 opacity-70 leading-tight uppercase tracking-wide"
             style={{ color: headerTextColor }}
           >
             {category === 'corporate' 
-              ? 'Large media conglomerates owned by major corporations'
-              : 'Creator-driven outlets operating outside traditional ownership'}
+              ? 'Major media conglomerates'
+              : 'Independent creators & outlets'}
           </p>
           <div className="flex gap-1 mb-2">
             <Button 
@@ -379,10 +378,10 @@ const Sidebar: React.FC<SidebarProps> = ({
               size="sm" 
               onClick={() => onToggleAll(category)}
               disabled={sorted.length === 0}
-              className="flex-1 text-xs px-3 h-8 bg-background/90 hover:bg-background"
+              className="flex-1 font-mono text-[9px] uppercase tracking-wider px-2 h-8 bg-background/90 hover:bg-background border-background/30"
               style={{ color: buttonTextColor }}
             >
-              {allSelected && sorted.length > 0 ? 'Deselect All' : 'Select All'}
+              {allSelected && sorted.length > 0 ? 'Deselect' : 'Select All'}
             </Button>
             <TooltipProvider>
               <Tooltip>
@@ -392,9 +391,9 @@ const Sidebar: React.FC<SidebarProps> = ({
                     variant="outline" 
                     size="sm" 
                     onClick={handleAddClick}
-                    className="flex-1 text-xs px-3 h-8 bg-background/90 hover:bg-background"
+                    className="flex-1 font-mono text-[9px] uppercase tracking-wider px-2 h-8 bg-background/90 hover:bg-background border-background/30"
                   >
-                    <span style={{ color: buttonTextColor }}>Add Channel</span>
+                    <span style={{ color: buttonTextColor }}>+ Add</span>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -404,20 +403,21 @@ const Sidebar: React.FC<SidebarProps> = ({
             </TooltipProvider>
           </div>
           <div className="relative">
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3" style={{ color: headerTextColor, opacity: 0.6 }} />
             <Input
-              placeholder="Search..."
+              placeholder="SEARCH..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-7 h-8 text-xs focus-visible:ring-0 focus-visible:ring-offset-0 bg-background/90"
+              className="pl-7 h-8 font-mono text-[9px] uppercase tracking-wider focus-visible:ring-0 focus-visible:ring-offset-0 bg-background/90 border-background/30"
+              style={{ color: buttonTextColor }}
             />
           </div>
         </div>
         
-        <ScrollArea className="flex-1">
-          <div className="px-2 pt-1 pb-24">
+        <ScrollArea className="flex-1 bg-card">
+          <div className="px-2 pt-2 pb-24">
             {sorted.length === 0 && (
-              <p className="text-center text-muted-foreground text-xs italic py-4">
+              <p className="text-center font-mono text-muted-foreground text-[10px] uppercase tracking-wider py-4">
                 No data available
               </p>
             )}
@@ -509,39 +509,39 @@ const Sidebar: React.FC<SidebarProps> = ({
   return (
     <div 
       className={cn(
-        "absolute top-0 bottom-0 z-10 w-[280px] bg-card backdrop-blur-sm",
+        "absolute top-0 bottom-0 z-10 w-[280px] bg-card",
         "flex flex-col border-border transition-transform duration-300",
-        side === 'left' ? 'left-0 border-r' : 'right-0 border-l',
+        side === 'left' ? 'left-0 border-r-2' : 'right-0 border-l-2',
         !isOpen && (side === 'left' ? '-translate-x-[calc(100%-12px)]' : 'translate-x-[calc(100%-12px)]')
       )}
     >
       <div 
-        className="px-3 py-3 relative z-10"
-        style={{ backgroundColor: headerBgColor, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
+        className="px-3 py-4 relative z-10 border-b border-border"
+        style={{ backgroundColor: headerBgColor }}
       >
         <h3 
-          className="font-semibold capitalize text-center text-lg mb-1 font-sans"
+          className="font-mono uppercase tracking-widest text-center text-sm mb-2"
           style={{ color: headerTextColor }}
         >
           {category}
         </h3>
         <p 
-          className="text-xs text-center mb-2 opacity-80 leading-tight"
+          className="font-mono text-[10px] text-center mb-3 opacity-70 leading-tight uppercase tracking-wide"
           style={{ color: headerTextColor }}
         >
           {category === 'corporate' 
-            ? 'Large media conglomerates owned by major corporations'
-            : 'Creator-driven outlets operating outside traditional ownership'}
+            ? 'Major media conglomerates'
+            : 'Independent creators & outlets'}
         </p>
-        <div className="flex gap-1.5 mb-2">
+        <div className="flex gap-2 mb-3">
           <button 
             data-tour={side === 'left' ? "select-all" : undefined}
             onClick={() => onToggleAll(category)}
             disabled={sorted.length === 0}
-            className="flex-1 text-xs px-3 py-2 rounded bg-background/80 hover:bg-background/95 transition-colors disabled:opacity-50"
+            className="flex-1 font-mono text-[10px] uppercase tracking-wider px-3 py-2 border border-background/30 bg-background/90 hover:bg-background transition-colors disabled:opacity-50"
             style={{ color: buttonTextColor }}
           >
-            {allSelected && sorted.length > 0 ? 'Deselect All' : 'Select All'}
+            {allSelected && sorted.length > 0 ? 'Deselect' : 'Select All'}
           </button>
           <TooltipProvider>
             <Tooltip>
@@ -549,9 +549,9 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <button 
                   data-tour={side === 'left' ? "add-button" : undefined}
                   onClick={handleAddClick}
-                  className="flex-1 text-xs px-3 py-2 rounded bg-background/80 hover:bg-background/95 transition-colors"
+                  className="flex-1 font-mono text-[10px] uppercase tracking-wider px-3 py-2 border border-background/30 bg-background/90 hover:bg-background transition-colors"
                 >
-                  <span style={{ color: buttonTextColor }}>Add Channel</span>
+                  <span style={{ color: buttonTextColor }}>+ Add</span>
                 </button>
               </TooltipTrigger>
               <TooltipContent>
@@ -561,18 +561,19 @@ const Sidebar: React.FC<SidebarProps> = ({
           </TooltipProvider>
         </div>
         <div className="relative">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3" style={{ color: headerTextColor, opacity: 0.6 }} />
           <input
-            placeholder="Search channels..."
+            placeholder="SEARCH..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-7 pr-3 py-2 text-xs rounded bg-background/80 border-0 focus:outline-none focus:bg-background/95 placeholder:text-muted-foreground/70"
+            className="w-full pl-8 pr-3 py-2 font-mono text-[10px] uppercase tracking-wider bg-background/90 border border-background/30 focus:outline-none focus:bg-background placeholder:opacity-50"
+            style={{ color: buttonTextColor }}
           />
         </div>
       </div>
 
-      <ScrollArea className="flex-1">
-        <div className="px-4 pt-2 pb-24">
+      <ScrollArea className="flex-1 bg-card">
+        <div className="px-3 pt-3 pb-24">
           {sorted.length === 0 && (
             <p className="text-center text-muted-foreground text-sm italic py-4">
               No data available

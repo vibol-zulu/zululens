@@ -22,12 +22,13 @@ export interface YearData {
   brands: BrandData[];
 }
 
+// Utilitarian color palette
 export const COLORS = {
-  corporate: '#00564A',
-  independent: '#F8D4C8',
-  userBubble: '#9333EA',
-  boundary: '#cccccc',
-  highlight: '#111111'
+  corporate: '#1a1a1a',      // Near black
+  independent: '#E85A4F',    // Coral/salmon accent
+  userBubble: '#4A9ECC',     // Light blue
+  boundary: '#1a1a1a',       // Black boundary
+  highlight: '#E85A4F'       // Coral highlight
 };
 
 export const calcRadius = (val: number) => Math.max(2, Math.round(val * 2.24));
