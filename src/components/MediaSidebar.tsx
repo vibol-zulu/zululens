@@ -345,9 +345,9 @@ const Sidebar: React.FC<SidebarProps> = ({
   }) : [];
   const othersFiltered = isCorporate ? filteredBrands.filter(b => !big6Filtered.includes(b)) : [];
 
-  // Utilitarian color scheme - black for corporate, coral for independent
-  const headerBgColor = category === 'corporate' ? '#1a1a1a' : '#E85A4F';
-  const headerTextColor = '#F5F0E6'; // Cream text on both
+  // Teal & Peach color scheme
+  const headerBgColor = category === 'corporate' ? '#00564A' : '#F8D4C8';
+  const headerTextColor = category === 'corporate' ? '#F5F0E6' : '#1a1a1a'; // Cream on teal, dark on peach
   const buttonTextColor = '#1a1a1a'; // Black button text
 
   if (isMobile) {
