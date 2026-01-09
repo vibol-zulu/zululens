@@ -55,9 +55,6 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
                 </p>
               </div>
 
-              {/* Spacer */}
-              <div className="flex-1" />
-
               {/* Start Exploring Button */}
               <Button 
                 onClick={handleStartExploring}
