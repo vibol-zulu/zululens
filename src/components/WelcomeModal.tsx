@@ -30,9 +30,9 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
         hideCloseButton
         overlayClassName="bg-black/50"
       >
-        <div className="flex flex-col">
+        <div className="flex flex-col pt-6">
           {/* Illustration */}
-          <div className="px-6 py-6 flex justify-center">
+          <div className="px-6 flex justify-center">
             <img 
               src={welcomeIllustration} 
               alt="Diverse group of media personalities illustration" 
@@ -41,7 +41,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
           </div>
 
           {/* Content - centered with max-width */}
-          <div className="px-6 pb-6 flex flex-col items-center">
+          <div className="px-6 pt-6 pb-6 flex flex-col items-center">
             <div className="w-full max-w-[400px] flex flex-col gap-4">
               <div className="flex flex-col gap-[14px]">
                 {/* Title */}
