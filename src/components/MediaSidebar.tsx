@@ -345,10 +345,10 @@ const Sidebar: React.FC<SidebarProps> = ({
   }) : [];
   const othersFiltered = isCorporate ? filteredBrands.filter(b => !big6Filtered.includes(b)) : [];
 
-  // Teal & Peach color scheme
+  // Teal & Peach color scheme - contrasting text
   const headerBgColor = category === 'corporate' ? '#00564A' : '#F8D4C8';
-  const headerTextColor = category === 'corporate' ? '#F5F0E6' : '#1a1a1a'; // Cream on teal, dark on peach
-  const buttonTextColor = '#1a1a1a'; // Black button text
+  const headerTextColor = category === 'corporate' ? '#F8D4C8' : '#00564A'; // Peach on teal, teal on peach
+  const buttonTextColor = category === 'corporate' ? '#00564A' : '#F8D4C8'; // Opposite for buttons
 
   if (isMobile) {
     return (
