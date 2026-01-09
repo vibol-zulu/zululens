@@ -51,7 +51,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
 
                 {/* Body Copy */}
                 <p className="text-[16px] text-muted-foreground" style={{ lineHeight: '1.7em' }}>
-                  Welcome, <span className="font-semibold text-foreground">{userName}</span>. You now have access to the Zulu Digital Microscope — an <span className="font-semibold text-foreground">interactive visualization</span> mapping the media landscape, starting with the U.S.
+                  Welcome, <span className="font-semibold text-foreground">{userName}</span>. You now have access to the Zulu Digital Microscope — an <span className="font-semibold italic text-foreground">interactive visualization</span> mapping the media landscape, starting with the U.S.
                 </p>
               </div>
 
