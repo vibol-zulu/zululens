@@ -22,13 +22,12 @@ export interface YearData {
   brands: BrandData[];
 }
 
-// Utilitarian color palette - Teal & Peach
 export const COLORS = {
-  corporate: '#00564A',      // Teal
-  independent: '#F8D4C8',    // Peach
-  userBubble: '#4A9ECC',     // Light blue
-  boundary: '#1a1a1a',       // Black boundary
-  highlight: '#00564A'       // Teal highlight
+  corporate: '#00564A',
+  independent: '#F8D4C8',
+  userBubble: '#9333EA',
+  boundary: '#cccccc',
+  highlight: '#111111'
 };
 
 export const calcRadius = (val: number) => Math.max(2, Math.round(val * 2.24));

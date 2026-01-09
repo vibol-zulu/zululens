@@ -9,7 +9,6 @@ interface AppSettings {
   defaultViewMode: 'default' | 'compass';
   approvalNotificationDuration: number;
   showAlexJonesImage: boolean;
-  useUtilitarianStyle: boolean;
 }
 
 // Decode HTML entities in URLs (e.g., &amp; -> &)
@@ -32,8 +31,7 @@ export const useAppSettings = () => {
     pxFactorAllCountries: DEFAULT_PX_FACTOR_ALL_COUNTRIES,
     defaultViewMode: 'compass',
     approvalNotificationDuration: DEFAULT_APPROVAL_NOTIFICATION_DURATION,
-    showAlexJonesImage: true,
-    useUtilitarianStyle: true
+    showAlexJonesImage: true
   });
   const [loading, setLoading] = useState(true);
 
@@ -59,8 +57,7 @@ export const useAppSettings = () => {
           pxFactorAllCountries: settingsMap['px_factor_all_countries'] ? parseFloat(settingsMap['px_factor_all_countries']) : DEFAULT_PX_FACTOR_ALL_COUNTRIES,
           defaultViewMode: (settingsMap['default_view_mode'] as 'default' | 'compass') || 'compass',
           approvalNotificationDuration: settingsMap['approval_notification_duration'] ? parseInt(settingsMap['approval_notification_duration']) : DEFAULT_APPROVAL_NOTIFICATION_DURATION,
-          showAlexJonesImage: settingsMap['show_alex_jones_image'] !== 'false',
-          useUtilitarianStyle: settingsMap['use_utilitarian_style'] !== 'false'
+          showAlexJonesImage: settingsMap['show_alex_jones_image'] !== 'false'
         });
       } catch (error) {
         console.error('Error fetching app settings:', error);

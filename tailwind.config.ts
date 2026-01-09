@@ -15,7 +15,6 @@ export default {
   	extend: {
 		fontFamily: {
 			sans: [
-				'Geist',
 				'ui-sans-serif',
 				'system-ui',
 				'sans-serif',
@@ -39,8 +38,6 @@ export default {
 				'serif'
 			],
 			mono: [
-				'JetBrains Mono',
-				'Space Mono',
 				'ui-monospace',
 				'SFMono-Regular',
 				'Menlo',
