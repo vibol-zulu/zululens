@@ -482,6 +482,7 @@ Format your response as JSON with this structure:
   const [guidedTourEnabled, setGuidedTourEnabled] = useState(false);
   const [defaultViewMode, setDefaultViewMode] = useState<'default' | 'compass'>('compass');
   const [showAlexJonesImage, setShowAlexJonesImage] = useState(false);
+  const [useUtilitarianStyle, setUseUtilitarianStyle] = useState(true);
   const [pxFactorGlobal, setPxFactorGlobal] = useState('1.0');
   const [pxFactorAllCountries, setPxFactorAllCountries] = useState('2.24');
   const [audienceSystemPrompt, setAudienceSystemPrompt] = useState(DEFAULT_SYSTEM_PROMPT);
@@ -675,6 +676,9 @@ Make sure questions are specific to {country}'s current political landscape and 
       if (settingsMap['show_alex_jones_image'] !== undefined) {
         setShowAlexJonesImage(settingsMap['show_alex_jones_image'] === 'true');
       }
+      if (settingsMap['use_utilitarian_style'] !== undefined) {
+        setUseUtilitarianStyle(settingsMap['use_utilitarian_style'] !== 'false');
+      }
     } catch (error) {
       console.error('Error fetching settings:', error);
     } finally {
@@ -691,6 +695,7 @@ Make sure questions are specific to {country}'s current political landscape and 
         { key: 'guided_tour_enabled', value: guidedTourEnabled.toString() },
         { key: 'default_view_mode', value: defaultViewMode },
         { key: 'show_alex_jones_image', value: showAlexJonesImage.toString() },
+        { key: 'use_utilitarian_style', value: useUtilitarianStyle.toString() },
         { key: 'px_factor_global', value: pxFactorGlobal },
         { key: 'px_factor_all_countries', value: pxFactorAllCountries },
         { key: 'approval_notification_duration', value: approvalNotificationDuration },
@@ -4339,6 +4344,20 @@ Make sure questions are specific to {country}'s current political landscape and 
                           id="alex-jones-image"
                           checked={showAlexJonesImage}
                           onCheckedChange={(checked) => setShowAlexJonesImage(checked === true)}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label htmlFor="utilitarian-style">Utilitarian Design Style</Label>
+                          <p className="text-xs text-muted-foreground">
+                            Use utilitarian styling with monospace fonts, sharp corners, and technical borders. Disable for classic rounded style.
+                          </p>
+                        </div>
+                        <Checkbox
+                          id="utilitarian-style"
+                          checked={useUtilitarianStyle}
+                          onCheckedChange={(checked) => setUseUtilitarianStyle(checked === true)}
                         />
                       </div>
                     </CardContent>

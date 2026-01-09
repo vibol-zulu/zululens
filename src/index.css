@@ -287,3 +287,58 @@
     @apply border border-primary bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-mono uppercase text-xs tracking-wider px-4 py-2;
   }
 }
+
+/* Classic Style Overrides - When utilitarian style is disabled */
+.classic-style {
+  --radius: 0.5rem;
+}
+
+.classic-style .font-mono {
+  font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+}
+
+.classic-style .uppercase {
+  text-transform: none;
+}
+
+.classic-style .tracking-wider,
+.classic-style .tracking-widest {
+  letter-spacing: normal;
+}
+
+.classic-style .util-frame,
+.classic-style .util-frame-bottom {
+  border: none;
+}
+
+.classic-style .util-frame::before,
+.classic-style .util-frame::after,
+.classic-style .util-frame-bottom::before,
+.classic-style .util-frame-bottom::after {
+  display: none;
+}
+
+.classic-style .tech-label {
+  @apply text-xs text-muted-foreground;
+  font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.classic-style .tech-value {
+  font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+}
+
+.classic-style .util-button {
+  @apply rounded-md border-border;
+  font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.classic-style .util-button-primary {
+  @apply rounded-md;
+  font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  text-transform: none;
+  letter-spacing: normal;
+}
