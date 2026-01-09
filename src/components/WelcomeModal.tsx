@@ -26,13 +26,13 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="w-[470px] h-[680px] max-w-[95vw] max-h-[95vh] overflow-y-auto p-0 bg-background" 
+        className="w-[470px] max-w-[95vw] max-h-[95vh] overflow-y-auto p-0 bg-background" 
         hideCloseButton
         overlayClassName="bg-black/50"
       >
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col">
           {/* Illustration */}
-          <div className="px-6 pt-6 flex justify-center">
+          <div className="px-6 py-6 flex justify-center">
             <img 
               src={welcomeIllustration} 
               alt="Diverse group of media personalities illustration" 
@@ -41,8 +41,8 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
           </div>
 
           {/* Content - centered with max-width */}
-          <div className="px-6 pt-4 pb-6 flex flex-col items-center flex-1">
-            <div className="w-full max-w-[400px] flex flex-col gap-4 h-full">
+          <div className="px-6 pb-6 flex flex-col items-center">
+            <div className="w-full max-w-[400px] flex flex-col gap-4">
               <div className="flex flex-col gap-[14px]">
                 {/* Title */}
                 <h2 className="text-[40px] font-bold text-black dark:text-white" style={{ lineHeight: '1.1em' }}>
