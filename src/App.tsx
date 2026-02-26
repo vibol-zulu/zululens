@@ -9,6 +9,7 @@ import OAuthCallback from "./pages/OAuthCallback";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import Discovery from "./pages/Discovery";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
