@@ -54,7 +54,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
                   Welcome, <span className="font-semibold text-foreground">{userName}</span>. You now have access to the Zulu Digital Microscope — an <span className="font-semibold italic text-foreground">interactive visualization</span> mapping the media landscape, starting with the U.S.
                 </p>
                 <p className="text-[13px] text-muted-foreground" style={{ lineHeight: '1.6em' }}>
-                  Note: all audience figures represent global (worldwide) reach, not US-only audiences.
+                  Note: all audience figures represent global (worldwide) reach.
                 </p>
               </div>
 
