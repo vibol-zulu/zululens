@@ -4,10 +4,9 @@
 Plan only: no app/database/permission/deployment/publication changes. Implementation requires approval; live data import and publication require a separate release decision. Use an isolated draft/test backend for review preview because current backend also serves the public app. Stop before migrations/import if isolation is unavailable. Keep defaults 2025/United States, 2000/2025 selections, styling, colours, logos and contributor/moderation workflows.
 
 ## Verified findings
-- Revision fe1ee2e13ab120a7087df2b66643e2ef802ccc5d matches the brief; initial working tree clean.
-- CSV UTF-8/BOM: 54 unique names/18 fields, 15 corporate/39 independent, 49 Low/5 Very low; country/change_pct blank. Bounds numeric/non-negative/ordered. All 972 fields match workbook Diagram data numerically/exact text/blanks; 12 sheets. Source fact-check/formula recalculation not performed.
-- Live read-only: 14 approved 2000; 76 approved 2025 (56 US, 5 UK, 5 Lithuania, 10 TEST), one pending UK, one rejected Global; no 2026. Required country defaults US/year 2025; primary-key/category constraints only. RLS/actual ACL access verified. Existing policies/ownership untouched.
-- Hook uses DB brands/static metadata; missing metadata→zero. Years/profiles hard-coded; loading/error ignored. Linear rounded/minimum radii, hidden 0.8 scale, 6px collapsed state, no collision resolution; canvas/guides/settings/methodology need coordinated review.
+Revision fe1ee2e13ab120a7087df2b66643e2ef802ccc5d matches. CSV: BOM/54 unique rows/18 fields; 15 corporate/39 independent; 49 Low/5 Very low; blank country/change; valid ordered bounds. All 972 fields match workbook Diagram data; 12 sheets. Source facts/formulas not verified.
+
+Live read-only: 14 approved 2000; 76 approved 2025 (56 US/5 UK/5 Lithuania/10 TEST), one pending UK/one rejected Global; no 2026. US/year2025 defaults, primary-key/category constraints, RLS/ACL verified. Hook uses DB brands/static metadata with zero fallback; hard-coded years/profile IDs/loading issues. Linear/minimum radii, hidden 0.8 scale, 6px collapse, no collision resolution; audit whole rendering path/settings/methodology.
 
 ## Country/identity mapping — approval required
 Country means outlet geography, not audience location. Original country blanks remain in provenance/export. US = United States copied from exact live 2025 name/category match, not default. Exact means a unique live match; retain full UUIDs in the import manifest. No fuzzy merges/existing-row edits.
