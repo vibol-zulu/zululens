@@ -11,6 +11,7 @@ import TermsOfService from "./pages/TermsOfService";
 import Discovery from "./pages/Discovery";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
+import TemporarilyDisabledModal from "./components/TemporarilyDisabledModal";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
+        <TemporarilyDisabledModal />
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>

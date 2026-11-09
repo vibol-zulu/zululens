@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { notifyIfFeatureDisabled } from '@/lib/temporarilyDisabledFeatures';
 import {
   Dialog,
   DialogContent,
@@ -758,6 +759,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
 
   // Multi-run AI Audience Estimation function (runs 3 times and calculates mean)
   const estimateAudience = async (channel: ChannelEntry) => {
+    if (notifyIfFeatureDisabled('estimate-audience')) return;
     const TOTAL_RUNS = 3;
     setIsEstimating(true);
     setEstimationResult(null);
@@ -1177,6 +1179,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
   };
 
   const analyzeComparableChannel = async (channelName: string) => {
+    if (notifyIfFeatureDisabled('estimate-audience')) return;
     setComparableChannelName(channelName);
     setShowComparableModal(true);
     setComparableEstimating(true);

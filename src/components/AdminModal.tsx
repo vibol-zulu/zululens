@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
+import { notifyIfFeatureDisabled } from '@/lib/temporarilyDisabledFeatures';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -1375,6 +1376,7 @@ Make sure questions are specific to {country}'s current political landscape and 
 
   // Fetch article content from URL
   const fetchArticle = async () => {
+    if (notifyIfFeatureDisabled('fetch-article')) return;
     if (!newsFormData.source_url) {
       toast({ title: 'Please enter a URL', variant: 'destructive' });
       return;
@@ -1502,6 +1504,7 @@ Make sure questions are specific to {country}'s current political landscape and 
 
   // Auto-fetch news articles
   const autoFetchNews = async () => {
+    if (notifyIfFeatureDisabled('auto-fetch-news')) return;
     setAutoFetchingNews(true);
     try {
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/auto-fetch-news`, {
@@ -1871,6 +1874,7 @@ Make sure questions are specific to {country}'s current political landscape and 
 
   // Multi-run AI Audience Estimation function (runs 3 times and calculates mean)
   const estimateAudience = async (submission: Submission) => {
+    if (notifyIfFeatureDisabled('estimate-audience')) return;
     const TOTAL_RUNS = 3;
     setIsEstimating(true);
     setEstimationResult(null);
@@ -2277,6 +2281,7 @@ Make sure questions are specific to {country}'s current political landscape and 
 
   // Analyze a comparable channel
   const analyzeComparableChannel = async (channelName: string) => {
+    if (notifyIfFeatureDisabled('estimate-audience')) return;
     setComparableChannelName(channelName);
     setShowComparableModal(true);
     setComparableEstimating(true);

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { notifyIfFeatureDisabled } from '@/lib/temporarilyDisabledFeatures';
 
 export interface ChannelDiscovery {
   id: string;
@@ -71,6 +72,7 @@ export function useChannelDiscoveries(country?: string) {
     category?: string,
     searchQuery?: string
   ) => {
+    if (notifyIfFeatureDisabled('discover-channels')) return;
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
