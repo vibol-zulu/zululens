@@ -10,7 +10,8 @@ Verification limitation: the existing Admin panel closes when opened in the brow
 
 - [x] Validate uploaded CSV/workbook and inspect live schema/outlet mapping read-only.
 - [x] Prepare approved addition, acceptance and rollback plan.
-- [ ] Implement isolated review preview — blocked: no isolated draft backend is available; new drafts share live data. Await approval for a file-backed preview alternative or an isolated environment.
-- [ ] Resolve BBC News identity/country and Reuters/Jordan Peterson outlet-country mapping — awaiting explicit user decision.
-- [ ] Stage/import and run acceptance/rollback checks — blocked by isolation and mapping decisions.
+- [ ] Implement file-backed review preview in a separate draft; no database writes.
+- [x] Resolve scenario mapping: BBC News United Kingdom, Reuters United Kingdom, Jordan Peterson Podcast Canada; existing records unchanged.
+- [ ] Validate preview/round-trip/area rules — continue in the draft.
+- [ ] Database staging/import/rollback — blocked until an isolated environment or separate live-data approval is available.
 - [ ] Live import/publication — requires a separate release decision after preview review.
