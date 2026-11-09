@@ -71,6 +71,7 @@ import {
 import perplexityLogo from '@/assets/perplexity-color.svg';
 import NotificationsTab from '@/components/NotificationsTab';
 import AccountSettingsTab from '@/components/AccountSettingsTab';
+import SignupGateToggle from '@/components/SignupGateToggle';
 import AnalysisReportsTab from '@/components/AnalysisReportsTab';
 import SubmissionAnalysisPanel from '@/components/SubmissionAnalysisPanel';
 import SearchableCountrySelect from '@/components/SearchableCountrySelect';
@@ -2133,6 +2134,7 @@ const ModeratorDashboardModal: React.FC<ModeratorDashboardModalProps> = ({
             {/* Settings Tab */}
             <TabsContent value="settings" className="flex-1 flex flex-col m-0 data-[state=inactive]:hidden overflow-hidden">
               <div className="flex-1 overflow-auto p-4">
+                <SignupGateToggle />
                 <AccountSettingsTab isActive={activeTab === 'settings'} />
               </div>
             </TabsContent>

@@ -7,9 +7,11 @@ import { Helmet } from 'react-helmet';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAppSettings } from '@/hooks/useAppSettings';
 
 const Index = () => {
   const { user, loading } = useAuth();
+  const { settings: appSettings, loading: settingsLoading } = useAppSettings();
   const [view, setView] = useState<'gate' | 'dashboard'>('gate');
   const [visitor, setVisitor] = useState<{name: string, email: string} | null>(null);
   const [showWelcome, setShowWelcome] = useState(false);
@@ -134,7 +136,7 @@ const Index = () => {
   };
 
   // Show loading while checking auth or processing OAuth callback
-  if (loading || isOAuthCallback) {
+  if (loading || isOAuthCallback || settingsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-pulse text-muted-foreground">Loading...</div>
@@ -160,6 +162,13 @@ const Index = () => {
           showWelcomeModal={showWelcome}
         />
       </>
+    );
+  }
+
+  // Sign-up gate disabled: let guests straight in
+  if (!appSettings.signupGateEnabled && !visitor) {
+    return (
+      <MediaDashboard visitorName="Guest" visitorEmail="" data={data} showWelcomeModal={true} />
     );
   }
 
