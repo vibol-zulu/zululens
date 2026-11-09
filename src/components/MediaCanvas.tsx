@@ -117,7 +117,7 @@ const COUNTRY_INSIGHTS: Record<string, CountryInfo> = {
   },
 };
 
-const METHODOLOGY_TEXT = `Audience estimates are derived from multiple data sources including industry reports, public filings, and third-party analytics platforms. For digital platforms, we use Unique Monthly Audience (UMA) metrics where available. Traditional broadcast audiences are estimated using ratings data and demographic surveys. All figures represent estimated reach rather than exact viewership counts. Political lean classifications are based on content analysis, editorial positioning, and audience demographic studies. Circle sizes are proportional to the square root of audience size to maintain visual clarity.`;
+const METHODOLOGY_TEXT = `Audience estimates are derived from multiple data sources including industry reports, public filings, and third-party analytics platforms. All figures represent global (worldwide) audience reach, not US-only audiences. For digital platforms, we use Unique Monthly Audience (UMA) metrics where available. Traditional broadcast audiences are estimated using ratings data and demographic surveys. All figures represent estimated reach rather than exact viewership counts. Political lean classifications are based on content analysis, editorial positioning, and audience demographic studies. Circle sizes are proportional to the square root of audience size to maintain visual clarity.`;
 
 // Reasoning Panel Component with expand/collapse and refinement questionnaire
 const ReasoningPanel: React.FC<{ 

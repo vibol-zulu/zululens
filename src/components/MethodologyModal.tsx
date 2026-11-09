@@ -28,6 +28,9 @@ const MethodologyModal: React.FC<MethodologyModalProps> = ({ open, onClose }) =>
             <h4 className="font-semibold text-foreground">What is UMA?</h4>
             <p>Unique Monthly Audience (UMA) is our cross-platform audience estimate. It combines publicly visible reach metrics from websites, YouTube, podcasts, and major social platforms into a single figure. The "Unique Monthly Audience" is an educated assumption, not a verified audit.</p>
             
+            <h4 className="font-semibold text-foreground mt-6">Geographic Scope</h4>
+            <p>All audience figures represent <strong className="text-foreground">global (worldwide) reach</strong>, not US-only audiences. The underlying sources (Social Blade, vidIQ, SimilarWeb, podcast charts, follower counts) report worldwide totals, and no geographic filtering is applied. While the visualization focuses on outlets in the US media ecosystem, their measured audiences include viewers, listeners, and readers from every country.</p>
+            
             <h4 className="font-semibold text-foreground mt-6">Data Sources</h4>
             <ul className="list-disc pl-5 space-y-1">
               <li>YouTube Analytics (Social Blade, vidIQ)</li>

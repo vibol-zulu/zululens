@@ -428,7 +428,7 @@ You have deep knowledge of:
 - Deduplication methodologies for cross-platform reach
 - Media ownership structures and corporate vs independent classification
 
-Use industry-standard audience measurement approaches and historical comparables to provide realistic estimates. Be critical in validating user inputs.`;
+Use industry-standard audience measurement approaches and historical comparables to provide realistic estimates. All audience estimates must represent global (worldwide) reach, not US-only audiences, to match the basis of the existing dataset. Be critical in validating user inputs.`;
 
   const DEFAULT_USER_PROMPT = `Analyze this media channel submission, validate the user's inputs, and estimate metrics:
 
@@ -450,7 +450,7 @@ Based on this information, provide:
    - Determine the political lean from: Far Left, Progressive/Left, Center-Left, Center, Center-Right, Right, Far Right, Libertarian, Independent, Non-partisan
    - Provide brief justification for your assessment.
 
-3. **Estimated Cross-Platform Monthly Audience (in millions)** - The total unique audience reach across major platforms.
+3. **Estimated Cross-Platform Monthly Audience (in millions)** - The total unique global (worldwide) audience reach across major platforms, not US-only.
 
 4. **Estimated Deduplicated Monthly Audience (in millions)** - Adjusted to remove estimated audience overlap.
 
